@@ -12,6 +12,7 @@
 		"format": "prettier --write ."
 	},
 	"devDependencies": {
+		"@capacitor/cli": "^6.1.2",
 		"@sveltejs/adapter-auto": "^3.0.0",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
@@ -31,6 +32,9 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@capacitor/android": "^6.1.2",
+		"@capacitor/core": "^6.1.2",
+		"@capacitor/ios": "^6.1.2",
 		"@supabase/supabase-js": "^2.45.4",
 		"@sveltejs/adapter-static": "^3.0.5",
 		"dotenv": "^16.4.5"
