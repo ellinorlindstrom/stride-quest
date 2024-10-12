@@ -1,10 +1,12 @@
 <script lang="ts">
 
 	import { onMount } from "svelte";
+    import { fetchLocations } from "$lib/services/supabase";
 
+    let locations = []
     let map: google.maps.Map
 
-    const api = 'AIzaSyDh1Zh-Z-AMTsggq0U8GNlQa_c1RptGvFA'
+    const api = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 
     function loadMap() {
     const script = document.createElement('script')
@@ -22,9 +24,11 @@ function initMap() {
     map = new google.maps.Map(document.getElementById('map') as HTMLElement, mapOptions)
 }
 
-onMount(() => {
+onMount(async() => {
     loadMap()
     window.initMap = initMap;
+    locations = await fetchLocations()
+    console.log(locations)
 })
 
  </script>
@@ -32,6 +36,8 @@ onMount(() => {
 <svelte:head>
     <script src="https://maps.googleapis.com/maps/api/js?key={api}" type="text/javascript"></script>
   </svelte:head>
+
+
 
  <style>
     #map {
