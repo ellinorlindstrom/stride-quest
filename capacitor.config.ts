@@ -3,7 +3,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 const config: CapacitorConfig = {
   appId: 'com.stridequest.app',
   appName: 'stride-quest',
-  webDir: 'build',
+  webDir: 'dist',
 };
 
 export default config;

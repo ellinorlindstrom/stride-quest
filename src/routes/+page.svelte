@@ -38,7 +38,7 @@ function initMap() {
 function setUpSearch() {
     const input = document.getElementById('pac-input') as HTMLInputElement
     const autoComplete = new google.maps.places.Autocomplete(input)
-    autoComplete.bindTo('bounds', map);
+    autoComplete.bindTo('bounds', map as unknown as google.maps.MVCObject);
 
     autoComplete.addListener('place_changed', () => {
         const place = autoComplete.getPlace()
