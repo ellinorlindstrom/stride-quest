@@ -142,7 +142,7 @@ onDestroy(() => {
         width: 100%;
     }
     .controls {
-      margin-top: 10px;
+      margin-top: 80px;
       background-color: #fff;
       padding: 10px 20px;
       border: none;
