@@ -10,25 +10,26 @@ PODS:
 DEPENDENCIES:
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorCamera (from `../../node_modules/@capacitor/camera`)"
-  - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorGeolocation (from `../../node_modules/@capacitor/geolocation`)"
+
+SPEC REPOS:
+  trunk:
+    - CapacitorCordova
 
 EXTERNAL SOURCES:
   Capacitor:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorCamera:
     :path: "../../node_modules/@capacitor/camera"
-  CapacitorCordova:
-    :path: "../../node_modules/@capacitor/ios"
   CapacitorGeolocation:
     :path: "../../node_modules/@capacitor/geolocation"
 
 SPEC CHECKSUMS:
   Capacitor: 679f9673fdf30597493a6362a5d5bf233d46abc2
   CapacitorCamera: ed022171dbf3853e68eec877b4d78995378af6b7
-  CapacitorCordova: f48c89f96c319101cd2f0ce8a2b7449b5fb8b3dd
+  CapacitorCordova: 2bff79fff47a4104445ba50130d603c7a92e7a8e
   CapacitorGeolocation: 39dca51d755f08ed1d43e51be55291a402cdc64f
 
-PODFILE CHECKSUM: def26d5f1331685cceb17b6bc377a154ceca4438
+PODFILE CHECKSUM: 3476412d83b9da033cc98404cd88ea4b46179cba
 
 COCOAPODS: 1.15.2
