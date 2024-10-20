@@ -14,7 +14,6 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
-		C156EAF02CC519A700AC8A21 /* Cordova.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C156EAEF2CC519A700AC8A21 /* Cordova.framework */; };
 		F77FE3D90CD02CF150B98D51 /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8D135BCA2BA25445CA6B4140 /* Pods_App.framework */; };
 /* End PBXBuildFile section */
 
@@ -30,7 +29,6 @@
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		8D135BCA2BA25445CA6B4140 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		C156EAEF2CC519A700AC8A21 /* Cordova.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Cordova.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		D35928C844686351EFD1CCB0 /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -39,7 +37,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C156EAF02CC519A700AC8A21 /* Cordova.framework in Frameworks */,
 				F77FE3D90CD02CF150B98D51 /* Pods_App.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -92,7 +89,6 @@
 		9BB1303D565098A6C4CAF2E2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				C156EAEF2CC519A700AC8A21 /* Cordova.framework */,
 				8D135BCA2BA25445CA6B4140 /* Pods_App.framework */,
 			);
 			name = Frameworks;
@@ -138,6 +134,7 @@
 				};
 			};
 			buildConfigurationList = 504EC2FF1FED79650016851F /* Build configuration list for PBXProject "App" */;
+			compatibilityVersion = "Xcode 15.3";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
