@@ -1,24 +1,28 @@
 require_relative '../../node_modules/@capacitor/ios/scripts/pods_helpers'
 
-def shared_pods
-  use_frameworks!
+platform :ios, '13.0'
+use_frameworks!
+use_modular_headers! 
+
+def capacitor_pods
   pod 'Capacitor', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCordova', :path => '../../node_modules/@capacitor/ios'
   pod 'CapacitorCamera', :path => '../../node_modules/@capacitor/camera'
   pod 'CapacitorGeolocation', :path => '../../node_modules/@capacitor/geolocation'
 end
 
-platform :ios, '13.0'
-
 target 'App' do
-  shared_pods
+  capacitor_pods
 end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
+      config.build_settings['SWIFT_VERSION'] = '5.0'
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      config.build_settings['ARCHS'] = 'arm64'
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = ''
     end
   end
 end
