@@ -16,4 +16,14 @@ end
 
 post_install do |installer|
   assertDeploymentTarget(installer)
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      # Add these specific header search paths
+      config.build_settings['HEADER_SEARCH_PATHS'] = [
+        '$(inherited)',
+        '${PODS_ROOT}/../../node_modules/@capacitor/ios/Capacitor/Capacitor/Bridge',
+        '${PODS_ROOT}/../../node_modules/@capacitor/ios/CapacitorCordova'
+      ]
+    end
+  end
 end
