@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		C174E1962CEC833B00E16571 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = C174E1952CEC832400E16571 /* .gitignore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		C174E1782CEC7FC600E16571 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,6 +31,7 @@
 		C174E1602CEC7FC000E16571 /* StrideQuest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StrideQuest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C174E1772CEC7FC600E16571 /* StrideQuestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StrideQuestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C174E1812CEC7FC600E16571 /* StrideQuestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StrideQuestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		C174E1952CEC832400E16571 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -88,6 +93,7 @@
 		C174E1572CEC7FC000E16571 = {
 			isa = PBXGroup;
 			children = (
+				C174E1952CEC832400E16571 /* .gitignore */,
 				C174E1622CEC7FC000E16571 /* StrideQuest */,
 				C174E17A2CEC7FC600E16571 /* StrideQuestTests */,
 				C174E1842CEC7FC600E16571 /* StrideQuestUITests */,
@@ -225,6 +231,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C174E1962CEC833B00E16571 /* .gitignore in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
