@@ -6,5 +6,9 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>StrideQuest needs your location to track your exploration progress</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>StrideQuest needs your location to track your exploration progress even when the app is in background</string>
 </dict>
 </plist>
