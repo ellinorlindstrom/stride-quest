@@ -1,10 +1,4 @@
-//
-//  AuthenticationManager.swift
-//  StrideQuest
-//
-//  Created by Ellinor Lindström on 2024-11-19.
-//
-
+import Foundation
 import SwiftUI
 import AuthenticationServices
 
@@ -48,7 +42,7 @@ class AuthenticationManager: ObservableObject {
                     break
             }
         case .failure(let error):
-            print(error.localizedDescription)
+            print("Sign in with Apple failed: \(error.localizedDescription)")
         }
     }
     

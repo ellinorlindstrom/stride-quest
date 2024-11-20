@@ -7,29 +7,35 @@
 
 import Foundation
 import SwiftUI
+import AuthenticationServices
 
 struct LoginView: View {
-    @StateObject private var authManager = AuthenticationManager()
+    @ObservedObject var authManager: AuthenticationManager
     
     var body: some View {
         
         VStack(spacing: 20) {
-            Spacer()
+            Spacer(minLength: 50)
             Text("Welcome to Stride Quest")
                 .font(.title)
                 .fontWeight(.bold)
+                .padding(.top, 40)
             
             Text("Sign in to track your progress")
                 .foregroundStyle(.secondary)
             
-            SignInWithAppleButton(authManager: authManager)
+            SignInWithAppleButton(.signIn) { request in
+                          request.requestedScopes = [.fullName, .email]
+                      } onCompletion: { result in
+                          authManager.handleSignInWithAppleCompletion(result)
+                      }
+                .signInWithAppleButtonStyle(.white)
+                .frame(height: 44)
                 .padding(.horizontal)
             
-            Spacer()
+            Spacer(minLength: 50)
         }
-        .padding()
-        .onAppear {
-            authManager.checkAuthentication()
-        }
+        .padding(.vertical, 40)
+        .frame(maxHeight: .infinity)
     }
 }

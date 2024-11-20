@@ -5,10 +5,14 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
+		<string>location</string>
 	</array>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>StrideQuest needs your location to track your exploration progress</string>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>StrideQuest needs your location to track your exploration progress even when the app is in background</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>StrideQuest needs your location to track your routes and show your position on the map</string>
+
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>StrideQuest needs your location to track your routes even when the app is in background</string>
+    <key>NSFaceIDUsageDescription</key>
+    <string>We use Face ID for signing you in securely.</string>
 </dict>
 </plist>
