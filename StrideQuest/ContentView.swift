@@ -12,7 +12,8 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var authManager = AuthenticationManager()
     @StateObject private var locationManager: LocationManager
-    @State private var mapPosition: MapCameraPosition = .userLocation(fallback: .automatic)
+    @State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
+
     
     init() {
         let container = PersistenceController.shared.container
@@ -22,27 +23,28 @@ struct ContentView: View {
     var body: some View {
         Group {
             if authManager.isAuthenticated {
-                Map (position: $mapPosition) {
+                Map (position: $position) {
+                    UserAnnotation()
                     
                     if !locationManager.currentRoute.isEmpty {
                                         MapPolyline(coordinates: locationManager.currentRoute)
-                                            .stroke(.blue, lineWidth: 3)
+                                            .stroke(.blue, lineWidth: 4)
                                     }
                 }
-                .mapStyle(.standard)
-                .mapControls {
+                .mapControls{
                     MapUserLocationButton()
+                    MapPitchToggle()
                     MapCompass()
                 }
-                .ignoresSafeArea()
-                .overlay(alignment: .topTrailing) {
+                .mapStyle(.standard(elevation: .realistic))
+                .overlay(alignment: .topLeading) {
                         Button("Sign Out") {
                         authManager.signOut()
                     }
                         .padding()
 
                 }
-                .overlay(alignment: .bottomTrailing) {
+                .overlay(alignment: .bottom) {
                     VStack {
                         Button(locationManager.isTracking ? "Stop Tracking" : "Start Tracking") {
                             if locationManager.isTracking {
