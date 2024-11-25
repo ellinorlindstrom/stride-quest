@@ -40,7 +40,6 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				Views/Authentication/SignInWithAppleButton.swift,
 			);
 			target = C174E15F2CEC7FC000E16571 /* StrideQuest */;
 		};
@@ -306,8 +305,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = StrideQuest/Info.plist;
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "StrideQuest needs your location to track your exploration progress even when the app is in background";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "StrideQuest needs your location to track your exploration progress";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "We use Face ID for signing you in securely.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "StrideQuest needs your location to track your routes even when the app is in background";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "StrideQuest needs your location to track your routes and show your position on the map";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -341,8 +341,9 @@
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = StrideQuest/Info.plist;
-				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "StrideQuest needs your location to track your exploration progress even when the app is in background";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "StrideQuest needs your location to track your exploration progress";
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "We use Face ID for signing you in securely.";
+				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "StrideQuest needs your location to track your routes even when the app is in background";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "StrideQuest needs your location to track your routes and show your position on the map";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

@@ -2,17 +2,39 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>MKDirectionsRequest</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.apple.maps.directionsrequest</string>
+			</array>
+		</dict>
+	</array>
+	<key>MKDirectionsApplicationSupportedModes</key>
+	<array>
+		<string>MKDirectionsModeBike</string>
+		<string>MKDirectionsModeFerry</string>
+		<string>MKDirectionsModePedestrian</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>remote-notification</string>
 		<string>location</string>
 	</array>
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>StrideQuest needs your location to track your routes and show your position on the map</string>
-
-    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>StrideQuest needs your location to track your routes even when the app is in background</string>
+    
+    <key>NSHealthShareUsageDescription</key>
+    <string>StrideQuest needs access to your health data to track your journey progress</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>SrideQuest needs permission to track your steps and distance</string>
+    
     <key>NSFaceIDUsageDescription</key>
     <string>We use Face ID for signing you in securely.</string>
+    
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>StrideQuest needs your location to track your routes and show your path</string>
+
 </dict>
 </plist>

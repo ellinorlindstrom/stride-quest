@@ -24,14 +24,11 @@ struct LoginView: View {
             Text("Sign in to track your progress")
                 .foregroundStyle(.secondary)
             
-            SignInWithAppleButton(.signIn) { request in
-                          request.requestedScopes = [.fullName, .email]
-                      } onCompletion: { result in
-                          authManager.handleSignInWithAppleCompletion(result)
-                      }
-                .signInWithAppleButtonStyle(.white)
-                .frame(height: 44)
-                .padding(.horizontal)
+            SignInWithAppleButton(authManager: authManager)
+                           .frame(height: 44)
+                           .padding(.horizontal)
+                           .cornerRadius(10)
+                           .signInWithAppleButtonStyle(.white)
             
             Spacer(minLength: 50)
         }
