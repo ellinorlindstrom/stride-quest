@@ -19,22 +19,33 @@
 		<string>MKDirectionsModeFerry</string>
 		<string>MKDirectionsModePedestrian</string>
 	</array>
-	<key>UIBackgroundModes</key>
-	<array>
-		<string>remote-notification</string>
-		<string>location</string>
+    <!-- Required background modes for tracking -->
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>location</string>
+        <string>processing</string>
 	</array>
     
+    <!-- HealthKit permissions -->
     <key>NSHealthShareUsageDescription</key>
     <string>StrideQuest needs access to your health data to track your journey progress</string>
     <key>NSHealthUpdateUsageDescription</key>
-    <string>SrideQuest needs permission to track your steps and distance</string>
+    <string>StrideQuest needs permission to track your steps and distance</string>
+
     
     <key>NSFaceIDUsageDescription</key>
     <string>We use Face ID for signing you in securely.</string>
     
+    <!-- Privacy - Location permissions -->
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>StrideQuest needs your location to track your routes and show your path</string>
+    <string>StrideQuest needs your location to track your progress on the map</string>
+    
+    <!-- Silence document warning -->
+    <key>LSSupportsOpeningDocumentsInPlace</key>
+    <false/>
+    <key>UISupportsDocumentBrowser</key>
+    <false/>
+
 
 </dict>
 </plist>

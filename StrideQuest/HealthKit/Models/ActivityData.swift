@@ -2,7 +2,7 @@ import Foundation
 
 
 struct HealthData {
-    let steps: Double
+    let progress: Double
     let distance: Double
     let date: Date
 }

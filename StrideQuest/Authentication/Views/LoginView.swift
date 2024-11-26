@@ -16,10 +16,16 @@ struct LoginView: View {
         
         VStack(spacing: 20) {
             Spacer(minLength: 50)
-            Text("Welcome to Stride Quest")
+            Text("Stride Quest")
                 .font(.title)
-                .fontWeight(.bold)
+                .fontWeight(.black)
                 .padding(.top, 40)
+            
+                Text("Transforming everyday movement into adventures!")
+                    .font(.headline)
+                    .fontWeight(.bold)
+                    .padding(.top, 20)
+                    .frame(maxWidth: .infinity, alignment: .center)
             
             Text("Sign in to track your progress")
                 .foregroundStyle(.secondary)
@@ -35,4 +41,9 @@ struct LoginView: View {
         .padding(.vertical, 40)
         .frame(maxHeight: .infinity)
     }
+}
+
+#Preview {
+    ContentView()
+        .environment(\.managedObjectContext, PersistenceController.shared.container.viewContext)
 }

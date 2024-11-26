@@ -1,14 +1,8 @@
-//
-//  ContentView.swift
-//  StrideQuest
-//
-//  Created by Ellinor Lindström on 2024-11-19.
-//
-
 import SwiftUI
 import MapKit
 
 struct ContentView: View {
+    @EnvironmentObject var healthManager: HealthKitManager
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var authManager = AuthenticationManager()
     @State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
@@ -16,10 +10,13 @@ struct ContentView: View {
     var body: some View {
         Group {
             if authManager.isAuthenticated {
+                
                 Map (position: $position) {
                     UserAnnotation()
+                        
                     
                 }
+                .environmentObject(healthManager)
                 .mapControls{
                     MapUserLocationButton()
                     MapPitchToggle()
@@ -36,7 +33,8 @@ struct ContentView: View {
                 }
                 .overlay(alignment: .bottom) {
                     VStack {
-
+                        ActivityView()
+                            .padding()
                     }
                 }
             } else {
