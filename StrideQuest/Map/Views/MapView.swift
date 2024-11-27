@@ -1,48 +1,49 @@
 import SwiftUI
 import MapKit
 
-struct MapView: UIViewRepresentable {
-    @Binding var plannedRoute: [CLLocationCoordinate2D]
-    @Binding var progressRoute: [CLLocationCoordinate2D]
 
-    func makeUIView(context: Context) -> MKMapView {
-        let mapView = MKMapView()
-        mapView.delegate = context.coordinator
-        return mapView
-    }
 
-    func updateUIView(_ mapView: MKMapView, context: Context) {
-        mapView.removeOverlays(mapView.overlays)
-        
-        let plannedPolyline = MKPolyline(coordinates: plannedRoute, count: plannedRoute.count)
-        mapView.addOverlay(plannedPolyline)
-        
-        let progressPolyline = MKPolyline(coordinates: progressRoute, count: progressRoute.count)
-        mapView.addOverlay(progressPolyline)
-    }
+struct MapView: View {
+    @Binding var position: MapCameraPosition
+    @ObservedObject var routeManager = RouteManager.shared
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-
-    class Coordinator: NSObject, MKMapViewDelegate {
-        let parent: MapView
-
-        init(_ parent: MapView) {
-            self.parent = parent
-        }
-
-        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
-            let renderer = MKPolylineRenderer(overlay: overlay)
-            renderer.lineWidth = 4
-
-            if overlay is MKPolyline {
-                renderer.strokeColor = .gray
+    var body: some View {
+        Map(position: $position) {
+            if let routePosition = routeManager.currentRouteCoordinate {
+                Marker("Current Position", coordinate: routePosition)
+                    .tint(.blue)
             } else {
-                renderer.strokeColor = .blue
+                UserAnnotation()
             }
-
-            return renderer
+            
+            if let progress = routeManager.currentProgress,
+               let route = progress.currentRoute {
+                ForEach(route.milestones) { milestone in
+                    if let coordinate = getCoordinate(for: milestone, in: route) {
+                        Marker(milestone.name, coordinate: coordinate)
+                            .tint(progress.completedMilestones.contains(milestone.id) ? .green : .red)
+                    }
+                }
+            }
         }
-    }
-}
+        .mapControls {
+            MapUserLocationButton()
+            MapPitchToggle()
+            MapCompass()
+            MapScaleView()
+        }
+        .mapStyle(.standard(elevation: .realistic))
+        .onReceive(routeManager.$currentMapRegion) { region in
+                  if let region = region {
+                      position = .region(region)
+                  }
+              }
+          }
+          
+          private func getCoordinate(for milestone: RouteMilestone, in route: VirtualRoute) -> CLLocationCoordinate2D? {
+              // Calculate milestone position based on distance along route
+              let progress = milestone.distanceFromStart / route.totalDistance
+              let index = Int(floor(Double(route.coordinates.count) * progress))
+              return index < route.coordinates.count ? route.coordinates[index] : nil
+          }
+       }
