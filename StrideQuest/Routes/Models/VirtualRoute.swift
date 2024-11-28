@@ -78,10 +78,11 @@ struct RouteProgress: Codable {
    var completedMilestones: Set<UUID>
    var isCompleted: Bool
    
-   var percentageCompleted: Double {
-       guard let totalDistance = currentRoute?.totalDistance else { return 0 }
-       return (completedDistance / totalDistance) * 100
-   }
+    var percentageCompleted: Double {
+          guard let route = currentRoute else { return 0 }
+          let routeTotalKm = route.totalDistance / 1000  
+          return (completedDistance / routeTotalKm) * 100
+      }
    
    var currentRoute: VirtualRoute? {
        RouteManager.shared.getRoute(by: routeId)

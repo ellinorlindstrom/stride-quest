@@ -2,76 +2,89 @@ import Foundation
 import CoreLocation
 
 extension RouteManager {
-    func initializeRoutes() -> [VirtualRoute] {
-        [
-            VirtualRoute(
-                name: "Camino de Santiago",
-                description: "Follow the historic pilgrimage route through Spain",
-                totalDistance: 799000,
-                milestones: [
-                    RouteMilestone(
-                        name: "Pamplona",
-                        description: "Historic city famous for the Running of the Bulls",
-                        distanceFromStart: 199750,
-                        imageName: "pamplona"
-                    ),
-                    RouteMilestone(
-                        name: "Burgos Cathedral",
-                        description: "UNESCO World Heritage Gothic cathedral",
-                        distanceFromStart: 399500,
-                        imageName: "burgos"
-                    ),
-                    RouteMilestone(
-                        name: "Santiago de Compostela",
-                        description: "Final destination with its famous cathedral",
-                        distanceFromStart: 799000,
-                        imageName: "santiago"
-                    )
-                ],
-                imageName: "camino",
-                region: "Spain",
-                startCoordinate: CLLocationCoordinate2D(latitude: 43.1631, longitude: -1.2358),
-                coordinates: [
-                    CLLocationCoordinate2D(latitude: 43.1631, longitude: -1.2358),
-                    CLLocationCoordinate2D(latitude: 42.8188, longitude: -1.6444),
-                    CLLocationCoordinate2D(latitude: 42.3439, longitude: -3.6966),
-                    CLLocationCoordinate2D(latitude: 42.8805, longitude: -8.5459)
-                ]
-            ),
-            
-            VirtualRoute(
-                name: "Great Wall Adventure",
-                description: "Trek along sections of China's Great Wall",
-                totalDistance: 42000,
-                milestones: [
-                    RouteMilestone(
-                        name: "Mutianyu",
-                        description: "Well-preserved section with stunning views",
-                        distanceFromStart: 14000,
-                        imageName: "mutianyu"
-                    ),
-                    RouteMilestone(
-                        name: "Watchtower 23",
-                        description: "Historic defensive position",
-                        distanceFromStart: 28000,
-                        imageName: "watchtower"
-                    ),
-                    RouteMilestone(
-                        name: "Jinshanling",
-                        description: "Most picturesque section of the wall",
-                        distanceFromStart: 42000,
-                        imageName: "jinshanling"
-                    )
-                ],
-                imageName: "great_wall",
-                region: "China",
-                startCoordinate: CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704),
-                coordinates: [
-                    CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704),
-                    CLLocationCoordinate2D(latitude: 40.4765, longitude: 116.5998),
-                    CLLocationCoordinate2D(latitude: 40.6764, longitude: 117.2754)
-                ]
-            ),
+   func initializeRoutes() -> [VirtualRoute] {
+       [
+           VirtualRoute(
+               name: "Camino de Santiago",
+               description: "Follow the historic pilgrimage route through Spain",
+               totalDistance: 799000,
+               milestones: [
+                   RouteMilestone(
+                       name: "Pamplona",
+                       description: "Historic city famous for the Running of the Bulls",
+                       distanceFromStart: 199750,
+                       imageName: "pamplona"
+                   ),
+                   RouteMilestone(
+                       name: "Burgos Cathedral",
+                       description: "UNESCO World Heritage Gothic cathedral",
+                       distanceFromStart: 399500,
+                       imageName: "burgos"
+                   ),
+                   RouteMilestone(
+                       name: "Santiago de Compostela",
+                       description: "Final destination with its famous cathedral",
+                       distanceFromStart: 799000,
+                       imageName: "santiago"
+                   )
+               ],
+               imageName: "camino",
+               region: "Spain",
+               startCoordinate: CLLocationCoordinate2D(latitude: 43.1631, longitude: -1.2358),
+               coordinates: [
+                   CLLocationCoordinate2D(latitude: 43.1631, longitude: -1.2358), // Saint-Jean-Pied-de-Port
+                   CLLocationCoordinate2D(latitude: 43.0097, longitude: -1.3192),
+                   CLLocationCoordinate2D(latitude: 42.9182, longitude: -1.4834),
+                   CLLocationCoordinate2D(latitude: 42.8188, longitude: -1.6444), // Pamplona
+                   CLLocationCoordinate2D(latitude: 42.6126, longitude: -2.1668),
+                   CLLocationCoordinate2D(latitude: 42.4668, longitude: -2.4449),
+                   CLLocationCoordinate2D(latitude: 42.3439, longitude: -3.6966), // Burgos
+                   CLLocationCoordinate2D(latitude: 42.3378, longitude: -3.9882),
+                   CLLocationCoordinate2D(latitude: 42.4982, longitude: -5.5773),
+                   CLLocationCoordinate2D(latitude: 42.5987, longitude: -6.7327),
+                   CLLocationCoordinate2D(latitude: 42.7469, longitude: -7.4154),
+                   CLLocationCoordinate2D(latitude: 42.8805, longitude: -8.5459)  // Santiago
+               ]
+           ),
+           
+           VirtualRoute(
+               name: "Great Wall Adventure",
+               description: "Trek along sections of China's Great Wall",
+               totalDistance: 42000,
+               milestones: [
+                   RouteMilestone(
+                       name: "Mutianyu",
+                       description: "Well-preserved section with stunning views",
+                       distanceFromStart: 14000,
+                       imageName: "mutianyu"
+                   ),
+                   RouteMilestone(
+                       name: "Watchtower 23",
+                       description: "Historic defensive position",
+                       distanceFromStart: 28000,
+                       imageName: "watchtower"
+                   ),
+                   RouteMilestone(
+                       name: "Jinshanling",
+                       description: "Most picturesque section of the wall",
+                       distanceFromStart: 42000,
+                       imageName: "jinshanling"
+                   )
+               ],
+               imageName: "great_wall",
+               region: "China",
+               startCoordinate: CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704),
+               coordinates: [
+                   CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704), // Mutianyu
+                   CLLocationCoordinate2D(latitude: 40.4417, longitude: 116.5815),
+                   CLLocationCoordinate2D(latitude: 40.4593, longitude: 116.5891),
+                   CLLocationCoordinate2D(latitude: 40.4765, longitude: 116.5998), // Watchtower
+                   CLLocationCoordinate2D(latitude: 40.5054, longitude: 116.6298),
+                   CLLocationCoordinate2D(latitude: 40.5876, longitude: 116.7876),
+                   CLLocationCoordinate2D(latitude: 40.6312, longitude: 117.0876),
+                   CLLocationCoordinate2D(latitude: 40.6764, longitude: 117.2754)  // Jinshanling
+               ]
+           ),
             
             VirtualRoute(
                 name: "Great Ocean Walk",

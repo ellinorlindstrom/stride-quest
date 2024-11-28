@@ -7,9 +7,9 @@ struct ContentView: View {
     @StateObject private var routeManager = RouteManager.shared
     @StateObject private var authManager = AuthenticationManager()
     @State private var showingRouteSelection = false
+    @State private var showingManualEntry = false
     @State private var position: MapCameraPosition = .userLocation(followsHeading: true, fallback: .automatic)
     @State private var showingProgress = true
-    @State private var showingHealthKitAuth = false
     @State private var camera = MapCamera(centerCoordinate: CLLocationCoordinate2D(latitude: 0, longitude: 0),distance: 1000)
         
     
@@ -23,6 +23,7 @@ struct ContentView: View {
                         HStack {
                             Menu {
                                 Button("Routes", action: { showingRouteSelection = true })
+                                Button("Add Distance Manually") { showingManualEntry = true }
                                 Button("Sign Out", action: authManager.signOut)
                             } label: {
                                 Image(systemName: "line.horizontal.3")
@@ -33,6 +34,9 @@ struct ContentView: View {
                             }
                             .sheet(isPresented: $showingRouteSelection) {
                             RouteSelectionView()
+                            }
+                            .sheet(isPresented: $showingManualEntry) {
+                                ManualDistanceEntryView()
                             }
                             
                             Spacer()
@@ -49,26 +53,6 @@ struct ContentView: View {
                                 .padding()
                         }
                     }
-                }
-                .task {
-                    // Request HealthKit authorization if needed
-                    if !healthManager.isAuthorized {
-                        do {
-                            try await healthManager.requestAuthorization()
-                        } catch {
-                            showingHealthKitAuth = true
-                        }
-                    }
-                }
-                .alert("HealthKit Access Required", isPresented: $showingHealthKitAuth) {
-                    Button("Open Settings", role: .none) {
-                        if let settingsUrl = URL(string: UIApplication.openSettingsURLString) {
-                            UIApplication.shared.open(settingsUrl)
-                        }
-                    }
-                    Button("Cancel", role: .cancel) { }
-                } message: {
-                    Text("This app needs access to HealthKit to track your progress.")
                 }
                 .onReceive(routeManager.$currentRouteCoordinate) { coordinate in
                                     if let coordinate = coordinate {
@@ -87,13 +71,6 @@ struct ContentView: View {
         .onAppear {
             authManager.checkAuthentication()
         }
-    }
-    
-    // Helper function to get coordinate for milestone
-    private func getCoordinate(for milestone: RouteMilestone, in route: VirtualRoute) -> CLLocationCoordinate2D? {
-        // This should be implemented based on your route coordinate system
-        // For now, returning nil
-        return nil
     }
 }
 

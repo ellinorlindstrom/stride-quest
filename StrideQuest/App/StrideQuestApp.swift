@@ -3,9 +3,8 @@ import SwiftUI
 @main
 struct StrideQuestApp: App {
     let persistenceController = PersistenceController.shared
-    
     @StateObject private var authManager = AuthenticationManager()
-    @StateObject var healthManager = HealthKitManager()
+    @StateObject private var healthManager = HealthKitManager.shared
 
     
     init() {
@@ -19,6 +18,13 @@ struct StrideQuestApp: App {
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .environmentObject(authManager)
                 .environmentObject(healthManager)
-        }
-    }
-}
+                .task {
+                                    do {
+                                        try await healthManager.requestAuthorization()
+                                    } catch {
+                                        print("Error setting up HealthKit: \(error)")
+                                    }
+                                }
+                        }
+                    }
+                }

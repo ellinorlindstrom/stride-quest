@@ -22,11 +22,12 @@ struct RouteProgressView: View {
                         .font(.headline)
                     
                     ProgressBar(value: progress.percentageCompleted)
+                        .id(progress.completedDistance)
                     
                     HStack {
                         VStack(alignment: .leading) {
                             Text("Completed")
-                            Text(String(format: "%.1f km", progress.completedDistance / 1000))
+                            Text(String(format: "%.1f km", progress.completedDistance))
                                 .font(.headline)
                         }
                         
@@ -35,7 +36,7 @@ struct RouteProgressView: View {
                         VStack(alignment: .trailing) {
                             Text("Remaining")
                             Text(String(format: "%.1f km",
-                                      (route.totalDistance - progress.completedDistance) / 1000))
+                                        (route.totalDistance / 1000) - progress.completedDistance))
                                 .font(.headline)
                         }
                     }
@@ -43,19 +44,10 @@ struct RouteProgressView: View {
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(15)
-                
-//                // Milestones
-//                ScrollView(.horizontal, showsIndicators: false) {
-//                    HStack(spacing: 15) {
-//                        ForEach(route.milestones) { milestone in
-//                            MilestoneCard(
-//                                milestone: milestone,
-//                                isCompleted: progress.completedMilestones.contains(milestone.id)
-//                            )
-//                        }
-//                    }
-//                    .padding(.horizontal)
-//                }
+                .onChange(of: healthManager.totalDistance) { oldValue, newValue in
+                                    let kmDistance = newValue / 1000
+                                    routeManager.updateProgress(withDistance: kmDistance)
+                }
             } else {
                 VStack(spacing: 5) {
                     Text("No Active Journey")
@@ -76,9 +68,6 @@ struct RouteProgressView: View {
         }
         .sheet(isPresented: $showingRouteSelection) {
             RouteSelectionView()
-        }
-        .onChange(of: healthManager.totalDistance) { oldValue, newValue in
-            routeManager.updateProgress(withDistance: newValue)
         }
     }
 }

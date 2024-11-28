@@ -5,7 +5,12 @@ class HealthKitManager: ObservableObject {
     static let shared = HealthKitManager()
     let healthStore = HKHealthStore()
     
-    @Published var totalDistance: Double = 0
+    @Published var totalDistance: Double = 0 {
+        didSet {
+            let distanceInKilometers = totalDistance / 1000
+            RouteManager.shared.updateProgress(withDistance: distanceInKilometers)
+        }
+    }
     @Published var isAuthorized = false
     
     private var observerQueries: [HKObserverQuery] = []
@@ -13,10 +18,6 @@ class HealthKitManager: ObservableObject {
     // Types we want to read from HealthKit
     let typesToRead: Set = [
         HKQuantityType(.distanceWalkingRunning),
-        HKQuantityType(.distanceCycling),
-        HKQuantityType(.distanceSwimming),
-        HKQuantityType(.distanceWheelchair),
-        HKWorkoutType.workoutType()
     ]
     
     // Request authorization and start observing
@@ -30,49 +31,56 @@ class HealthKitManager: ObservableObject {
         DispatchQueue.main.async {
             self.isAuthorized = true
             self.startObservingDistance()
+            // Fetch initial distance when authorization is granted
+            self.fetchTotalDistance()
         }
         try await setupBackgroundDelivery()
-
     }
     
     private func setupBackgroundDelivery() async throws {
-           let distanceTypes = [
-               HKQuantityType(.distanceWalkingRunning),
-               HKQuantityType(.distanceCycling),
-               HKQuantityType(.distanceSwimming),
-               HKQuantityType(.distanceWheelchair)
-           ]
-           
-           for distanceType in distanceTypes {
-               try await healthStore.enableBackgroundDelivery(for: distanceType, frequency: .immediate)
-           }
-       }
+        let distanceTypes = [
+            HKQuantityType(.distanceWalkingRunning),
+        ]
+        
+        for distanceType in distanceTypes {
+            try await healthStore.enableBackgroundDelivery(for: distanceType, frequency: .immediate)
+        }
+    }
     
     private func startObservingDistance() {
-            let distanceTypes = [
-                HKQuantityType(.distanceWalkingRunning),
-                HKQuantityType(.distanceCycling),
-                HKQuantityType(.distanceSwimming),
-                HKQuantityType(.distanceWheelchair)
-            ]
-            
-            for distanceType in distanceTypes {
-                let query = HKObserverQuery(sampleType: distanceType, predicate: nil) { [weak self] _, completion, error in
-                    self?.fetchTotalDistance()
-                    completion()
+        let distanceTypes = [
+            HKQuantityType(.distanceWalkingRunning),
+        ]
+        
+        for distanceType in distanceTypes {
+            let query = HKObserverQuery(sampleType: distanceType, predicate: nil) { [weak self] _, completion, error in
+                if error == nil {
+                    DispatchQueue.main.async {
+                        self?.fetchTotalDistance()
+                    }
                 }
-                
-                observerQueries.append(query)
-                healthStore.execute(query)
+                completion()
             }
+            
+            observerQueries.append(query)
+            healthStore.execute(query)
+            
+            // Enable immediate background updates
+            let anchorQuery = HKAnchoredObjectQuery(type: distanceType, predicate: nil, anchor: nil, limit: HKObjectQueryNoLimit) { [weak self] _, samples, _, _, error in
+                if error == nil && samples?.count ?? 0 > 0 {
+                    DispatchQueue.main.async {
+                        self?.fetchTotalDistance()
+                    }
+                }
+            }
+            
+            healthStore.execute(anchorQuery)
         }
+    }
     
     func fetchTotalDistance() {
         let distanceTypes = [
             HKQuantityType(.distanceWalkingRunning),
-            HKQuantityType(.distanceCycling),
-            HKQuantityType(.distanceSwimming),
-            HKQuantityType(.distanceWheelchair)
         ]
         
         let calendar = Calendar.current
@@ -110,7 +118,7 @@ class HealthKitManager: ObservableObject {
         }
         
         group.notify(queue: DispatchQueue.main) { [weak self] in
-            self?.totalDistance = temporaryTotal
+                self?.totalDistance = temporaryTotal
         }
     }
     
