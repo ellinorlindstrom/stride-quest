@@ -1,61 +1,72 @@
 import SwiftUI
 import MapKit
 
-
-
 struct MapView: View {
-    @Binding var position: MapCameraPosition
+    @State private var cameraPosition: MapCameraPosition = .automatic
+    @State private var isUserInteracting = false
     @ObservedObject var routeManager = RouteManager.shared
     @State private var progressPolyline: [CLLocationCoordinate2D] = []
     
-    
     var body: some View {
-        Map(position: $position) {
-            if let routePosition = routeManager.currentRouteCoordinate {
-                MapCircle(center: routePosition, radius: 50)
-                    .foregroundStyle(.blue.opacity(0.3))
-                    .stroke(.white, lineWidth: 2)
-            } else {
-                UserAnnotation()
-            }
-            
-            if let progress = routeManager.currentProgress,
-               let route = progress.currentRoute {
-                // Full route polyline
-                MapPolyline(coordinates: route.coordinates)
-                    .stroke(.gray, lineWidth: 3)
-                
-                // Progress polyline
-                MapPolyline(coordinates: progressPolyline)
-                    .stroke(.blue, lineWidth: 3)
-                
-                // Milestone markers
-                ForEach(route.milestones) { milestone in
-                    let coordinate = getMilestoneCoordinate(milestone: milestone, coordinates: route.coordinates)
-                    Marker(milestone.name, coordinate: coordinate)
-                        .tint(progress.completedMilestones.contains(milestone.id) ? .green : .red)
-                }
-            }
+        Map(position: $cameraPosition, interactionModes: .all) {
+                   if let progress = routeManager.currentProgress,
+                      let route = progress.currentRoute {
+                       MapPolyline(coordinates: route.coordinates)
+                           .stroke(.gray, lineWidth: 3)
+                       
+                       MapPolyline(coordinates: progressPolyline)
+                           .stroke(.blue, lineWidth: 3)
+                       
+                       ForEach(route.milestones) { milestone in
+                           let coordinate = getMilestoneCoordinate(milestone: milestone, coordinates: route.coordinates)
+                           Marker(milestone.name, coordinate: coordinate)
+                               .tint(progress.completedMilestones.contains(milestone.id) ? .green : .red)
+                       }
+                       
+                       if let currentPosition = progressPolyline.last {
+                           Annotation("", coordinate: currentPosition) {
+                               ZStack {
+                                   Circle()
+                                       .fill(.blue.opacity(0.2))
+                                       .frame(width: 40, height: 40)
+                                   Circle()
+                                       .fill(.blue)
+                                       .frame(width: 15, height: 15)
+                                       .overlay(Circle().stroke(.white, lineWidth: 3))
+                               }
+                           }
+                       }
+                   }
+               }
+        .onAppear {
+            setInitialCamera()
+        }
+        .onReceive(routeManager.$currentProgress) { _ in
+            setInitialCamera()
         }
         .mapControls {
-            MapUserLocationButton()
             MapPitchToggle()
             MapCompass()
             MapScaleView()
         }
         .mapStyle(.standard(elevation: .realistic))
-        .onReceive(routeManager.$currentMapRegion) { region in
-            if let region = region {
-                position = .region(region)
-            }
-        }
-        .onReceive(routeManager.$currentProgress) { progress in
-            updateProgressPolyline()
-        }
+        .gesture(
+                    SimultaneousGesture(
+                        DragGesture().onChanged { _ in isUserInteracting = true },
+                        MagnificationGesture().onChanged { _ in isUserInteracting = true }
+                    )
+                )
+                .onReceive(routeManager.$currentMapRegion) { region in
+                    if let region = region, !isUserInteracting {
+                        cameraPosition = .region(region)
+                    }
+                }
+                .onReceive(routeManager.$currentProgress) { _ in
+                    updateProgressPolyline()
+                }
     }
     
     private func getMilestoneCoordinate(milestone: RouteMilestone, coordinates: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D {
-        // Convert both to kilometers
         let milestoneDistanceKm = milestone.distanceFromStart / 1000
         let routeTotalKm = routeManager.currentProgress!.currentRoute!.totalDistance / 1000
         let progress = milestoneDistanceKm / routeTotalKm
@@ -73,27 +84,22 @@ struct MapView: View {
         let routeTotalKm = route.totalDistance / 1000
         let percentComplete = progress.completedDistance / routeTotalKm
         
-        // Early exit if no real progress
         if percentComplete <= 0 {
             progressPolyline = []
             return
         }
         
-        // If complete, show full route
         if percentComplete >= 1 {
             progressPolyline = route.coordinates
             return
         }
         
         let coordinates = route.coordinates
-        
-        // Need at least 2 points to create a line
         guard coordinates.count >= 2 else {
             progressPolyline = []
             return
         }
         
-        // Calculate cumulative distances between points
         var cumulativeDistances: [Double] = [0]
         var totalDistance: Double = 0
         
@@ -105,14 +111,11 @@ struct MapView: View {
             cumulativeDistances.append(totalDistance)
         }
         
-        // Scale to match route's actual distance
         let scaleFactor = route.totalDistance / totalDistance
         cumulativeDistances = cumulativeDistances.map { $0 * scaleFactor }
         
-        // Find how far we've traveled in meters
-        let targetDistance = progress.completedDistance * 1000 // convert km to meters
+        let targetDistance = progress.completedDistance * 1000
         
-        // Find the last point we've reached
         var lastPointIndex = 0
         for (index, distance) in cumulativeDistances.enumerated() {
             if distance > targetDistance {
@@ -121,7 +124,6 @@ struct MapView: View {
             }
         }
         
-        // If we're between points, interpolate the exact position
         if lastPointIndex > 0 {
             let previousDistance = cumulativeDistances[lastPointIndex - 1]
             let nextDistance = cumulativeDistances[lastPointIndex]
@@ -145,4 +147,15 @@ struct MapView: View {
         let to = CLLocation(latitude: to.latitude, longitude: to.longitude)
         return from.distance(from: to)
     }
+    
+    private func setInitialCamera() {
+        if let route = routeManager.currentProgress?.currentRoute {
+            cameraPosition = .region(MKCoordinateRegion(
+                center: route.startCoordinate,
+                span: MKCoordinateSpan(latitudeDelta: 1.0, longitudeDelta: 1.0)
+            ))
+        }
+    }
 }
+
+

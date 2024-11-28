@@ -3,90 +3,109 @@ import CoreLocation
 import MapKit
 
 class RouteManager: ObservableObject {
-   static let shared = RouteManager()
-   
-   @Published var currentRouteCoordinate: CLLocationCoordinate2D?
-   @Published private(set) var availableRoutes: [VirtualRoute]
+    static let shared = RouteManager()
+    
+    @Published var currentRouteCoordinate: CLLocationCoordinate2D?
+    @Published private(set) var availableRoutes: [VirtualRoute]
     @Published private(set) var currentProgress: RouteProgress? {
         didSet {
             print("RouteManager - Progress updated: \(currentProgress?.completedDistance ?? 0) km completed")
         }
     }
-
-   @Published private(set) var recentlyUnlockedMilestone: RouteMilestone?
-   @Published var currentMapRegion: MKCoordinateRegion?
-   
-   private let userDefaults = UserDefaults.standard
-   private let progressKey = "currentRouteProgress"
-   private var routeCoordinates: [CLLocationCoordinate2D] = []
-   
-   init() {
-       self.availableRoutes = []
-       self.availableRoutes = initializeRoutes()
-       loadProgress()
-   }
-   
+    @Published private(set) var recentlyUnlockedMilestone: RouteMilestone?
+    @Published var currentMapRegion: MKCoordinateRegion?
+    
+    private let userDefaults = UserDefaults.standard
+    private let progressKey = "currentRouteProgress"
+    private var routeCoordinates: [CLLocationCoordinate2D] = []
+    private var cumulativeDistances: [Double] = []
+    
+    init() {
+        self.availableRoutes = []
+        self.availableRoutes = initializeRoutes()
+        loadProgress()
+    }
+    
     func startRoute(_ route: VirtualRoute) {
-        let currentDistance = HealthKitManager.shared.totalDistance / 1000 // Convert to km
+        let currentDistance = HealthKitManager.shared.totalDistance / 1000
         
         let progress = RouteProgress(
             routeId: route.id,
             startDate: Date(),
-            completedDistance: currentDistance, // Start with current distance
+            completedDistance: currentDistance,
             lastUpdated: Date(),
             completedMilestones: [],
             isCompleted: false
         )
-                
+        
         currentProgress = progress
         routeCoordinates = route.coordinates
-        currentRouteCoordinate = route.startCoordinate
-        currentMapRegion = MKCoordinateRegion(
-            center: route.startCoordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        )
+        calculateCumulativeDistances()
+        updateProgress(withDistance: currentDistance)
         
         saveProgress()
     }
-   
-    func updateProgress(withDistance distance: Double) {
+    
+    private func calculateCumulativeDistances() {
+        cumulativeDistances = [0]
+        var totalDistance: Double = 0
+        
+        for i in 1..<routeCoordinates.count {
+            let previous = routeCoordinates[i-1]
+            let current = routeCoordinates[i]
+            let distance = calculateDistance(from: previous, to: current)
+            totalDistance += distance
+            cumulativeDistances.append(totalDistance)
+        }
+    }
+    
+    private func calculateDistance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
+        let fromLocation = CLLocation(latitude: from.latitude, longitude: from.longitude)
+        let toLocation = CLLocation(latitude: to.latitude, longitude: to.longitude)
+        return fromLocation.distance(from: toLocation)
+    }
+    
+    func updateProgress(withDistance distance: Double, isManual: Bool = false) {
         guard var progress = currentProgress,
               let route = progress.currentRoute else {
             return
         }
-        
-        print("RouteManager updateProgress:")
-        print("Incoming distance: \(distance) km")
-        
+        progress.completedDistance = isManual ? distance : max(distance, progress.completedDistance)
         progress.completedDistance = distance
-        
         let routeTotalKm = route.totalDistance / 1000
         let percentComplete = distance / routeTotalKm
         
-        print("Route total: \(routeTotalKm) km")
-        print("Calculated percentage: \((percentComplete * 100))%")
-        
-        // Update position along route
-        let coordIndex = Int(floor(Double(routeCoordinates.count) * percentComplete))
-        print("Coordinate index: \(coordIndex) of \(routeCoordinates.count)")
-        
-        if coordIndex < routeCoordinates.count {
-            currentRouteCoordinate = routeCoordinates[coordIndex]
-        }
-        
-        print("Debug Polyline:")
-        print("Route total (km): \(routeTotalKm)")
-        print("Completed distance (km): \(distance)")
-        print("Percent complete: \((distance / routeTotalKm) * 100)%")  // Convert to percentage
-        print("Coordinates count: \(route.coordinates.count)")
-        
-        // Calculate index based on percentage
-        let lastIndex = Int(floor(Double(route.coordinates.count) * percentComplete))
-        print("Last index: \(lastIndex)")
-        
-        // Update position along route
-        if lastIndex < routeCoordinates.count {
-            currentRouteCoordinate = routeCoordinates[lastIndex]
+        // Update interpolated position
+        if percentComplete > 0 && percentComplete < 1 {
+            let targetDistance = distance * 1000 // Convert to meters
+            
+            var lastPointIndex = 0
+            for (index, cumDistance) in cumulativeDistances.enumerated() {
+                if cumDistance > targetDistance {
+                    lastPointIndex = index
+                    break
+                }
+            }
+            
+            if lastPointIndex > 0 {
+                let previousDistance = cumulativeDistances[lastPointIndex - 1]
+                let nextDistance = cumulativeDistances[lastPointIndex]
+                let fraction = (targetDistance - previousDistance) / (nextDistance - previousDistance)
+                
+                let start = routeCoordinates[lastPointIndex - 1]
+                let end = routeCoordinates[lastPointIndex]
+                
+                let interpolatedLat = start.latitude + (end.latitude - start.latitude) * fraction
+                let interpolatedLon = start.longitude + (end.longitude - start.longitude) * fraction
+                
+                currentRouteCoordinate = CLLocationCoordinate2D(latitude: interpolatedLat, longitude: interpolatedLon)
+                
+//                // Update map region to follow progress
+//                currentMapRegion = MKCoordinateRegion(
+//                    center: currentRouteCoordinate!,
+//                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+//                )
+            }
         }
         
         // Check for new milestones
@@ -101,7 +120,6 @@ class RouteManager: ObservableObject {
         
         progress.lastUpdated = Date()
         
-        // Check completion
         if distance >= routeTotalKm {
             progress.isCompleted = true
         }
