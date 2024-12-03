@@ -12,11 +12,17 @@ class RouteManager: ObservableObject {
             print("RouteManager - Progress updated: \(currentProgress?.completedDistance ?? 0) km completed")
         }
     }
+    @Published private(set) var completedRoutes: [RouteProgress] = [] {
+           didSet {
+               saveCompletedRoutes()
+           }
+       }
     @Published private(set) var recentlyUnlockedMilestone: RouteMilestone?
     @Published var currentMapRegion: MKCoordinateRegion?
     
     private let userDefaults = UserDefaults.standard
     private let progressKey = "currentRouteProgress"
+    private let completedRoutesKey = "completedRoutesKey"
     private var routeCoordinates: [CLLocationCoordinate2D] = []
     private var cumulativeDistances: [Double] = []
     
@@ -24,17 +30,26 @@ class RouteManager: ObservableObject {
         self.availableRoutes = []
         self.availableRoutes = initializeRoutes()
         loadProgress()
+        loadCompletedRoutes()
     }
     
     func startRoute(_ route: VirtualRoute) {
         let currentDistance = HealthKitManager.shared.totalDistance / 1000
         
         let progress = RouteProgress(
+            id: UUID(),
             routeId: route.id,
             startDate: Date(),
             completedDistance: currentDistance,
             lastUpdated: Date(),
             completedMilestones: [],
+            totalDistance: route.totalDistance,
+            dailyProgress: [
+                                RouteProgress.DailyProgress(
+                                    date: Date(),
+                                    distance: currentDistance
+                                )
+                            ],
             isCompleted: false
         )
         
@@ -99,12 +114,6 @@ class RouteManager: ObservableObject {
                 let interpolatedLon = start.longitude + (end.longitude - start.longitude) * fraction
                 
                 currentRouteCoordinate = CLLocationCoordinate2D(latitude: interpolatedLat, longitude: interpolatedLon)
-                
-//                // Update map region to follow progress
-//                currentMapRegion = MKCoordinateRegion(
-//                    center: currentRouteCoordinate!,
-//                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-//                )
             }
         }
         
@@ -121,11 +130,32 @@ class RouteManager: ObservableObject {
         progress.lastUpdated = Date()
         
         if distance >= routeTotalKm {
-            progress.isCompleted = true
-        }
+                    progress.isCompleted = true
+                    progress.completionDate = Date()
+                    completedRoutes.append(progress)
+                    currentProgress = nil  // Reset current progress
+                }
+                
         
         currentProgress = progress
         saveProgress()
+    }
+    
+    private func saveCompletedRoutes() {
+           if let encoded = try? JSONEncoder().encode(completedRoutes) {
+               userDefaults.set(encoded, forKey: completedRoutesKey)
+           }
+       }
+    private func loadCompletedRoutes() {
+            if let savedRoutes = userDefaults.data(forKey: completedRoutesKey),
+               let decodedRoutes = try? JSONDecoder().decode([RouteProgress].self, from: savedRoutes) {
+                completedRoutes = decodedRoutes
+            }
+        }
+    
+    var availableUncompletedRoutes: [VirtualRoute] {
+        let completedRouteIds = Set(completedRoutes.map { $0.routeId })
+        return availableRoutes.filter { !completedRouteIds.contains($0.id) }
     }
    
    func getRoute(by id: UUID) -> VirtualRoute? {
@@ -150,3 +180,5 @@ class RouteManager: ObservableObject {
        userDefaults.removeObject(forKey: progressKey)
    }
 }
+
+

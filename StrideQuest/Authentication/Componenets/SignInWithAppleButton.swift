@@ -15,7 +15,8 @@ struct SignInWithAppleButton: View {
     var body: some View {
         SignInWithAppleButtonViewRepresentable(authManager: authManager)
             .frame(height: 50)
-            .cornerRadius(8)
+            .cornerRadius(10)
+
     }
 }
 
@@ -23,7 +24,7 @@ struct SignInWithAppleButtonViewRepresentable: UIViewRepresentable {
     let authManager: AuthenticationManager
     
     func makeUIView(context: Context) -> ASAuthorizationAppleIDButton {
-        let button = ASAuthorizationAppleIDButton(type: .signIn, style: .white)
+        let button = ASAuthorizationAppleIDButton(type: .signIn, style: .black)
         button.addTarget(context.coordinator,
                         action: #selector(Coordinator.handleSignInWithAppleTapped),
                         for: .touchUpInside)
@@ -69,4 +70,8 @@ struct SignInWithAppleButtonViewRepresentable: UIViewRepresentable {
             parent.authManager.handleSignInWithAppleCompletion(.failure(error))
         }
     }
+}
+
+#Preview {
+    LoginView(authManager: AuthenticationManager())
 }

@@ -69,22 +69,5 @@ struct RouteMilestone: Identifiable, Codable {
        self.imageName = imageName
    }
 }
+    
 
-struct RouteProgress: Codable {
-   let routeId: UUID
-   var startDate: Date
-   var completedDistance: Double
-   var lastUpdated: Date
-   var completedMilestones: Set<UUID>
-   var isCompleted: Bool
-   
-    var percentageCompleted: Double {
-          guard let route = currentRoute else { return 0 }
-          let routeTotalKm = route.totalDistance / 1000  
-          return (completedDistance / routeTotalKm) * 100
-      }
-   
-   var currentRoute: VirtualRoute? {
-       RouteManager.shared.getRoute(by: routeId)
-   }
-}

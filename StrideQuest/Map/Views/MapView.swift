@@ -6,6 +6,8 @@ struct MapView: View {
     @State private var isUserInteracting = false
     @ObservedObject var routeManager = RouteManager.shared
     @State private var progressPolyline: [CLLocationCoordinate2D] = []
+    @State private var mapStyle = MapStyle.standard(elevation: .realistic)
+
     
     var body: some View {
         Map(position: $cameraPosition, interactionModes: .all) {

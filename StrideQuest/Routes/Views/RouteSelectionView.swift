@@ -10,6 +10,7 @@ import SwiftUI
 struct RouteSelectionView: View {
     @StateObject private var routeManager = RouteManager.shared
     @Environment(\.dismiss) private var dismiss
+    var onRouteSelected: (() -> Void)?
     
     var body: some View {
         NavigationView {
@@ -18,6 +19,7 @@ struct RouteSelectionView: View {
                     .onTapGesture {
                         routeManager.startRoute(route)
                         dismiss()
+                        onRouteSelected?()
                     }
             }
             .navigationTitle("Choose Your Journey")

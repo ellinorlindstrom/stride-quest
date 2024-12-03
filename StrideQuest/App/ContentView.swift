@@ -9,6 +9,7 @@ struct ContentView: View {
     @State private var showingRouteSelection = false
     @State private var showingManualEntry = false
     @State private var showingProgress = true
+    @State private var showingCompletedRoutes = false
     
     var body: some View {
         Group {
@@ -21,6 +22,7 @@ struct ContentView: View {
                             Menu {
                                 Button("Routes", action: { showingRouteSelection = true })
                                 Button("Add Distance Manually") { showingManualEntry = true }
+                                Button("Completed Routes") { showingCompletedRoutes = true }
                                 Button("Sign Out", action: authManager.signOut)
                             } label: {
                                 Image(systemName: "line.horizontal.3")
@@ -34,6 +36,9 @@ struct ContentView: View {
                             }
                             .sheet(isPresented: $showingManualEntry) {
                                 ManualDistanceEntryView()
+                            }
+                            .sheet(isPresented: $showingCompletedRoutes) {
+                                CompletedRoutesView()
                             }
                             
                             Spacer()
@@ -57,4 +62,9 @@ struct ContentView: View {
             authManager.checkAuthentication()
         }
     }
+}
+
+
+#Preview {
+    ContentView()
 }
