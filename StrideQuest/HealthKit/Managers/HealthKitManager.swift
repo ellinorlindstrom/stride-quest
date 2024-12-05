@@ -5,20 +5,37 @@ class HealthKitManager: ObservableObject {
     static let shared = HealthKitManager()
     let healthStore = HKHealthStore()
     
+    @Published var routeStartDistance: Double = 0
+    @Published var isAuthorized = false
     @Published var totalDistance: Double = 0 {
         didSet {
-            let distanceInKilometers = totalDistance / 1000
-            RouteManager.shared.updateProgress(withDistance: distanceInKilometers)
-        }
-    }
-    @Published var isAuthorized = false
+            if RouteManager.shared.isActivelyTracking {
+                            let relativeDistance = max(0, totalDistance - routeStartDistance)
+                            let currentRouteDistance = relativeDistance / 1000
+                            RouteManager.shared.updateProgress(withDistance: currentRouteDistance, source: "healthkit")
+                    }
+                    
+                    HealthDataStore.shared.saveHealthData(
+                        totalDistance,
+                        date: Date(),
+                        type: HKQuantityType(.distanceWalkingRunning)
+                    )
+                }
+            }
     
     private var observerQueries: [HKObserverQuery] = []
     
     // Types we want to read from HealthKit
     let typesToRead: Set = [
         HKQuantityType(.distanceWalkingRunning),
+        HKQuantityType(.distanceCycling),
+        HKQuantityType(.distanceSwimming),
+        HKQuantityType(.distanceWheelchair),
     ]
+    
+    func markRouteStart() {
+        routeStartDistance = totalDistance
+    }
     
     // Request authorization and start observing
     func requestAuthorization() async throws {
@@ -31,7 +48,6 @@ class HealthKitManager: ObservableObject {
         DispatchQueue.main.async {
             self.isAuthorized = true
             self.startObservingDistance()
-            // Fetch initial distance when authorization is granted
             self.fetchTotalDistance()
         }
         try await setupBackgroundDelivery()
@@ -40,6 +56,9 @@ class HealthKitManager: ObservableObject {
     private func setupBackgroundDelivery() async throws {
         let distanceTypes = [
             HKQuantityType(.distanceWalkingRunning),
+            HKQuantityType(.distanceCycling),
+            HKQuantityType(.distanceSwimming),
+            HKQuantityType(.distanceWheelchair),
         ]
         
         for distanceType in distanceTypes {
@@ -50,6 +69,9 @@ class HealthKitManager: ObservableObject {
     private func startObservingDistance() {
         let distanceTypes = [
             HKQuantityType(.distanceWalkingRunning),
+            HKQuantityType(.distanceCycling),
+            HKQuantityType(.distanceSwimming),
+            HKQuantityType(.distanceWheelchair),
         ]
         
         for distanceType in distanceTypes {
@@ -81,6 +103,9 @@ class HealthKitManager: ObservableObject {
     func fetchTotalDistance() {
         let distanceTypes = [
             HKQuantityType(.distanceWalkingRunning),
+            HKQuantityType(.distanceCycling),
+            HKQuantityType(.distanceSwimming),
+            HKQuantityType(.distanceWheelchair),
         ]
         
         let calendar = Calendar.current
@@ -119,6 +144,12 @@ class HealthKitManager: ObservableObject {
         
         group.notify(queue: DispatchQueue.main) { [weak self] in
                 self?.totalDistance = temporaryTotal
+            
+            HealthDataStore.shared.saveHealthData(
+                        temporaryTotal,
+                        date: Date(),
+                        type: HKQuantityType(.distanceWalkingRunning)
+                    )
         }
     }
     

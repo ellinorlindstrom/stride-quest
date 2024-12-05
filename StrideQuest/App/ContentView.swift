@@ -66,5 +66,5 @@ struct ContentView: View {
 
 
 #Preview {
-    ContentView()
+    MapView()
 }

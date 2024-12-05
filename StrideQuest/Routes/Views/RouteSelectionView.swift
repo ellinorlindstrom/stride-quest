@@ -15,15 +15,12 @@ struct RouteSelectionView: View {
     var body: some View {
         NavigationView {
             List(routeManager.availableRoutes) { route in
-                RouteCard(route: route)
-                    .onTapGesture {
-                        routeManager.startRoute(route)
-                        dismiss()
-                        onRouteSelected?()
-                    }
-            }
-            .navigationTitle("Choose Your Journey")
-        }
+                NavigationLink(destination: RouteDetailView(route: route)) {
+                                    RouteCard(route: route)
+                                }
+                            }
+                            .navigationTitle("Choose Your Journey")
+                        }
     }
 }
 

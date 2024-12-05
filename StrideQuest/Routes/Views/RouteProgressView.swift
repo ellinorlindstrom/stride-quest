@@ -44,10 +44,7 @@ struct RouteProgressView: View {
                 .padding()
                 .background(Color.gray.opacity(0.1))
                 .cornerRadius(15)
-                .onChange(of: healthManager.totalDistance) { oldValue, newValue in
-                                    let kmDistance = newValue / 1000
-                                    routeManager.updateProgress(withDistance: kmDistance)
-                }
+             
             } else {
                 VStack(spacing: 5) {
                     Text("No Active Journey")
@@ -61,7 +58,7 @@ struct RouteProgressView: View {
                     .controlSize(.large)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .tint(.black)
+                    .tint(.green)
                     
                 }
             }
@@ -96,8 +93,8 @@ struct ProgressBar: View {
 }
 
 struct MilestoneCard: View {
+    @ObservedObject private var routeManager = RouteManager.shared
     let milestone: RouteMilestone
-    let isCompleted: Bool
     
     var body: some View {
         VStack {
@@ -108,14 +105,14 @@ struct MilestoneCard: View {
                 .clipShape(Circle())
                 .overlay(
                     Circle()
-                        .stroke(isCompleted ? Color.green : Color.gray, lineWidth: 4)
+                        .stroke(routeManager.isMilestoneCompleted(milestone) ? Color.green : Color.gray, lineWidth: 4)
                 )
             
             Text(milestone.name)
                 .font(.caption)
                 .multilineTextAlignment(.center)
             
-            if isCompleted {
+            if routeManager.isMilestoneCompleted(milestone) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(.green)
             }

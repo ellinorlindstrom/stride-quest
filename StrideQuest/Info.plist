@@ -2,50 +2,38 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleDocumentTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleTypeName</key>
-			<string>MKDirectionsRequest</string>
-			<key>LSItemContentTypes</key>
-			<array>
-				<string>com.apple.maps.directionsrequest</string>
-			</array>
-		</dict>
-	</array>
-	<key>MKDirectionsApplicationSupportedModes</key>
-	<array>
-		<string>MKDirectionsModeBike</string>
-		<string>MKDirectionsModeFerry</string>
-		<string>MKDirectionsModePedestrian</string>
-	</array>
-    <!-- Required background modes for tracking -->
+    <key>CFBundleDocumentTypes</key>
+    <array>
+        <dict>
+            <key>CFBundleTypeName</key>
+            <string>MKDirectionsRequest</string>
+            <key>LSItemContentTypes</key>
+            <array>
+                <string>com.apple.maps.directionsrequest</string>
+            </array>
+        </dict>
+    </array>
+    <key>MKDirectionsApplicationSupportedModes</key>
+    <array>
+        <string>MKDirectionsModeBike</string>
+        <string>MKDirectionsModeFerry</string>
+        <string>MKDirectionsModePedestrian</string>
+    </array>
     <key>UIBackgroundModes</key>
     <array>
-        <string>location</string>
         <string>processing</string>
-	</array>
-    
-    <!-- HealthKit permissions -->
+        <string>fetch</string>
+        <string>health-kit</string>
+    </array>
+    <!-- Added HealthKit Permission Descriptions -->
     <key>NSHealthShareUsageDescription</key>
-    <string>StrideQuest needs access to your health data to track your journey progress</string>
+    <string>We need access to your health data to track your walking and running distance for your virtual journey progress.</string>
     <key>NSHealthUpdateUsageDescription</key>
-    <string>StrideQuest needs permission to track your steps and distance</string>
-
-    
-    <key>NSFaceIDUsageDescription</key>
-    <string>We use Face ID for signing you in securely.</string>
-    
-    <!-- Privacy - Location permissions -->
+    <string>We need permission to save your completed distances to HealthKit.</string>
+    <!-- Location Permissions if you're using them -->
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>StrideQuest needs your location to track your progress on the map</string>
-    
-    <!-- Silence document warning -->
-    <key>LSSupportsOpeningDocumentsInPlace</key>
-    <false/>
-    <key>UISupportsDocumentBrowser</key>
-    <false/>
-
-
+    <string>We use your location to show your position on the virtual journey map.</string>
+    <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+    <string>We use your location to track your progress on virtual journeys even when the app is in the background.</string>
 </dict>
 </plist>

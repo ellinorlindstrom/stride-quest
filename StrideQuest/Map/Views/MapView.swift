@@ -22,10 +22,10 @@ struct MapView: View {
                        ForEach(route.milestones) { milestone in
                            let coordinate = getMilestoneCoordinate(milestone: milestone, coordinates: route.coordinates)
                            Marker(milestone.name, coordinate: coordinate)
-                               .tint(progress.completedMilestones.contains(milestone.id) ? .green : .red)
+                               .tint(progress.completedMilestones.contains(milestone.id) ? .green : .gray)
                        }
                        
-                       if let currentPosition = progressPolyline.last {
+                       if let currentPosition = progressPolyline.last ?? routeManager.currentRouteCoordinate {
                            Annotation("", coordinate: currentPosition) {
                                ZStack {
                                    Circle()

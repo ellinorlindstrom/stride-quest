@@ -2,16 +2,10 @@ import SwiftUI
 
 @main
 struct StrideQuestApp: App {
-    let persistenceController = PersistenceController.shared
     @StateObject private var authManager = AuthenticationManager()
     @StateObject private var healthManager = HealthKitManager.shared
-
+    private let persistenceController = PersistenceController.shared
     
-    init() {
-        _authManager = StateObject(wrappedValue: AuthenticationManager())
-    }
-
-
     var body: some Scene {
         WindowGroup {
             ContentView()
@@ -19,12 +13,19 @@ struct StrideQuestApp: App {
                 .environmentObject(authManager)
                 .environmentObject(healthManager)
                 .task {
-                                    do {
-                                        try await healthManager.requestAuthorization()
-                                    } catch {
-                                        print("Error setting up HealthKit: \(error)")
-                                    }
-                                }
-                        }
-                    }
+                    await requestHealthKitAuthorization()
                 }
+                .onAppear {
+                    print("App started with Core Data context: \(persistenceController.container.viewContext)")
+                }
+        }
+    }
+    
+    private func requestHealthKitAuthorization() async {
+        do {
+            try await healthManager.requestAuthorization()
+        } catch {
+            print("HealthKit authorization failed: \(error.localizedDescription)")
+        }
+    }
+}
