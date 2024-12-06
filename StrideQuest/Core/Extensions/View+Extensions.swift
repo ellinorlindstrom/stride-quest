@@ -275,78 +275,78 @@ extension RouteManager {
         VirtualRoute(
             name: "Great Wall Adventure",
             description: "Trek along sections of China's Great Wall from Mutianyu to Jinshanling",
-            totalDistance: 42000,
+            totalDistance: 65000,
             milestones: [
-                RouteMilestone(
-                    name: "Mutianyu Entrance",
-                    description: "Starting point at the restored Mutianyu section",
-                    distanceFromStart: 0,
-                    imageName: "mutianyu_entrance"
-                ),
-                RouteMilestone(
-                    name: "Tower 6",
-                    description: "Scenic viewpoint of mountain ranges",
-                    distanceFromStart: 3500,
-                    imageName: "tower_6"
-                ),
-                RouteMilestone(
-                    name: "Tower 14",
-                    description: "Highest point of Mutianyu section",
-                    distanceFromStart: 7000,
-                    imageName: "tower_14"
-                ),
-                RouteMilestone(
-                    name: "Mutianyu-Gubeikou Junction",
-                    description: "Connection to the wild wall section",
-                    distanceFromStart: 14000,
-                    imageName: "mutianyu_junction"
-                ),
-                RouteMilestone(
-                    name: "Gubeikou Village",
-                    description: "Ancient garrison town with rich history",
-                    distanceFromStart: 18000,
-                    imageName: "gubeikou_village"
-                ),
-                RouteMilestone(
-                    name: "24-Eye Tower",
-                    description: "Famous watchtower with panoramic views",
-                    distanceFromStart: 23000,
-                    imageName: "24_eye_tower"
-                ),
-                RouteMilestone(
-                    name: "General Tower",
-                    description: "Historic military command post",
-                    distanceFromStart: 28000,
-                    imageName: "general_tower"
-                ),
-                RouteMilestone(
-                    name: "Simatai West",
-                    description: "Beginning of the steepest section",
-                    distanceFromStart: 32000,
-                    imageName: "simatai_west"
-                ),
-                RouteMilestone(
-                    name: "Heaven Ladder",
-                    description: "Challenging steep ascent with incredible views",
-                    distanceFromStart: 35000,
-                    imageName: "heaven_ladder"
-                ),
-                RouteMilestone(
-                    name: "Taochun Tower",
-                    description: "Unique architecture with Buddhist influences",
-                    distanceFromStart: 38000,
-                    imageName: "taochun_tower"
-                ),
-                RouteMilestone(
-                    name: "Jinshanling Entrance",
-                    description: "Most picturesque section of the wall",
-                    distanceFromStart: 42000,
-                    imageName: "jinshanling"
-                )
-            ],
-            imageName: "great-wall-adventure",
-            region: "China",
-            startCoordinate: CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704),
+                   RouteMilestone(
+                       name: "Mutianyu Entrance",
+                       description: "Starting point at the restored Mutianyu section",
+                       distanceFromStart: 0,
+                       imageName: "mutianyu_entrance"
+                   ),
+                   RouteMilestone(
+                       name: "Tower 6",
+                       description: "Scenic viewpoint of mountain ranges",
+                       distanceFromStart: 850, 
+                       imageName: "tower_6"
+                   ),
+                   RouteMilestone(
+                       name: "Tower 14",
+                       description: "Highest point of Mutianyu section",
+                       distanceFromStart: 1800,
+                       imageName: "tower_14"
+                   ),
+                   RouteMilestone(
+                       name: "Mutianyu-Gubeikou Junction",
+                       description: "Connection to the wild wall section",
+                       distanceFromStart: 3500,
+                       imageName: "mutianyu_junction"
+                   ),
+                   RouteMilestone(
+                       name: "Gubeikou Village",
+                       description: "Ancient garrison town with rich history",
+                       distanceFromStart: 8000,
+                       imageName: "gubeikou_village"
+                   ),
+                   RouteMilestone(
+                       name: "24-Eye Tower",
+                       description: "Famous watchtower with panoramic views",
+                       distanceFromStart: 12000,
+                       imageName: "24_eye_tower"
+                   ),
+                   RouteMilestone(
+                       name: "General Tower",
+                       description: "Historic military command post",
+                       distanceFromStart: 15000,
+                       imageName: "general_tower"
+                   ),
+                   RouteMilestone(
+                       name: "Simatai West",
+                       description: "Beginning of the steepest section",
+                       distanceFromStart: 25000,
+                       imageName: "simatai_west"
+                   ),
+                   RouteMilestone(
+                       name: "Heaven Ladder",
+                       description: "Challenging steep ascent with incredible views",
+                       distanceFromStart: 35000,
+                       imageName: "heaven_ladder"
+                   ),
+                   RouteMilestone(
+                       name: "Taochun Tower",
+                       description: "Unique architecture with Buddhist influences",
+                       distanceFromStart: 45000,
+                       imageName: "taochun_tower"
+                   ),
+                   RouteMilestone(
+                       name: "Jinshanling Entrance",
+                       description: "Most picturesque section of the wall",
+                       distanceFromStart: 65000,
+                       imageName: "jinshanling"
+                   )
+               ],
+               imageName: "great-wall-adventure",
+               region: "China",
+               startCoordinate: CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704),
             coordinates: [
                     // Mutianyu Section (elevation in meters)
                     CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704), // Mutianyu Entrance, 450m

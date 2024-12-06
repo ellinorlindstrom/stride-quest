@@ -31,7 +31,29 @@ class RouteManager: ObservableObject {
     
     init() {
         self.availableRoutes = []
-        self.availableRoutes = initializeRoutes()
+        var routes = initializeRoutes()
+        
+        // Adjust each route's coordinates to match its total distance
+        routes = routes.map { route in
+            let trimmedCoordinates = trimCoordinatesToDistance(
+                coordinates: route.coordinates,
+                targetDistance: route.totalDistance
+            )
+            
+            return VirtualRoute(
+                id: route.id,
+                name: route.name,
+                description: route.description,
+                totalDistance: route.totalDistance,
+                milestones: route.milestones,
+                imageName: route.imageName,
+                region: route.region,
+                startCoordinate: route.startCoordinate,
+                coordinates: trimmedCoordinates
+            )
+        }
+        
+        self.availableRoutes = routes
         loadProgress()
         loadCompletedRoutes()
     }
@@ -49,7 +71,7 @@ class RouteManager: ObservableObject {
                 startDate: Date(),
                 completedDistance: 0,
                 lastUpdated: Date(),
-                completedMilestones: [],
+                completedMilestones: Set<UUID>(),
                 totalDistance: selectedRoute.totalDistance,
                 dailyProgress: [
                     RouteProgress.DailyProgress(
@@ -105,6 +127,46 @@ class RouteManager: ObservableObject {
         return fromLocation.distance(from: toLocation)
     }
     
+    private func calculateActualDistance(coordinates: [CLLocationCoordinate2D]) -> Double {
+        var totalDistance: Double = 0
+        for i in 1..<coordinates.count {
+            let prev = coordinates[i-1]
+            let curr = coordinates[i]
+            let from = CLLocation(latitude: prev.latitude, longitude: prev.longitude)
+            let to = CLLocation(latitude: curr.latitude, longitude: curr.longitude)
+            totalDistance += from.distance(from: to)
+        }
+        return totalDistance
+    }
+
+    private func trimCoordinatesToDistance(coordinates: [CLLocationCoordinate2D], targetDistance: Double) -> [CLLocationCoordinate2D] {
+        var trimmedCoordinates: [CLLocationCoordinate2D] = [coordinates[0]]
+        var currentDistance: Double = 0
+        
+        for i in 1..<coordinates.count {
+            let prev = coordinates[i-1]
+            let curr = coordinates[i]
+            let from = CLLocation(latitude: prev.latitude, longitude: prev.longitude)
+            let to = CLLocation(latitude: curr.latitude, longitude: curr.longitude)
+            let segmentDistance = from.distance(from: to)
+            
+            if currentDistance + segmentDistance > targetDistance {
+                // Interpolate final point
+                let remainingDistance = targetDistance - currentDistance
+                let fraction = remainingDistance / segmentDistance
+                let newLat = prev.latitude + (curr.latitude - prev.latitude) * fraction
+                let newLon = prev.longitude + (curr.longitude - prev.longitude) * fraction
+                trimmedCoordinates.append(CLLocationCoordinate2D(latitude: newLat, longitude: newLon))
+                break
+            }
+            
+            currentDistance += segmentDistance
+            trimmedCoordinates.append(curr)
+        }
+        
+        return trimmedCoordinates
+    }
+    
     func updateProgress(withDistance distance: Double, isManual: Bool = false, source: String = "unknown") {
         guard isActivelyTracking,
                  var progress = currentProgress,
@@ -114,10 +176,29 @@ class RouteManager: ObservableObject {
         print("📍 RouteManager - Receiving update from \(source)")
         print("- Distance: \(distance) km")
         print("- Current completed milestones count: \(progress.completedMilestones.count)")
-
+        
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+        
+        if let lastProgress = progress.dailyProgress.last,
+               calendar.startOfDay(for: lastProgress.date) == today {
+                // Update today's progress
+                var updatedDailyProgress = progress.dailyProgress
+                updatedDailyProgress[updatedDailyProgress.count - 1].distance = distance
+                progress.dailyProgress = updatedDailyProgress
+            } else {
+                // Add new day's progress
+                progress.dailyProgress.append(
+                    RouteProgress.DailyProgress(
+                        date: Date(),
+                        distance: distance
+                    )
+                )
+            }
+        
+        let totalCompleted = progress.dailyProgress.reduce(0) { $0 + $1.distance }
+           progress.completedDistance = isManual ? distance : max(distance, progress.completedDistance)
            
-
-        progress.completedDistance = isManual ? distance : max(distance, progress.completedDistance)
         //progress.completedDistance = distance
         let routeTotalKm = route.totalDistance / 1000
         let percentComplete = distance / routeTotalKm
@@ -132,22 +213,14 @@ class RouteManager: ObservableObject {
         
         // Check for new milestones
         for milestone in route.milestones.sorted(by: { $0.distanceFromStart < $1.distanceFromStart }) {
-                let milestoneDistanceKm = milestone.distanceFromStart / 1000
-                print("⭐️ Checking milestone: \(milestone.name)")
-                print("- Required distance: \(milestoneDistanceKm) km")
-                print("- Current distance: \(distance) km")
-                
-                if !progress.completedMilestones.contains(milestone.id) &&
-                    distance >= milestoneDistanceKm {
-                    print("✅ MILESTONE COMPLETED: \(milestone.name)")
-                    progress.completedMilestones.insert(milestone.id)
-                    recentlyUnlockedMilestone = milestone
-                    
-                    DispatchQueue.main.async {
-                        self.objectWillChange.send()
-                    }
-                }
-            }
+               let milestoneDistanceKm = milestone.distanceFromStart / 1000
+               if totalCompleted >= milestoneDistanceKm && !progress.completedMilestones.contains(milestone.id) {
+                   progress.completedMilestones.insert(milestone.id)
+                   recentlyUnlockedMilestone = milestone
+                   print("✅ Milestone unlocked: \(milestone.name) at \(milestoneDistanceKm) km")
+                   // Add notification or celebration effect here
+               }
+           }
         
         currentProgress = progress
         saveProgress()

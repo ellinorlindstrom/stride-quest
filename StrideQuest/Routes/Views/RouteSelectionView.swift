@@ -15,11 +15,14 @@ struct RouteSelectionView: View {
     var body: some View {
         NavigationView {
             List(routeManager.availableRoutes) { route in
-                NavigationLink(destination: RouteDetailView(route: route)) {
-                                    RouteCard(route: route)
-                                }
-                            }
-                            .navigationTitle("Choose Your Journey")
+                NavigationLink(destination: RouteDetailView(route: route, onRouteSelected: {
+                                   onRouteSelected?()
+                                   dismiss()
+                               })) {
+                                   RouteCard(route: route)
+                               }
+                           }
+                           .navigationTitle("Choose Your Journey")
                         }
     }
 }

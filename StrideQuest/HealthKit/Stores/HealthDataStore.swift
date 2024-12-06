@@ -44,6 +44,19 @@ class HealthDataStore {
             healthData.distance = distance
             healthData.type = type.identifier
             
+        if let currentProgress = RouteManager.shared.currentProgress {
+                let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
+                fetchRequest.predicate = NSPredicate(format: "id == %@", currentProgress.id as CVarArg)
+                
+                do {
+                    if let routeProgressEntity = try context.fetch(fetchRequest).first {
+                        healthData.routeProgress = routeProgressEntity
+                    }
+                } catch {
+                    print("Failed to link health data to route progress: \(error)")
+                }
+            }
+            
             do {
                 try context.save()
                 print("Health data saved successfully")
@@ -52,6 +65,7 @@ class HealthDataStore {
                 context.rollback()
             }
         }
+
     
     func updateRouteProgress(_ progress: RouteProgress) {
         let context = persistentContainer.viewContext
@@ -83,6 +97,24 @@ class HealthDataStore {
             try context.save()
         } catch {
             print("Failed to save route progress: \(error)")
+        }
+    }
+    
+    func fetchAccumulatedDistance(for routeProgress: RouteProgress) -> Double {
+        let context = persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<DailyHealthData>(entityName: "DailyHealthData")
+        
+        // Create predicate to fetch all health data linked to this route progress
+        let routeProgressPredicate = NSPredicate(format: "routeProgress.id == %@", routeProgress.id as CVarArg)
+        fetchRequest.predicate = routeProgressPredicate
+        
+        do {
+            let healthDataEntries = try context.fetch(fetchRequest)
+            let totalDistance = healthDataEntries.reduce(0) { $0 + $1.distance }
+            return totalDistance
+        } catch {
+            print("Failed to fetch accumulated distance: \(error)")
+            return 0
         }
     }
     

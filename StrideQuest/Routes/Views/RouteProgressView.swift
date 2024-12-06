@@ -27,7 +27,7 @@ struct RouteProgressView: View {
                     HStack {
                         VStack(alignment: .leading) {
                             Text("Completed")
-                            Text(String(format: "%.1f km", progress.completedDistance))
+                            Text(String(format: "%.2f km", progress.completedDistance))
                                 .font(.headline)
                         }
                         

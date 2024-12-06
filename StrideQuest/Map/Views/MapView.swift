@@ -22,7 +22,7 @@ struct MapView: View {
                        ForEach(route.milestones) { milestone in
                            let coordinate = getMilestoneCoordinate(milestone: milestone, coordinates: route.coordinates)
                            Marker(milestone.name, coordinate: coordinate)
-                               .tint(progress.completedMilestones.contains(milestone.id) ? .green : .gray)
+                               .tint(routeManager.isMilestoneCompleted(milestone) ? .green : .gray)
                        }
                        
                        if let currentPosition = progressPolyline.last ?? routeManager.currentRouteCoordinate {
@@ -69,11 +69,35 @@ struct MapView: View {
     }
     
     private func getMilestoneCoordinate(milestone: RouteMilestone, coordinates: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D {
-        let milestoneDistanceKm = milestone.distanceFromStart / 1000
-        let routeTotalKm = routeManager.currentProgress!.currentRoute!.totalDistance / 1000
-        let progress = milestoneDistanceKm / routeTotalKm
-        let index = Int(floor(Double(coordinates.count - 1) * progress))
-        return coordinates[index]
+        let milestoneDistance = milestone.distanceFromStart
+        var currentDistance: Double = 0
+        
+        for i in 1..<coordinates.count {
+            let previous = coordinates[i-1]
+            let current = coordinates[i]
+            let segmentDistance = calculateDistance(from: previous, to: current)
+            
+            if currentDistance + segmentDistance >= milestoneDistance {
+                // Interpolate position within this segment
+                let remainingDistance = milestoneDistance - currentDistance
+                let fraction = remainingDistance / segmentDistance
+                
+                let lat = previous.latitude + (current.latitude - previous.latitude) * fraction
+                let lon = previous.longitude + (current.longitude - previous.longitude) * fraction
+                
+                return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+            }
+            
+            currentDistance += segmentDistance
+        }
+        
+        return coordinates[0] 
+    }
+
+    private func calculateDistance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
+        let fromLocation = CLLocation(latitude: from.latitude, longitude: from.longitude)
+        let toLocation = CLLocation(latitude: to.latitude, longitude: to.longitude)
+        return fromLocation.distance(from: toLocation)
     }
     
     private func updateProgressPolyline() {
@@ -105,6 +129,7 @@ struct MapView: View {
         var cumulativeDistances: [Double] = [0]
         var totalDistance: Double = 0
         
+        // Calculate cumulative distances between coordinates
         for i in 1..<coordinates.count {
             let previous = coordinates[i-1]
             let current = coordinates[i]
@@ -113,11 +138,13 @@ struct MapView: View {
             cumulativeDistances.append(totalDistance)
         }
         
+        // Scale distances to match route's total distance
         let scaleFactor = route.totalDistance / totalDistance
         cumulativeDistances = cumulativeDistances.map { $0 * scaleFactor }
         
-        let targetDistance = progress.completedDistance * 1000
+        let targetDistance = progress.completedDistance * 1000 // Convert to meters
         
+        // Find the last point we've passed
         var lastPointIndex = 0
         for (index, distance) in cumulativeDistances.enumerated() {
             if distance > targetDistance {
@@ -127,6 +154,7 @@ struct MapView: View {
         }
         
         if lastPointIndex > 0 {
+            // Interpolate between the last two points
             let previousDistance = cumulativeDistances[lastPointIndex - 1]
             let nextDistance = cumulativeDistances[lastPointIndex]
             let fraction = (targetDistance - previousDistance) / (nextDistance - previousDistance)
@@ -144,17 +172,12 @@ struct MapView: View {
         }
     }
     
-    private func calculateDistance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
-        let from = CLLocation(latitude: from.latitude, longitude: from.longitude)
-        let to = CLLocation(latitude: to.latitude, longitude: to.longitude)
-        return from.distance(from: to)
-    }
-    
     private func setInitialCamera() {
         if let route = routeManager.currentProgress?.currentRoute {
+            let span = MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
             cameraPosition = .region(MKCoordinateRegion(
                 center: route.startCoordinate,
-                span: MKCoordinateSpan(latitudeDelta: 1.0, longitudeDelta: 1.0)
+                span: span
             ))
         }
     }
