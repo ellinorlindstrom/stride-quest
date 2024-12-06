@@ -9,10 +9,12 @@ struct MapView: View {
     @State private var progressPolyline: [CLLocationCoordinate2D] = []
     @State private var mapStyle = MapStyle.standard(elevation: .realistic)
     @State private var showConfetti = false
+    @State private var selectedMilestone: RouteMilestone?
+    @State private var showMilestoneCard = false
 
     
     var body: some View {
-        ZStack {  // Add ZStack here
+        ZStack {
             Map(position: $cameraPosition, interactionModes: .all) {
                 if let progress = routeManager.currentProgress,
                    let route = progress.currentRoute {
@@ -24,8 +26,19 @@ struct MapView: View {
                     
                     ForEach(route.milestones) { milestone in
                         let coordinate = getMilestoneCoordinate(milestone: milestone, coordinates: route.coordinates)
-                        Marker(milestone.name, coordinate: coordinate)
-                            .tint(routeManager.isMilestoneCompleted(milestone) ? .green : .gray)
+                        Annotation(milestone.name, coordinate: coordinate) {
+                            Image(systemName: "mappin.circle.fill")
+                                .foregroundStyle(routeManager.isMilestoneCompleted(milestone) ? .green : .gray)
+                                .font(.title)
+                                .onTapGesture {
+                                    if routeManager.isMilestoneCompleted(milestone) {
+                                        selectedMilestone = milestone
+                                        withAnimation {
+                                            showMilestoneCard = true
+                                        }
+                                    }
+                                }
+                        }
                     }
                     
                     if let currentPosition = progressPolyline.last ?? routeManager.currentRouteCoordinate {
@@ -43,12 +56,6 @@ struct MapView: View {
                     }
                 }
             }
-            .onAppear {
-                setInitialCamera()
-            }
-            .onReceive(routeManager.$currentProgress) { _ in
-                setInitialCamera()
-            }
             .mapControls {
                 MapPitchToggle()
                 MapCompass()
@@ -61,22 +68,37 @@ struct MapView: View {
                     MagnificationGesture().onChanged { _ in isUserInteracting = true }
                 )
             )
-            .onReceive(routeManager.$currentMapRegion) { region in
-                if let region = region, !isUserInteracting {
-                    cameraPosition = .region(region)
-                }
-            }
-            .onReceive(routeManager.$currentProgress) { _ in
-                updateProgressPolyline()
-            }
-            .onReceive(routeManager.milestoneCompletedPublisher) { milestone in
-                withAnimation {
-                    showConfetti = true
-                }
-            }
             
-            // Add ConfettiView on top of the Map
             ConfettiView(isShowing: $showConfetti)
+            
+            if showMilestoneCard, let milestone = selectedMilestone {
+                MilestoneDetailCard(
+                    milestone: milestone,
+                    isShowing: $showMilestoneCard
+                )
+                .padding()
+            }
+        }
+        .onAppear {
+            setInitialCamera()
+        }
+        .onReceive(routeManager.$currentProgress) { _ in
+            setInitialCamera()
+        }
+        .onReceive(routeManager.$currentMapRegion) { region in
+            if let region = region, !isUserInteracting {
+                cameraPosition = .region(region)
+            }
+        }
+        .onReceive(routeManager.$currentProgress) { _ in
+            updateProgressPolyline()
+        }
+        .onReceive(routeManager.milestoneCompletedPublisher) { milestone in
+            selectedMilestone = milestone
+            withAnimation {
+                showConfetti = true
+                showMilestoneCard = true
+            }
         }
     }
             

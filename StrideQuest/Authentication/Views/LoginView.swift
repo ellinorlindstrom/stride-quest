@@ -22,7 +22,7 @@ struct LoginView: View {
                 .foregroundStyle(Color(red: 0.075, green: 0.278, blue: 0.396))
             
                 Text("Transforming everyday movement into adventures!")
-                .font(.system(.headline, design: .monospaced))
+                    .font(.system(.headline, design: .monospaced))
                     .fontWeight(.bold)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .multilineTextAlignment(.center)

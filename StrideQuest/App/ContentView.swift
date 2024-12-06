@@ -12,54 +12,58 @@ struct ContentView: View {
     @State private var showingCompletedRoutes = false
     
     var body: some View {
-        Group {
-            if authManager.isAuthenticated {
-                ZStack {
-                    MapView()
-                    
-                    VStack {
-                        HStack {
-                            Menu {
-                                Button("Routes", action: { showingRouteSelection = true })
-                                Button("Add Distance Manually") { showingManualEntry = true }
-                                Button("Completed Routes") { showingCompletedRoutes = true }
-                                Button("Sign Out", action: authManager.signOut)
-                            } label: {
-                                Image(systemName: "line.horizontal.3")
-                                    .font(.title)
-                                    .foregroundColor(.black)
-                                    .padding()
-                                    .bold()
-                            }
-                            .sheet(isPresented: $showingRouteSelection) {
-                                RouteSelectionView()
-                            }
-                            .sheet(isPresented: $showingManualEntry) {
-                                ManualDistanceEntryView()
-                            }
-                            .sheet(isPresented: $showingCompletedRoutes) {
-                                CompletedRoutesView()
+        VStack(spacing: 0) {
+            AppHeader()
+                .shadow(radius: 5)
+            Group {
+                if authManager.isAuthenticated {
+                    ZStack {
+                        MapView()
+                        
+                        VStack {
+                            HStack {
+                                Menu {
+                                    Button("Routes", action: { showingRouteSelection = true })
+                                    Button("Add Distance Manually") { showingManualEntry = true }
+                                    Button("Completed Routes") { showingCompletedRoutes = true }
+                                    Button("Sign Out", action: authManager.signOut)
+                                } label: {
+                                    Image(systemName: "line.horizontal.3")
+                                        .font(.title)
+                                        .foregroundColor(.black)
+                                        .padding()
+                                        .bold()
+                                }
+                                .sheet(isPresented: $showingRouteSelection) {
+                                    RouteSelectionView()
+                                }
+                                .sheet(isPresented: $showingManualEntry) {
+                                    ManualDistanceEntryView()
+                                }
+                                .sheet(isPresented: $showingCompletedRoutes) {
+                                    CompletedRoutesView()
+                                }
+                                
+                                Spacer()
                             }
                             
                             Spacer()
-                        }
-
-                        Spacer()
-                        
-                        if showingProgress {
-                            RouteProgressView()
-                                .background(.ultraThinMaterial)
-                                .cornerRadius(15)
-                                .padding()
+                            
+                            if showingProgress {
+                                RouteProgressView()
+                                    .background(.ultraThinMaterial)
+                                    .cornerRadius(15)
+                                    .padding()
+                            }
                         }
                     }
+                } else {
+                    LoginView(authManager: authManager)
                 }
-            } else {
-                LoginView(authManager: authManager)
             }
-        }
-        .onAppear {
-            authManager.checkAuthentication()
+            .onAppear {
+                authManager.checkAuthentication()
+            }
         }
     }
 }

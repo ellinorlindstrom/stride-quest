@@ -48,17 +48,18 @@ struct RouteProgressView: View {
             } else {
                 VStack(spacing: 5) {
                     Text("No Active Journey")
-                        .font(.headline)
+                        .font(.system(.headline, design: .monospaced))
                         .padding()
                     
                     Button("Choose Your Adventure!") {
                         showingRouteSelection = true
                     }
+                    .font(.system(.caption, design: .monospaced))
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .tint(.green)
+                    .tint(.teal)
                     
                 }
             }
