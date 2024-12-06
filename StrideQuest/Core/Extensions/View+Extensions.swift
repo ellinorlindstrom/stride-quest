@@ -640,40 +640,56 @@ extension RouteManager {
                 ]
             ),
             
-            VirtualRoute(
-                name: "Inca Trail",
-                description: "Journey to Machu Picchu through the Andes",
-                totalDistance: 43000,
-                milestones: [
-                    RouteMilestone(
-                        name: "Dead Woman's Pass",
-                        description: "Highest point of the trail",
-                        distanceFromStart: 14333,
-                        imageName: "dead_womans_pass"
-                    ),
-                    RouteMilestone(
-                        name: "Wiñay Wayna",
-                        description: "Beautiful Inca ruins",
-                        distanceFromStart: 28666,
-                        imageName: "winay_wayna"
-                    ),
-                    RouteMilestone(
-                        name: "Machu Picchu",
-                        description: "The lost city of the Incas",
-                        distanceFromStart: 43000,
-                        imageName: "machu_picchu"
-                    )
-                ],
-                imageName: "inca-trail",
-                region: "Peru",
-                startCoordinate: CLLocationCoordinate2D(latitude: -13.5183, longitude: -71.9784),
-                coordinates: [
-                    CLLocationCoordinate2D(latitude: -13.5183, longitude: -71.9784),
-                    CLLocationCoordinate2D(latitude: -13.1868, longitude: -72.5508),
-                    CLLocationCoordinate2D(latitude: -13.1631, longitude: -72.5449)
-                ]
-                
-            )
+        VirtualRoute(
+            name: "Inca Trail to Machu Picchu",
+            description: """
+            The legendary 4-day trek through the Andes Mountains following ancient Incan paths. 
+            Experience breathtaking mountain passes, cloud forests, and ancient ruins before 
+            reaching the iconic Machu Picchu. This challenging trail combines stunning natural 
+            beauty with fascinating historical sites.
+            """,
+            totalDistance: 43000,
+            milestones: [
+                RouteMilestone(
+                    name: "Km 82 (Piscacucho)",
+                    description: "The classic starting point of the Inca Trail, where permits are checked and the adventure begins",
+                    distanceFromStart: 0,
+                    imageName: "km82_start"
+                ),
+                RouteMilestone(
+                    name: "Dead Woman's Pass (Warmiwañusca)",
+                    description: "The highest and most challenging point of the trail at 4,215m (13,828ft). Named for its resemblance to a supine woman's profile",
+                    distanceFromStart: 14333,
+                    imageName: "dead_womans_pass"
+                ),
+                RouteMilestone(
+                    name: "Wiñay Wayna",
+                    description: "Spectacular terraced ruins whose name means 'Forever Young' in Quechua. Features ancient agricultural terraces and religious sites",
+                    distanceFromStart: 28666,
+                    imageName: "winay_wayna"
+                ),
+                RouteMilestone(
+                    name: "Machu Picchu",
+                    description: "The legendary 'Lost City of the Incas'. This 15th-century citadel stands as the most famous symbol of Inca civilization",
+                    distanceFromStart: 43000,
+                    imageName: "machu_picchu"
+                )
+            ],
+            imageName: "inca-trail",
+            region: "Cusco Region, Peru",
+            startCoordinate: CLLocationCoordinate2D(latitude: -13.5183, longitude: -71.9784), // Km 82
+            //endCoordinate: CLLocationCoordinate2D(latitude: -13.1631, longitude: -72.5449), // Machu Picchu
+            coordinates: [
+                CLLocationCoordinate2D(latitude: -13.5183, longitude: -71.9784), // Start at Km 82
+                CLLocationCoordinate2D(latitude: -13.4747, longitude: -72.0304), // Llactapata
+                CLLocationCoordinate2D(latitude: -13.4183, longitude: -72.0543), // Wayllabamba
+                CLLocationCoordinate2D(latitude: -13.3986, longitude: -72.0912), // Dead Woman's Pass
+                CLLocationCoordinate2D(latitude: -13.3602, longitude: -72.1224), // Runkuracay Pass
+                CLLocationCoordinate2D(latitude: -13.2937, longitude: -72.1832), // Wiñay Wayna
+                CLLocationCoordinate2D(latitude: -13.1868, longitude: -72.5508), // Sun Gate
+                CLLocationCoordinate2D(latitude: -13.1631, longitude: -72.5449)  // Machu Picchu
+            ]
+            ),
         ]
         
     }

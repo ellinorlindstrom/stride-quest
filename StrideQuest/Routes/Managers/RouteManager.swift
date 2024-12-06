@@ -2,8 +2,10 @@ import Foundation
 import CoreLocation
 import MapKit
 import CoreData
+import Combine
 
 class RouteManager: ObservableObject {
+    let milestoneCompletedPublisher = PassthroughSubject<RouteMilestone, Never>()
     static let shared = RouteManager()
     @Published private(set) var isActivelyTracking: Bool = false
     @Published private(set) var selectedRoute: VirtualRoute?
@@ -218,6 +220,8 @@ class RouteManager: ObservableObject {
                    progress.completedMilestones.insert(milestone.id)
                    recentlyUnlockedMilestone = milestone
                    print("✅ Milestone unlocked: \(milestone.name) at \(milestoneDistanceKm) km")
+                   milestoneCompletedPublisher.send(milestone)
+
                    // Add notification or celebration effect here
                }
            }

@@ -1,5 +1,6 @@
 import SwiftUI
 import MapKit
+import Combine
 
 struct MapView: View {
     @State private var cameraPosition: MapCameraPosition = .automatic
@@ -7,66 +8,79 @@ struct MapView: View {
     @ObservedObject var routeManager = RouteManager.shared
     @State private var progressPolyline: [CLLocationCoordinate2D] = []
     @State private var mapStyle = MapStyle.standard(elevation: .realistic)
+    @State private var showConfetti = false
 
     
     var body: some View {
-        Map(position: $cameraPosition, interactionModes: .all) {
-                   if let progress = routeManager.currentProgress,
-                      let route = progress.currentRoute {
-                       MapPolyline(coordinates: route.coordinates)
-                           .stroke(.gray, lineWidth: 3)
-                       
-                       MapPolyline(coordinates: progressPolyline)
-                           .stroke(.blue, lineWidth: 3)
-                       
-                       ForEach(route.milestones) { milestone in
-                           let coordinate = getMilestoneCoordinate(milestone: milestone, coordinates: route.coordinates)
-                           Marker(milestone.name, coordinate: coordinate)
-                               .tint(routeManager.isMilestoneCompleted(milestone) ? .green : .gray)
-                       }
-                       
-                       if let currentPosition = progressPolyline.last ?? routeManager.currentRouteCoordinate {
-                           Annotation("", coordinate: currentPosition) {
-                               ZStack {
-                                   Circle()
-                                       .fill(.blue.opacity(0.2))
-                                       .frame(width: 40, height: 40)
-                                   Circle()
-                                       .fill(.blue)
-                                       .frame(width: 15, height: 15)
-                                       .overlay(Circle().stroke(.white, lineWidth: 3))
-                               }
-                           }
-                       }
-                   }
-               }
-        .onAppear {
-            setInitialCamera()
-        }
-        .onReceive(routeManager.$currentProgress) { _ in
-            setInitialCamera()
-        }
-        .mapControls {
-            MapPitchToggle()
-            MapCompass()
-            MapScaleView()
-        }
-        .mapStyle(.standard(elevation: .realistic))
-        .gesture(
-                    SimultaneousGesture(
-                        DragGesture().onChanged { _ in isUserInteracting = true },
-                        MagnificationGesture().onChanged { _ in isUserInteracting = true }
-                    )
-                )
-                .onReceive(routeManager.$currentMapRegion) { region in
-                    if let region = region, !isUserInteracting {
-                        cameraPosition = .region(region)
+        ZStack {  // Add ZStack here
+            Map(position: $cameraPosition, interactionModes: .all) {
+                if let progress = routeManager.currentProgress,
+                   let route = progress.currentRoute {
+                    MapPolyline(coordinates: route.coordinates)
+                        .stroke(.gray, lineWidth: 3)
+                    
+                    MapPolyline(coordinates: progressPolyline)
+                        .stroke(.blue, lineWidth: 3)
+                    
+                    ForEach(route.milestones) { milestone in
+                        let coordinate = getMilestoneCoordinate(milestone: milestone, coordinates: route.coordinates)
+                        Marker(milestone.name, coordinate: coordinate)
+                            .tint(routeManager.isMilestoneCompleted(milestone) ? .green : .gray)
+                    }
+                    
+                    if let currentPosition = progressPolyline.last ?? routeManager.currentRouteCoordinate {
+                        Annotation("", coordinate: currentPosition) {
+                            ZStack {
+                                Circle()
+                                    .fill(.blue.opacity(0.2))
+                                    .frame(width: 40, height: 40)
+                                Circle()
+                                    .fill(.blue)
+                                    .frame(width: 15, height: 15)
+                                    .overlay(Circle().stroke(.white, lineWidth: 3))
+                            }
+                        }
                     }
                 }
-                .onReceive(routeManager.$currentProgress) { _ in
-                    updateProgressPolyline()
+            }
+            .onAppear {
+                setInitialCamera()
+            }
+            .onReceive(routeManager.$currentProgress) { _ in
+                setInitialCamera()
+            }
+            .mapControls {
+                MapPitchToggle()
+                MapCompass()
+                MapScaleView()
+            }
+            .mapStyle(.standard(elevation: .realistic))
+            .gesture(
+                SimultaneousGesture(
+                    DragGesture().onChanged { _ in isUserInteracting = true },
+                    MagnificationGesture().onChanged { _ in isUserInteracting = true }
+                )
+            )
+            .onReceive(routeManager.$currentMapRegion) { region in
+                if let region = region, !isUserInteracting {
+                    cameraPosition = .region(region)
                 }
+            }
+            .onReceive(routeManager.$currentProgress) { _ in
+                updateProgressPolyline()
+            }
+            .onReceive(routeManager.milestoneCompletedPublisher) { milestone in
+                withAnimation {
+                    showConfetti = true
+                }
+            }
+            
+            // Add ConfettiView on top of the Map
+            ConfettiView(isShowing: $showConfetti)
+        }
     }
+            
+    
     
     private func getMilestoneCoordinate(milestone: RouteMilestone, coordinates: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D {
         let milestoneDistance = milestone.distanceFromStart
