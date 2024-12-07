@@ -16,14 +16,14 @@ struct RouteSelectionView: View {
         NavigationView {
             List(routeManager.availableRoutes) { route in
                 NavigationLink(destination: RouteDetailView(route: route, onRouteSelected: {
-                                   onRouteSelected?()
-                                   dismiss()
-                               })) {
-                                   RouteCard(route: route)
-                               }
-                           }
-                           .navigationTitle("Choose Your Journey")
-                        }
+                    onRouteSelected?()
+                    dismiss()
+                })) {
+                    RouteCard(route: route)
+                }
+            }
+            .navigationTitle("Choose Your Journey")
+        }
     }
 }
 
@@ -41,7 +41,7 @@ struct RouteCard: View {
             
             VStack(alignment: .leading, spacing: 5) {
                 Text(route.name)
-                    .font(.headline)
+                    .font(.system(.headline, design: .monospaced))
                 
                 Text(route.region)
                     .font(.subheadline)

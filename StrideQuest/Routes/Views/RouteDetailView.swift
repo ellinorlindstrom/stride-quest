@@ -27,7 +27,7 @@ struct RouteDetailView: View {
                 // Route details
                 VStack(alignment: .leading, spacing: 15) {
                     Text(route.name)
-                        .font(.title)
+                        .font(.system(.title, design: .monospaced))
                         .bold()
                     
                     Text(route.region)
@@ -51,7 +51,7 @@ struct RouteDetailView: View {
                         onRouteSelected?()
                     }) {
                         Text("Start Journey")
-                            .font(.headline)
+                            .font(.system(.headline, design: .monospaced))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()

@@ -19,7 +19,7 @@ struct RouteProgressView: View {
                 // Current route progress
                 VStack(alignment: .leading, spacing: 15) {
                     Text(route.name)
-                        .font(.headline)
+                        .font(.system(.headline, design: .monospaced))
                     
                     ProgressBar(value: progress.percentageCompleted)
                         .id(progress.completedDistance)

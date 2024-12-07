@@ -41,7 +41,7 @@ struct AppHeader: View {
                         .font(.system(.title2, design: .monospaced))
                         .fontWeight(.bold)
                     Text("Your Adventure Awaits")
-                        .font(.caption)
+                        .font(.system(.caption, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
                 
@@ -49,10 +49,10 @@ struct AppHeader: View {
                 
                 VStack(alignment: .trailing, spacing: 2) {
                     Text("\(Int.random(in: 1...10))K")
-                        .font(.headline)
+                        .font(.system(.headline, design: .monospaced))
                         .foregroundStyle(.teal)
                     Text("Steps Today")
-                        .font(.caption2)
+                        .font(.system(.caption2, design: .monospaced))
                         .foregroundStyle(.secondary)
                 }
             }
