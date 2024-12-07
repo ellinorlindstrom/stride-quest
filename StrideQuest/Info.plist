@@ -19,6 +19,10 @@
         <string>MKDirectionsModeFerry</string>
         <string>MKDirectionsModePedestrian</string>
     </array>
+    <key>BGTaskSchedulerPermittedIdentifiers</key>
+    <array>
+        <string>com.ellinorlindstrom.StrideQuest.StrideQuest.healthkitfetch</string>
+    </array>
     <key>UIBackgroundModes</key>
     <array>
         <string>processing</string>
@@ -35,5 +39,12 @@
     <string>We use your location to show your position on the virtual journey map.</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
     <string>We use your location to track your progress on virtual journeys even when the app is in the background.</string>
+    <!-- Accesibility -->
+    <key>UIAccessibilityEnabled</key>
+    <true/>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>Used for accessibility voice control features</string>
+    <key>NSSpeechRecognitionUsageDescription</key>
+    <string>Used for accessibility voice control features</string>
 </dict>
 </plist>

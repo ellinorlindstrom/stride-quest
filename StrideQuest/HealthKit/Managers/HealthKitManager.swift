@@ -162,4 +162,5 @@ class HealthKitManager: ObservableObject {
 
 enum HealthkitError: Error {
     case notAvailable
+    case timeout
 }

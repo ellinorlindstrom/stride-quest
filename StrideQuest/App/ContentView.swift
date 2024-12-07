@@ -10,63 +10,61 @@ struct ContentView: View {
     @State private var showingManualEntry = false
     @State private var showingProgress = true
     @State private var showingCompletedRoutes = false
+    @State private var isMenuShowing = false
     
     var body: some View {
         VStack(spacing: 0) {
-            AppHeader()
+            if authManager.isAuthenticated {
+                AppHeader(
+                    authManager: authManager,
+                    showingRouteSelection: $showingRouteSelection,
+                    showingManualEntry: $showingManualEntry,
+                    showingCompletedRoutes: $showingCompletedRoutes,
+                    isMenuShowing: $isMenuShowing
+                )
                 .shadow(radius: 5)
-            Group {
-                if authManager.isAuthenticated {
-                    ZStack {
-                        MapView()
-                        
+                
+                ZStack {
+                    MapView()
+                    if showingProgress {
                         VStack {
-                            HStack {
-                                Menu {
-                                    Button("Routes", action: { showingRouteSelection = true })
-                                    Button("Add Distance Manually") { showingManualEntry = true }
-                                    Button("Completed Routes") { showingCompletedRoutes = true }
-                                    Button("Sign Out", action: authManager.signOut)
-                                } label: {
-                                    Image(systemName: "line.horizontal.3")
-                                        .font(.title)
-                                        .foregroundColor(.black)
-                                        .padding()
-                                        .bold()
-                                }
-                                .sheet(isPresented: $showingRouteSelection) {
-                                    RouteSelectionView()
-                                }
-                                .sheet(isPresented: $showingManualEntry) {
-                                    ManualDistanceEntryView()
-                                }
-                                .sheet(isPresented: $showingCompletedRoutes) {
-                                    CompletedRoutesView()
-                                }
-                                
-                                Spacer()
-                            }
-                            
                             Spacer()
-                            
-                            if showingProgress {
-                                RouteProgressView()
-                                    .background(.ultraThinMaterial)
-                                    .cornerRadius(15)
-                                    .padding()
-                            }
+                            RouteProgressView()
+                                .background(.ultraThinMaterial)
+                                .cornerRadius(15)
+                                .padding()
                         }
                     }
-                } else {
-                    LoginView(authManager: authManager)
+                    if isMenuShowing  {
+                        SideMenu(
+                            authManager: authManager,
+                            showingRouteSelection: $showingRouteSelection,
+                            showingManualEntry: $showingManualEntry,
+                            showingCompletedRoutes: $showingCompletedRoutes,
+                            isMenuShowing: $isMenuShowing
+                        )
+                        .transition(.move(edge: .leading))
+                    }
                 }
+            } else {
+                LoginView(authManager: authManager)
             }
-            .onAppear {
-                authManager.checkAuthentication()
-            }
+        }
+        .sheet(isPresented: $showingRouteSelection) {
+            RouteSelectionView()
+        }
+        .sheet(isPresented: $showingManualEntry) {
+            ManualDistanceEntryView()
+        }
+        .sheet(isPresented: $showingCompletedRoutes) {
+            CompletedRoutesView()
+        }
+        .onAppear {
+            authManager.checkAuthentication()
         }
     }
 }
+
 
 
 #Preview {
