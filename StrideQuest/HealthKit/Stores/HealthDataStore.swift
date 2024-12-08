@@ -118,29 +118,31 @@ class HealthDataStore {
         }
     }
     
-    func fetchRouteProgress(id: UUID) -> RouteProgress? {
-        let context = persistentContainer.viewContext
+    func fetchRouteProgress(for routeId: UUID) -> RouteProgress? {
         let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
-        fetchRequest.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        fetchRequest.predicate = NSPredicate(format: "routeId == %@ AND isCompleted == %@",
+                                           routeId as CVarArg,
+                                           NSNumber(value: false))
+        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
+        fetchRequest.fetchLimit = 1
         
         do {
-            guard let entity = try context.fetch(fetchRequest).first else { return nil }
-            
-            return RouteProgress(
-                id: entity.id ?? UUID(),
-                routeId: entity.routeId ?? UUID(),
-                startDate: entity.startDate ?? Date(),
-                completedDistance: entity.completedDistance,
-                lastUpdated: entity.lastUpdated ?? Date(),
-                completedMilestones: entity.getCompletedMilestones(),
-                totalDistance: entity.totalDistance,
-                dailyProgress: entity.getDailyProgress(),
-                isCompleted: entity.isCompleted,
-                completionDate: entity.completionDate
-            )
+            if let entity = try persistentContainer.viewContext.fetch(fetchRequest).first {
+                return RouteProgress(
+                    id: entity.id ?? UUID(),
+                    routeId: entity.routeId ?? UUID(),
+                    startDate: entity.startDate ?? Date(),
+                    completedDistance: entity.completedDistance,
+                    lastUpdated: entity.lastUpdated ?? Date(),
+                    completedMilestones: entity.getCompletedMilestones(),
+                    totalDistance: entity.totalDistance,
+                    dailyProgress: entity.getDailyProgress(),
+                    isCompleted: false
+                )
+            }
         } catch {
             print("Failed to fetch route progress: \(error)")
-            return nil
         }
+        return nil
     }
 }

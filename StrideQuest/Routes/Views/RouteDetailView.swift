@@ -42,24 +42,21 @@ struct RouteDetailView: View {
                 }
                 .padding()
                 
-                // Start button
-                if !routeManager.isActivelyTracking {
                     Button(action: {
                         routeManager.selectRoute(route)
                         routeManager.beginRouteTracking()
                         dismiss()
                         onRouteSelected?()
                     }) {
-                        Text("Start Journey")
+                        Text(routeManager.isTracking(route: route) ? "Resume Journey" : "Start Journey")
                             .font(.system(.headline, design: .monospaced))
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.blue)
+                            .background(routeManager.isTracking(route: route) ? Color.blue : Color.green)
                             .cornerRadius(10)
                     }
                     .padding(.horizontal)
-                }
             }
         }
         .navigationBarTitleDisplayMode(.inline)

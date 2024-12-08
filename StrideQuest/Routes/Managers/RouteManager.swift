@@ -7,7 +7,7 @@ import Combine
 class RouteManager: ObservableObject {
     let milestoneCompletedPublisher = PassthroughSubject<RouteMilestone, Never>()
     static let shared = RouteManager()
-    @Published private(set) var isActivelyTracking: Bool = false
+    @Published private(set) var activeRouteIds: Set<UUID> = []
     @Published private(set) var selectedRoute: VirtualRoute?
     @Published var currentRouteCoordinate: CLLocationCoordinate2D?
     @Published private(set) var availableRoutes: [VirtualRoute]
@@ -60,13 +60,24 @@ class RouteManager: ObservableObject {
         loadCompletedRoutes()
     }
     
+    func isTracking(route: VirtualRoute) -> Bool {
+            return activeRouteIds.contains(route.id)
+        }
+    
     func selectRoute(_ route: VirtualRoute) {
             selectedRoute = route
         }
     
     func beginRouteTracking() {
-            guard let selectedRoute = selectedRoute else { return }
-                    
+        guard let selectedRoute = selectedRoute else { return }
+        // First try to find existing progress for this route
+        let existingProgress = healthDataStore.fetchRouteProgress(for: selectedRoute.id)
+        
+        if let existingProgress = existingProgress, !existingProgress.isCompleted {
+            // Resume existing progress
+            currentProgress = existingProgress
+        } else {
+            // Create new progress if none exists or if previous one was completed
             let progress = RouteProgress(
                 id: UUID(),
                 routeId: selectedRoute.id,
@@ -83,32 +94,37 @@ class RouteManager: ObservableObject {
                 ],
                 isCompleted: false
             )
-            
             currentProgress = progress
-            routeCoordinates = selectedRoute.coordinates
-            calculateCumulativeDistances()
-            currentRouteCoordinate = selectedRoute.coordinates.first
-            currentMapRegion = MKCoordinateRegion(
-                center: selectedRoute.startCoordinate,
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            )
-            HealthKitManager.shared.markRouteStart()
-            isActivelyTracking = true
-            updateProgress(withDistance: 0, source: "initial")
-            saveProgress()
         }
+        
+        routeCoordinates = selectedRoute.coordinates
+        calculateCumulativeDistances()
+        currentRouteCoordinate = selectedRoute.coordinates.first
+        currentMapRegion = MKCoordinateRegion(
+            center: selectedRoute.startCoordinate,
+            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+        )
+        HealthKitManager.shared.markRouteStart()
+        activeRouteIds.insert(selectedRoute.id)
+        updateProgress(withDistance: currentProgress?.completedDistance ?? 0, source: "initial")
+        saveProgress()
+    }
     
 
     func pauseTracking() {
-        isActivelyTracking = false
-        saveProgress()
-    }
-
+           if let selectedRoute = selectedRoute {
+               activeRouteIds.remove(selectedRoute.id)
+           }
+           saveProgress()
+       }
+        
     func stopRoute() {
-        isActivelyTracking = false
-        selectedRoute = nil
-        saveProgress()
-    }
+            if let selectedRoute = selectedRoute {
+                activeRouteIds.remove(selectedRoute.id)
+            }
+            selectedRoute = nil
+            saveProgress()
+        }
     
     private func calculateCumulativeDistances() {
         cumulativeDistances = [0]
@@ -170,11 +186,12 @@ class RouteManager: ObservableObject {
     }
     
     func updateProgress(withDistance distance: Double, isManual: Bool = false, source: String = "unknown") {
-        guard isActivelyTracking,
-                 var progress = currentProgress,
-                 let route = progress.currentRoute else {
-               return
-           }
+        guard var progress = currentProgress,
+              let route = progress.currentRoute,
+                activeRouteIds.contains(route.id) else {
+            return
+        }
+        
         print("📍 RouteManager - Receiving update from \(source)")
         print("- Distance: \(distance) km")
         print("- Current completed milestones count: \(progress.completedMilestones.count)")
@@ -183,52 +200,47 @@ class RouteManager: ObservableObject {
         let today = calendar.startOfDay(for: Date())
         
         if let lastProgress = progress.dailyProgress.last,
-               calendar.startOfDay(for: lastProgress.date) == today {
-                // Update today's progress
-                var updatedDailyProgress = progress.dailyProgress
-                updatedDailyProgress[updatedDailyProgress.count - 1].distance = distance
-                progress.dailyProgress = updatedDailyProgress
-            } else {
-                // Add new day's progress
-                progress.dailyProgress.append(
-                    RouteProgress.DailyProgress(
-                        date: Date(),
-                        distance: distance
-                    )
+           calendar.startOfDay(for: lastProgress.date) == today {
+            // Update today's progress
+            var updatedDailyProgress = progress.dailyProgress
+            updatedDailyProgress[updatedDailyProgress.count - 1].distance = distance
+            progress.dailyProgress = updatedDailyProgress
+        } else {
+            // Add new day's progress
+            progress.dailyProgress.append(
+                RouteProgress.DailyProgress(
+                    date: Date(),
+                    distance: distance
                 )
-            }
+            )
+        }
         
         let totalCompleted = progress.dailyProgress.reduce(0) { $0 + $1.distance }
-           progress.completedDistance = isManual ? distance : max(distance, progress.completedDistance)
-           
-        //progress.completedDistance = distance
+        progress.completedDistance = isManual ? distance : max(distance, progress.completedDistance)
+        
         let routeTotalKm = route.totalDistance / 1000
         let percentComplete = distance / routeTotalKm
         
-       
         // Update position marker
         if percentComplete > 0 && percentComplete < 1 {
             let targetDistance = distance * 1000 // Convert to meters
             updatePositionMarker(targetDistance: targetDistance)
-            
         }
         
         // Check for new milestones
         for milestone in route.milestones.sorted(by: { $0.distanceFromStart < $1.distanceFromStart }) {
-               let milestoneDistanceKm = milestone.distanceFromStart / 1000
-               if totalCompleted >= milestoneDistanceKm && !progress.completedMilestones.contains(milestone.id) {
-                   progress.completedMilestones.insert(milestone.id)
-                   recentlyUnlockedMilestone = milestone
-                   print("✅ Milestone unlocked: \(milestone.name) at \(milestoneDistanceKm) km")
-                   milestoneCompletedPublisher.send(milestone)
-
-                   // Add notification or celebration effect here
-               }
-           }
+            let milestoneDistanceKm = milestone.distanceFromStart / 1000
+            if totalCompleted >= milestoneDistanceKm && !progress.completedMilestones.contains(milestone.id) {
+                progress.completedMilestones.insert(milestone.id)
+                recentlyUnlockedMilestone = milestone
+                print("✅ Milestone unlocked: \(milestone.name) at \(milestoneDistanceKm) km")
+                milestoneCompletedPublisher.send(milestone)
+                // Add notification or celebration effect here
+            }
+        }
         
         currentProgress = progress
         saveProgress()
-
     }
     
     func isMilestoneCompleted(_ milestone: RouteMilestone) -> Bool {

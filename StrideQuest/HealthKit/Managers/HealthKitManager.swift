@@ -9,7 +9,7 @@ class HealthKitManager: ObservableObject {
     @Published var isAuthorized = false
     @Published var totalDistance: Double = 0 {
         didSet {
-            if RouteManager.shared.isActivelyTracking {
+            if !RouteManager.shared.activeRouteIds.isEmpty {
                             let relativeDistance = max(0, totalDistance - routeStartDistance)
                             let currentRouteDistance = relativeDistance / 1000
                             RouteManager.shared.updateProgress(withDistance: currentRouteDistance, source: "healthkit")
