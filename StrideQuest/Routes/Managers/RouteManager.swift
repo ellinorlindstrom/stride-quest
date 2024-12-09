@@ -10,7 +10,6 @@ class RouteManager: ObservableObject {
     @Published private(set) var activeRouteIds: Set<UUID> = []
     @Published private(set) var selectedRoute: VirtualRoute?
     @Published var currentRouteCoordinate: CLLocationCoordinate2D?
-    @Published private(set) var availableRoutes: [VirtualRoute]
     @Published private(set) var currentProgress: RouteProgress? {
         didSet {
             print("RouteManager - Progress updated: \(currentProgress?.completedDistance ?? 0) km completed")
@@ -23,6 +22,7 @@ class RouteManager: ObservableObject {
     }
     @Published private(set) var recentlyUnlockedMilestone: RouteMilestone?
     @Published var currentMapRegion: MKCoordinateRegion?
+    @Published var availableRoutes: [VirtualRoute]
     
     private let healthDataStore = HealthDataStore.shared
     private let progressKey = "currentRouteProgress"

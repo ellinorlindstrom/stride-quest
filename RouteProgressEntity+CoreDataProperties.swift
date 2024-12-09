@@ -24,6 +24,7 @@ extension RouteProgressEntity {
     @NSManaged public var lastUpdated: Date?
     @NSManaged public var totalDistance: Double
     @NSManaged public var isCompleted: Bool
+    @NSManaged public var isActive: Bool
     @NSManaged public var completionDate: Date?
     @NSManaged public var dailyProgressData: Data?
     @NSManaged public var dailyHealthData: NSSet?

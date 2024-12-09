@@ -13,6 +13,7 @@
         <attribute name="completionDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="dailyProgressData" optional="YES" attributeType="Binary"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isActive" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="isCompleted" optional="YES" attributeType="Boolean" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="lastUpdated" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="routeId" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
