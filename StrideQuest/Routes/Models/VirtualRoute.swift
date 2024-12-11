@@ -45,7 +45,7 @@ struct VirtualRoute: Identifiable, Codable {
         self.milestones = milestones.map { milestone in
                 RouteMilestone(
                     id: milestone.id,
-                    routeId: id,  
+                    routeId: id,
                     name: milestone.name,
                     description: milestone.description,
                     distanceFromStart: milestone.distanceFromStart,

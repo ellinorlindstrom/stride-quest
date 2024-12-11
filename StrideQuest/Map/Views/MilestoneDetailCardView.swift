@@ -2,10 +2,12 @@ import SwiftUI
 
 struct MilestoneDetailCard: View {
     let milestone: RouteMilestone
+    let routeId: UUID
     @Binding var isShowing: Bool
     @Binding var selectedMilestone: RouteMilestone?
     
     var body: some View {
+        if milestone.routeId == routeId {
         VStack {
             // Header with close button
             HStack {
@@ -54,6 +56,10 @@ struct MilestoneDetailCard: View {
         )
         .transition(.scale.combined(with: .opacity))
         .offset(y: -50)
+    } else {
+        EmptyView() // Don't display anything if IDs don't match
     }
+}
+
 }
 

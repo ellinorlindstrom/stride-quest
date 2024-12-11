@@ -32,7 +32,7 @@ struct MapContentView: View {
                                 milestone.routeId == routeManager.currentProgress?.currentRoute?.id {
                                 onMilestoneSelected(milestone)
                             }
-                        }
+                        }, currentRouteId: route.id
                     )
                 }
             }

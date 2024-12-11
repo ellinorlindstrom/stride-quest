@@ -3,119 +3,127 @@ import CoreLocation
 
 extension RouteManager {
     func initializeRoutes() -> [VirtualRoute] {
+        
+        let caminoId = UUID()
+        let greatWallId = UUID()
+        let pacificCrestTrailId = UUID()
+        let incaTrailId = UUID()
+        
+        return
        [
         VirtualRoute(
+            id: caminoId,
             name: "Camino de Santiago",
             description: "Follow the historic pilgrimage route through Spain",
             totalDistance: 825000, // Corrected to actual distance
             milestones: [
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Saint-Jean-Pied-de-Port",
                     description: "Historic starting point in France",
                     distanceFromStart: 0,
                     imageName: "saint-jean"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Roncesvalles",
                     description: "First Spanish town and historic monastery",
                     distanceFromStart: 27500, // ~27.5km - actual first day's challenging hike
                     imageName: "roncesvalles"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Zubiri",
                     description: "Medieval bridge town",
                     distanceFromStart: 48500,
                     imageName: "zubiri"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Pamplona",
                     description: "Historic city famous for the Running of the Bulls",
                     distanceFromStart: 74800,
                     imageName: "pamplona"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Puente la Reina",
                     description: "Town with famous Romanesque bridge",
                     distanceFromStart: 100000,
                     imageName: "puente-la-reina"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Estella",
                     description: "Historic town with beautiful churches",
                     distanceFromStart: 126000,
                     imageName: "estella"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Los Arcos",
                     description: "Medieval town with Gothic church",
                     distanceFromStart: 152000,
                     imageName: "los-arcos"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Logroño",
                     description: "Capital of La Rioja wine region",
                     distanceFromStart: 178000,
                     imageName: "logrono"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Santo Domingo de la Calzada",
                     description: "Town with cathedral and famous chicken legend",
                     distanceFromStart: 204000,
                     imageName: "santo-domingo"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Belorado",
                     description: "Ancient settlement with castle ruins",
                     distanceFromStart: 230000,
                     imageName: "belorado"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "San Juan de Ortega",
                     description: "12th-century monastery",
                     distanceFromStart: 256000,
                     imageName: "san-juan"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Burgos Cathedral",
                     description: "UNESCO World Heritage Gothic cathedral",
                     distanceFromStart: 282000,
                     imageName: "burgos"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Castrojeriz",
                     description: "Hill town with castle ruins",
                     distanceFromStart: 308000,
                     imageName: "castrojeriz"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Frómista",
                     description: "Perfect Romanesque church of San Martín",
                     distanceFromStart: 334000,
                     imageName: "fromista"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Carrión de los Condes",
                     description: "Medieval town with Romanesque churches",
                     distanceFromStart: 360000,
                     imageName: "carrion"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: caminoId,
                     name: "Sahagún",
                     description: "Town known as the Spanish Cluny",
                     distanceFromStart: 386000,
@@ -304,33 +312,34 @@ extension RouteManager {
             ),
            
         VirtualRoute(
+            id: greatWallId,
             name: "Great Wall Adventure",
             description: "Trek along sections of China's Great Wall from Mutianyu to Jinshanling",
             totalDistance: 65000,
             milestones: [
                    RouteMilestone(
-                    routeId: UUID(),
+                    routeId: greatWallId,
                        name: "Mutianyu Entrance",
                        description: "Starting point at the restored Mutianyu section",
                        distanceFromStart: 0,
                        imageName: "mutianyu_entrance"
                    ),
                    RouteMilestone(
-                    routeId: UUID(),
+                    routeId: greatWallId,
                        name: "Tower 6",
                        description: "Scenic viewpoint of mountain ranges",
                        distanceFromStart: 850, 
                        imageName: "tower_6"
                    ),
                    RouteMilestone(
-                    routeId: UUID(),
+                    routeId: greatWallId,
                        name: "Tower 14",
                        description: "Highest point of Mutianyu section",
                        distanceFromStart: 1800,
                        imageName: "tower_14"
                    ),
                    RouteMilestone(
-                    routeId: UUID(),
+                    routeId: greatWallId,
                        name: "Mutianyu-Gubeikou Junction",
                        description: "Connection to the wild wall section",
                        distanceFromStart: 3500,
@@ -667,26 +676,27 @@ extension RouteManager {
             ),
             
             VirtualRoute(
+                id: pacificCrestTrailId,
                 name: "Pacific Crest Trail Segment",
                 description: "Experience a portion of the iconic Pacific Crest Trail",
                 totalDistance: 160934,
                 milestones: [
                     RouteMilestone(
-                        routeId: UUID(),
+                        routeId: pacificCrestTrailId,
                         name: "Mountain View Point",
                         description: "Spectacular valley views",
                         distanceFromStart: 32186.9,
                         imageName: "mountain_view"
                     ),
                     RouteMilestone(
-                        routeId: UUID(),
+                        routeId: pacificCrestTrailId,
                         name: "Alpine Lake",
                         description: "Crystal clear mountain lake",
                         distanceFromStart: 80467.2,
                         imageName: "alpine_lake"
                     ),
                     RouteMilestone(
-                        routeId: UUID(),
+                        routeId: pacificCrestTrailId,
                         name: "Summit Peak",
                         description: "Highest point of the journey",
                         distanceFromStart: 128747.5,
@@ -704,6 +714,7 @@ extension RouteManager {
             ),
             
         VirtualRoute(
+            id: incaTrailId,
             name: "Inca Trail to Machu Picchu",
             description: """
             The legendary 4-day trek through the Andes Mountains following ancient Incan paths. 
@@ -714,28 +725,28 @@ extension RouteManager {
             totalDistance: 43000,
             milestones: [
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: incaTrailId,
                     name: "Km 82 (Piscacucho)",
                     description: "The classic starting point of the Inca Trail, where permits are checked and the adventure begins",
                     distanceFromStart: 0,
                     imageName: "km82_start"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: incaTrailId,
                     name: "Dead Woman's Pass (Warmiwañusca)",
                     description: "The highest and most challenging point of the trail at 4,215m (13,828ft). Named for its resemblance to a supine woman's profile",
                     distanceFromStart: 14333,
                     imageName: "dead_womans_pass"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: incaTrailId,
                     name: "Wiñay Wayna",
                     description: "Spectacular terraced ruins whose name means 'Forever Young' in Quechua. Features ancient agricultural terraces and religious sites",
                     distanceFromStart: 28666,
                     imageName: "winay_wayna"
                 ),
                 RouteMilestone(
-                    routeId: UUID(),
+                    routeId: incaTrailId,
                     name: "Machu Picchu",
                     description: "The legendary 'Lost City of the Incas'. This 15th-century citadel stands as the most famous symbol of Inca civilization",
                     distanceFromStart: 43000,

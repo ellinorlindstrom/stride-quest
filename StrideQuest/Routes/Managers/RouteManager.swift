@@ -249,10 +249,6 @@ class RouteManager: ObservableObject {
             return false
         }
         let isCompleted = progress.completedMilestones.contains(milestone.id)
-        print("🏁 Checking milestone: \(milestone.name)")
-        print("- Distance from start: \(milestone.distanceFromStart/1000) km")
-        print("- Current distance: \(progress.completedDistance) km")
-        print("- Is in completed set: \(isCompleted)")
         return isCompleted
     }
     

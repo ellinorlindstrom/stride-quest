@@ -23,12 +23,15 @@ struct MapView: View {
                     currentPosition: progressPolyline.last ?? routeManager.currentRouteCoordinate,
                     routeManager: routeManager,
                     onMilestoneSelected: { milestone in
-                        selectedMilestone = milestone
-                        withAnimation {
-                            showMilestoneCard = true
+                            // Add route ID check here
+                            if milestone.routeId == route.id {
+                                selectedMilestone = milestone
+                                withAnimation {
+                                    showMilestoneCard = true
+                                }
+                            }
                         }
-                    }
-                )
+                    )
                 .gesture(
                     SimultaneousGesture(
                         DragGesture().onChanged { _ in isUserInteracting = true },
@@ -51,14 +54,19 @@ struct MapView: View {
             if showMilestoneCard, let milestone = selectedMilestone {
                 MilestoneDetailCard(
                     milestone: milestone,
+                    routeId: routeManager.currentProgress?.currentRoute?.id ?? UUID(),
                     isShowing: $showMilestoneCard,
                     selectedMilestone: $selectedMilestone
                 )
                 .padding()
-            }
+                .transition(.move(edge: .bottom))
+                .zIndex(2)            }
         }
         .onChange(of: showMilestoneCard) { oldValue, newValue in
-            print("showMilestoneCard changed to: \(newValue)")
+            print("🎭 showMilestoneCard changed from \(oldValue) to \(newValue)")
+            if let milestone = selectedMilestone {
+                print("🎭 Selected milestone: \(milestone.name)")
+            }
         }
         .onAppear {
             setInitialCamera()
@@ -74,31 +82,18 @@ struct MapView: View {
         }
         .onReceive(routeManager.milestoneCompletedPublisher) { milestone in
             print("🎉Milestone completed: \(milestone.name), routeId: \(milestone.routeId)")
-            if let currentRouteId = routeManager.currentProgress?.currentRoute?.id {
-                print("✍️Current Route ID: \(currentRouteId)")
-                if milestone.routeId == currentRouteId {
-                    selectedMilestone = milestone
-                    print("🐄Selected milestone: \(milestone.name)")
-                    DispatchQueue.main.async {
-                        withAnimation {
-                            showConfetti = true
-                            showMilestoneCard = true
-                        }
-                    }
-                } else {
-                    print("⛳️Milestone routeId does not match current routeId")
+            if let currentRouteId = routeManager.currentProgress?.currentRoute?.id,
+               milestone.routeId == currentRouteId {
+                print("🎯 Showing card for milestone: \(milestone.name)")
+                selectedMilestone = milestone
+                withAnimation(.easeInOut(duration: 0.3)) {
+                    showMilestoneCard = true
+                    showConfetti = true
                 }
-            } else {
-                print("🍏No current route in progress")
             }
         }
-
-        .onChange(of: routeManager.currentProgress?.currentRoute?.id) { oldValue, newValue in
-            selectedMilestone = nil
-            showMilestoneCard = false
-        }
     }
-        
+    
     private func updateProgressPolyline() {
         guard let progress = routeManager.currentProgress,
               let route = progress.currentRoute else {
