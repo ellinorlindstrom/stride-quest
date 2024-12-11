@@ -23,15 +23,24 @@ struct MapView: View {
                     currentPosition: progressPolyline.last ?? routeManager.currentRouteCoordinate,
                     routeManager: routeManager,
                     onMilestoneSelected: { milestone in
-                            // Add route ID check here
-                            if milestone.routeId == route.id {
-                                selectedMilestone = milestone
-                                withAnimation {
-                                    showMilestoneCard = true
-                                }
+                        print("📍 Milestone tapped: \(milestone.name)")
+                        print("📍 Current selectedMilestone before update: \(String(describing: selectedMilestone))")
+                        
+                        // Route ID check
+                        if milestone.routeId == route.id {
+                            selectedMilestone = milestone
+                            print("📍 selectedMilestone updated to: \(String(describing: selectedMilestone))")
+                            
+                            withAnimation {
+                                showMilestoneCard = true
                             }
+                            print("📍 showMilestoneCard set to: \(showMilestoneCard)")
+                        } else {
+                            print("🚫 Milestone routeId does not match current routeId.")
                         }
-                    )
+                    }
+                    
+                )
                 .gesture(
                     SimultaneousGesture(
                         DragGesture().onChanged { _ in isUserInteracting = true },
@@ -81,7 +90,7 @@ struct MapView: View {
             }
         }
         .onReceive(routeManager.milestoneCompletedPublisher) { milestone in
-            print("🎉Milestone completed: \(milestone.name), routeId: \(milestone.routeId)")
+            print("🎉 Milestone completed: \(milestone.name), routeId: \(milestone.routeId)")
             if let currentRouteId = routeManager.currentProgress?.currentRoute?.id,
                milestone.routeId == currentRouteId {
                 print("🎯 Showing card for milestone: \(milestone.name)")
@@ -90,6 +99,8 @@ struct MapView: View {
                     showMilestoneCard = true
                     showConfetti = true
                 }
+            } else {
+                print("🚫 Milestone routeId does not match current routeId.")
             }
         }
     }

@@ -729,7 +729,7 @@ extension RouteManager {
                     name: "Km 82 (Piscacucho)",
                     description: "The classic starting point of the Inca Trail, where permits are checked and the adventure begins",
                     distanceFromStart: 0,
-                    imageName: "km82_start"
+                    imageName: ""
                 ),
                 RouteMilestone(
                     routeId: incaTrailId,
