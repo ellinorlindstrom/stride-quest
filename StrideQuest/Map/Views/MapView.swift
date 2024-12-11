@@ -11,131 +11,94 @@ struct MapView: View {
     @State private var showConfetti = false
     @State private var selectedMilestone: RouteMilestone?
     @State private var showMilestoneCard = false
-
     
     var body: some View {
         ZStack {
-            Map(position: $cameraPosition, interactionModes: .all) {
-                if let progress = routeManager.currentProgress,
-                   let route = progress.currentRoute {
-                    MapPolyline(coordinates: route.coordinates)
-                        .stroke(.gray, lineWidth: 3)
-                    
-                    MapPolyline(coordinates: progressPolyline)
-                        .stroke(.blue, lineWidth: 3)
-                    
-                    ForEach(route.milestones) { milestone in
-                        let coordinate = getMilestoneCoordinate(milestone: milestone, coordinates: route.coordinates)
-                        Annotation(milestone.name, coordinate: coordinate) {
-                            Image(systemName: "mappin.circle.fill")
-                                .foregroundStyle(routeManager.isMilestoneCompleted(milestone) ? .green : .gray)
-                                .font(.title)
-                                .onTapGesture {
-                                    if routeManager.isMilestoneCompleted(milestone) {
-                                        selectedMilestone = milestone
-                                        withAnimation {
-                                            showMilestoneCard = true
-                                        }
-                                    }
-                                }
+            if let progress = routeManager.currentProgress,
+               let route = progress.currentRoute {
+                MapContentView(
+                    cameraPosition: $cameraPosition,
+                    route: route,
+                    progressPolyline: progressPolyline,
+                    currentPosition: progressPolyline.last ?? routeManager.currentRouteCoordinate,
+                    routeManager: routeManager,
+                    onMilestoneSelected: { milestone in
+                        selectedMilestone = milestone
+                        withAnimation {
+                            showMilestoneCard = true
                         }
                     }
-                    
-                    if let currentPosition = progressPolyline.last ?? routeManager.currentRouteCoordinate {
-                        Annotation("", coordinate: currentPosition) {
-                            ZStack {
-                                Circle()
-                                    .fill(.blue.opacity(0.2))
-                                    .frame(width: 40, height: 40)
-                                Circle()
-                                    .fill(.blue)
-                                    .frame(width: 15, height: 15)
-                                    .overlay(Circle().stroke(.white, lineWidth: 3))
-                            }
-                        }
-                    }
+                )
+                .gesture(
+                    SimultaneousGesture(
+                        DragGesture().onChanged { _ in isUserInteracting = true },
+                        MagnificationGesture().onChanged { _ in isUserInteracting = true }
+                    )
+                )
+            } else {
+                Map(position: $cameraPosition) {
+                }
+                .mapStyle(.standard(elevation: .realistic))
+                .mapControls {
+                    MapPitchToggle()
+                    MapCompass()
+                    MapScaleView()
                 }
             }
-            .mapControls {
-                MapPitchToggle()
-                MapCompass()
-                MapScaleView()
-            }
-            .mapStyle(.standard(elevation: .realistic))
-            .gesture(
-                SimultaneousGesture(
-                    DragGesture().onChanged { _ in isUserInteracting = true },
-                    MagnificationGesture().onChanged { _ in isUserInteracting = true }
-                )
-            )
             
             ConfettiView(isShowing: $showConfetti)
             
             if showMilestoneCard, let milestone = selectedMilestone {
                 MilestoneDetailCard(
                     milestone: milestone,
-                    isShowing: $showMilestoneCard
+                    isShowing: $showMilestoneCard,
+                    selectedMilestone: $selectedMilestone
                 )
                 .padding()
             }
+        }
+        .onChange(of: showMilestoneCard) { oldValue, newValue in
+            print("showMilestoneCard changed to: \(newValue)")
         }
         .onAppear {
             setInitialCamera()
         }
         .onReceive(routeManager.$currentProgress) { _ in
             setInitialCamera()
+            updateProgressPolyline()
         }
         .onReceive(routeManager.$currentMapRegion) { region in
             if let region = region, !isUserInteracting {
                 cameraPosition = .region(region)
             }
         }
-        .onReceive(routeManager.$currentProgress) { _ in
-            updateProgressPolyline()
-        }
         .onReceive(routeManager.milestoneCompletedPublisher) { milestone in
-            selectedMilestone = milestone
-            withAnimation {
-                showConfetti = true
-                showMilestoneCard = true
+            print("🎉Milestone completed: \(milestone.name), routeId: \(milestone.routeId)")
+            if let currentRouteId = routeManager.currentProgress?.currentRoute?.id {
+                print("✍️Current Route ID: \(currentRouteId)")
+                if milestone.routeId == currentRouteId {
+                    selectedMilestone = milestone
+                    print("🐄Selected milestone: \(milestone.name)")
+                    DispatchQueue.main.async {
+                        withAnimation {
+                            showConfetti = true
+                            showMilestoneCard = true
+                        }
+                    }
+                } else {
+                    print("⛳️Milestone routeId does not match current routeId")
+                }
+            } else {
+                print("🍏No current route in progress")
             }
         }
-    }
-            
-    
-    
-    private func getMilestoneCoordinate(milestone: RouteMilestone, coordinates: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D {
-        let milestoneDistance = milestone.distanceFromStart
-        var currentDistance: Double = 0
-        
-        for i in 1..<coordinates.count {
-            let previous = coordinates[i-1]
-            let current = coordinates[i]
-            let segmentDistance = calculateDistance(from: previous, to: current)
-            
-            if currentDistance + segmentDistance >= milestoneDistance {
-                // Interpolate position within this segment
-                let remainingDistance = milestoneDistance - currentDistance
-                let fraction = remainingDistance / segmentDistance
-                
-                let lat = previous.latitude + (current.latitude - previous.latitude) * fraction
-                let lon = previous.longitude + (current.longitude - previous.longitude) * fraction
-                
-                return CLLocationCoordinate2D(latitude: lat, longitude: lon)
-            }
-            
-            currentDistance += segmentDistance
-        }
-        
-        return coordinates[0] 
-    }
 
-    private func calculateDistance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
-        let fromLocation = CLLocation(latitude: from.latitude, longitude: from.longitude)
-        let toLocation = CLLocation(latitude: to.latitude, longitude: to.longitude)
-        return fromLocation.distance(from: toLocation)
+        .onChange(of: routeManager.currentProgress?.currentRoute?.id) { oldValue, newValue in
+            selectedMilestone = nil
+            showMilestoneCard = false
+        }
     }
-    
+        
     private func updateProgressPolyline() {
         guard let progress = routeManager.currentProgress,
               let route = progress.currentRoute else {

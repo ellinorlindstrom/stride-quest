@@ -10,186 +10,217 @@ extension RouteManager {
             totalDistance: 825000, // Corrected to actual distance
             milestones: [
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Saint-Jean-Pied-de-Port",
                     description: "Historic starting point in France",
                     distanceFromStart: 0,
                     imageName: "saint-jean"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Roncesvalles",
                     description: "First Spanish town and historic monastery",
                     distanceFromStart: 27500, // ~27.5km - actual first day's challenging hike
                     imageName: "roncesvalles"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Zubiri",
                     description: "Medieval bridge town",
                     distanceFromStart: 48500,
                     imageName: "zubiri"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Pamplona",
                     description: "Historic city famous for the Running of the Bulls",
                     distanceFromStart: 74800,
                     imageName: "pamplona"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Puente la Reina",
                     description: "Town with famous Romanesque bridge",
                     distanceFromStart: 100000,
                     imageName: "puente-la-reina"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Estella",
                     description: "Historic town with beautiful churches",
                     distanceFromStart: 126000,
                     imageName: "estella"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Los Arcos",
                     description: "Medieval town with Gothic church",
                     distanceFromStart: 152000,
                     imageName: "los-arcos"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Logroño",
                     description: "Capital of La Rioja wine region",
                     distanceFromStart: 178000,
                     imageName: "logrono"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Santo Domingo de la Calzada",
                     description: "Town with cathedral and famous chicken legend",
                     distanceFromStart: 204000,
                     imageName: "santo-domingo"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Belorado",
                     description: "Ancient settlement with castle ruins",
                     distanceFromStart: 230000,
                     imageName: "belorado"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "San Juan de Ortega",
                     description: "12th-century monastery",
                     distanceFromStart: 256000,
                     imageName: "san-juan"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Burgos Cathedral",
                     description: "UNESCO World Heritage Gothic cathedral",
                     distanceFromStart: 282000,
                     imageName: "burgos"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Castrojeriz",
                     description: "Hill town with castle ruins",
                     distanceFromStart: 308000,
                     imageName: "castrojeriz"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Frómista",
                     description: "Perfect Romanesque church of San Martín",
                     distanceFromStart: 334000,
                     imageName: "fromista"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Carrión de los Condes",
                     description: "Medieval town with Romanesque churches",
                     distanceFromStart: 360000,
                     imageName: "carrion"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Sahagún",
                     description: "Town known as the Spanish Cluny",
                     distanceFromStart: 386000,
                     imageName: "sahagun"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "León",
                     description: "Historic city with Gothic cathedral",
                     distanceFromStart: 412000,
                     imageName: "leon"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Hospital de Órbigo",
                     description: "Town with longest medieval bridge in Spain",
                     distanceFromStart: 438000,
                     imageName: "hospital-orbigo"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Astorga",
                     description: "Roman city with Gaudí palace",
                     distanceFromStart: 464000,
                     imageName: "astorga"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Rabanal del Camino",
                     description: "Mountain village with Templar history",
                     distanceFromStart: 490000,
                     imageName: "rabanal"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Ponferrada",
                     description: "City with Templar castle",
                     distanceFromStart: 516000,
                     imageName: "ponferrada"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Villafranca del Bierzo",
                     description: "Gateway to Galicia",
                     distanceFromStart: 542000,
                     imageName: "villafranca"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "O Cebreiro",
                     description: "Celtic mountain village",
                     distanceFromStart: 568000,
                     imageName: "cebreiro"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Triacastela",
                     description: "Ancient pilgrim hospital site",
                     distanceFromStart: 594000,
                     imageName: "triacastela"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Sarria",
                     description: "Popular starting point for shorter pilgrimages",
                     distanceFromStart: 620000,
                     imageName: "sarria"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Portomarín",
                     description: "Town with fortress-church",
                     distanceFromStart: 646000,
                     imageName: "portomarin"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Palas de Rei",
                     description: "Medieval town in green Galicia",
                     distanceFromStart: 672000,
                     imageName: "palas-de-rei"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Melide",
                     description: "Town famous for Galician octopus",
                     distanceFromStart: 698000,
                     imageName: "melide"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Arzúa",
                     description: "Town known for local cheese",
                     distanceFromStart: 724000,
                     imageName: "arzua"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Monte do Gozo",
                     description: "Hill with first view of Santiago",
                     distanceFromStart: 799000,
                     imageName: "monte-do-gozo"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Santiago de Compostela",
                     description: "Final destination with its famous cathedral",
                     distanceFromStart: 825000,
@@ -278,66 +309,77 @@ extension RouteManager {
             totalDistance: 65000,
             milestones: [
                    RouteMilestone(
+                    routeId: UUID(),
                        name: "Mutianyu Entrance",
                        description: "Starting point at the restored Mutianyu section",
                        distanceFromStart: 0,
                        imageName: "mutianyu_entrance"
                    ),
                    RouteMilestone(
+                    routeId: UUID(),
                        name: "Tower 6",
                        description: "Scenic viewpoint of mountain ranges",
                        distanceFromStart: 850, 
                        imageName: "tower_6"
                    ),
                    RouteMilestone(
+                    routeId: UUID(),
                        name: "Tower 14",
                        description: "Highest point of Mutianyu section",
                        distanceFromStart: 1800,
                        imageName: "tower_14"
                    ),
                    RouteMilestone(
+                    routeId: UUID(),
                        name: "Mutianyu-Gubeikou Junction",
                        description: "Connection to the wild wall section",
                        distanceFromStart: 3500,
                        imageName: "mutianyu_junction"
                    ),
                    RouteMilestone(
+                    routeId: UUID(),
                        name: "Gubeikou Village",
                        description: "Ancient garrison town with rich history",
                        distanceFromStart: 8000,
                        imageName: "gubeikou_village"
                    ),
                    RouteMilestone(
+                    routeId: UUID(),
                        name: "24-Eye Tower",
                        description: "Famous watchtower with panoramic views",
                        distanceFromStart: 12000,
                        imageName: "24_eye_tower"
                    ),
                    RouteMilestone(
+                    routeId: UUID(),
                        name: "General Tower",
                        description: "Historic military command post",
                        distanceFromStart: 15000,
                        imageName: "general_tower"
                    ),
                    RouteMilestone(
+                        routeId: UUID(),
                        name: "Simatai West",
                        description: "Beginning of the steepest section",
                        distanceFromStart: 25000,
                        imageName: "simatai_west"
                    ),
                    RouteMilestone(
+                    routeId: UUID(),
                        name: "Heaven Ladder",
                        description: "Challenging steep ascent with incredible views",
                        distanceFromStart: 35000,
                        imageName: "heaven_ladder"
                    ),
                    RouteMilestone(
+                    routeId: UUID(),
                        name: "Taochun Tower",
                        description: "Unique architecture with Buddhist influences",
                        distanceFromStart: 45000,
                        imageName: "taochun_tower"
                    ),
                    RouteMilestone(
+                    routeId: UUID(),
                        name: "Jinshanling Entrance",
                        description: "Most picturesque section of the wall",
                        distanceFromStart: 65000,
@@ -414,90 +456,105 @@ extension RouteManager {
             totalDistance: 104000, // 104 km total length
             milestones: [
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Apollo Bay Visitor Centre",
                     description: "Starting point of the Great Ocean Walk",
                     distanceFromStart: 0,
                     imageName: "apollo_bay_start"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Marengo Reefs Marine Sanctuary",
                     description: "Protected marine area with Australian fur seals",
                     distanceFromStart: 2500,
                     imageName: "marengo_reefs"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Shelly Beach",
                     description: "Sheltered beach with rich marine life",
                     distanceFromStart: 8000,
                     imageName: "shelly_beach"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Elliot Ridge Campsite",
                     description: "First hiker's campsite in the eucalyptus forest",
                     distanceFromStart: 12000,
                     imageName: "elliot_ridge"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Blanket Bay",
                     description: "Protected bay with pristine beach",
                     distanceFromStart: 21000,
                     imageName: "blanket_bay"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Parker Inlet",
                     description: "Scenic river crossing and wetlands",
                     distanceFromStart: 27500,
                     imageName: "parker_inlet"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Cape Otway Lightstation",
                     description: "Historic lighthouse and koala habitat",
                     distanceFromStart: 34666,
                     imageName: "cape_otway"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Aire River",
                     description: "Major river crossing with wetland birds",
                     distanceFromStart: 42000,
                     imageName: "aire_river"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Castle Cove",
                     description: "Dramatic cliffs and geological formations",
                     distanceFromStart: 48000,
                     imageName: "castle_cove"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Johanna Beach",
                     description: "Long surf beach with rugged coastline",
                     distanceFromStart: 55000,
                     imageName: "johanna_beach"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Milanesia Beach",
                     description: "Remote beach with spectacular cliffs",
                     distanceFromStart: 65000,
                     imageName: "milanesia_beach"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Ryan's Den",
                     description: "Highest sea cliffs in mainland Australia",
                     distanceFromStart: 72000,
                     imageName: "ryans_den"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Devils Kitchen",
                     description: "Challenging coastal section with views",
                     distanceFromStart: 80000,
                     imageName: "devils_kitchen"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Princetown",
                     description: "Coastal village with estuary views",
                     distanceFromStart: 91000,
                     imageName: "princetown"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Twelve Apostles",
                     description: "Iconic limestone stacks and visitor center",
                     distanceFromStart: 104000,
@@ -578,18 +635,21 @@ extension RouteManager {
                 totalDistance: 161000,
                 milestones: [
                     RouteMilestone(
+                        routeId: UUID(),
                         name: "McAfee Knob",
                         description: "Most photographed spot on the trail",
                         distanceFromStart: 53666,
                         imageName: "mcafee"
                     ),
                     RouteMilestone(
+                        routeId: UUID(),
                         name: "Shenandoah Valley",
                         description: "Breathtaking valley views",
                         distanceFromStart: 107333,
                         imageName: "shenandoah"
                     ),
                     RouteMilestone(
+                        routeId: UUID(),
                         name: "Mount Katahdin",
                         description: "Northern terminus of the trail",
                         distanceFromStart: 161000,
@@ -612,18 +672,21 @@ extension RouteManager {
                 totalDistance: 160934,
                 milestones: [
                     RouteMilestone(
+                        routeId: UUID(),
                         name: "Mountain View Point",
                         description: "Spectacular valley views",
                         distanceFromStart: 32186.9,
                         imageName: "mountain_view"
                     ),
                     RouteMilestone(
+                        routeId: UUID(),
                         name: "Alpine Lake",
                         description: "Crystal clear mountain lake",
                         distanceFromStart: 80467.2,
                         imageName: "alpine_lake"
                     ),
                     RouteMilestone(
+                        routeId: UUID(),
                         name: "Summit Peak",
                         description: "Highest point of the journey",
                         distanceFromStart: 128747.5,
@@ -651,24 +714,28 @@ extension RouteManager {
             totalDistance: 43000,
             milestones: [
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Km 82 (Piscacucho)",
                     description: "The classic starting point of the Inca Trail, where permits are checked and the adventure begins",
                     distanceFromStart: 0,
                     imageName: "km82_start"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Dead Woman's Pass (Warmiwañusca)",
                     description: "The highest and most challenging point of the trail at 4,215m (13,828ft). Named for its resemblance to a supine woman's profile",
                     distanceFromStart: 14333,
                     imageName: "dead_womans_pass"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Wiñay Wayna",
                     description: "Spectacular terraced ruins whose name means 'Forever Young' in Quechua. Features ancient agricultural terraces and religious sites",
                     distanceFromStart: 28666,
                     imageName: "winay_wayna"
                 ),
                 RouteMilestone(
+                    routeId: UUID(),
                     name: "Machu Picchu",
                     description: "The legendary 'Lost City of the Incas'. This 15th-century citadel stands as the most famous symbol of Inca civilization",
                     distanceFromStart: 43000,

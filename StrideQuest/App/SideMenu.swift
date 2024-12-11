@@ -6,6 +6,8 @@ struct SideMenu: View {
     @Binding var showingRouteSelection: Bool
     @Binding var showingManualEntry: Bool
     @Binding var showingCompletedRoutes: Bool
+    @Binding var showingCustomRouteCreation: Bool
+    @Binding var showingSettings: Bool
     @Binding var isMenuShowing: Bool
     
     var body: some View {
@@ -50,6 +52,14 @@ struct SideMenu: View {
                             
                             MenuButton(icon: "checkmark.circle.fill", title: "Completed Routes") {
                                 showingCompletedRoutes = true
+                                isMenuShowing = false
+                            }
+                            MenuButton(icon: "pencil.line", title: "Add Custom Route") {
+                                showingCustomRouteCreation = true
+                                isMenuShowing = false
+                            }
+                            MenuButton(icon: "gearshape.fill", title: "Settings") {
+                                showingSettings = true
                                 isMenuShowing = false
                             }
                             

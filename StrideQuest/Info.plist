@@ -34,7 +34,7 @@
     <string>We need access to your health data to track your walking and running distance for your virtual journey progress.</string>
     <key>NSHealthUpdateUsageDescription</key>
     <string>We need permission to save your completed distances to HealthKit.</string>
-    <!-- Location Permissions if you're using them -->
+    <!-- Location Permissions -->
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>We use your location to show your position on the virtual journey map.</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

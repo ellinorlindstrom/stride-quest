@@ -22,7 +22,7 @@ class RouteManager: ObservableObject {
     }
     @Published private(set) var recentlyUnlockedMilestone: RouteMilestone?
     @Published var currentMapRegion: MKCoordinateRegion?
-    @Published var availableRoutes: [VirtualRoute]
+    @Published var availableRoutes: [VirtualRoute] = []
     
     private let healthDataStore = HealthDataStore.shared
     private let progressKey = "currentRouteProgress"

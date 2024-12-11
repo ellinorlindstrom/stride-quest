@@ -1,10 +1,3 @@
-//
-//  RouteSelectionView.swift
-//  StrideQuest
-//
-//  Created by Ellinor Lindström on 2024-11-26.
-//
-
 import SwiftUI
 
 struct RouteSelectionView: View {

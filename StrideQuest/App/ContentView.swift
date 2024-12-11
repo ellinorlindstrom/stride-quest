@@ -10,6 +10,8 @@ struct ContentView: View {
     @State private var showingManualEntry = false
     @State private var showingProgress = true
     @State private var showingCompletedRoutes = false
+    @State private var showingCustomRouteCreation = false
+    @State private var showingSettings = false
     @State private var isMenuShowing = false
     
     var body: some View {
@@ -20,6 +22,8 @@ struct ContentView: View {
                     showingRouteSelection: $showingRouteSelection,
                     showingManualEntry: $showingManualEntry,
                     showingCompletedRoutes: $showingCompletedRoutes,
+                    showingCustomRouteCreation: $showingCustomRouteCreation,
+                    showingSettings: $showingSettings,
                     isMenuShowing: $isMenuShowing
                 )
                 .shadow(radius: 5)
@@ -41,6 +45,8 @@ struct ContentView: View {
                             showingRouteSelection: $showingRouteSelection,
                             showingManualEntry: $showingManualEntry,
                             showingCompletedRoutes: $showingCompletedRoutes,
+                            showingCustomRouteCreation: $showingCustomRouteCreation,
+                            showingSettings: $showingSettings,
                             isMenuShowing: $isMenuShowing
                         )
                         .transition(.move(edge: .leading))
@@ -58,6 +64,11 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showingCompletedRoutes) {
             CompletedRoutesView()
+        }
+        .sheet(isPresented: $showingCustomRouteCreation) {
+            CustomRouteView()
+        }
+        .sheet(isPresented: $showingSettings) {
         }
         .onAppear {
             authManager.checkAuthentication()
