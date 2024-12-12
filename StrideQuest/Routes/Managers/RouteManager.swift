@@ -38,7 +38,7 @@ class RouteManager: ObservableObject {
         // Adjust each route's coordinates to match its total distance
         routes = routes.map { route in
             let trimmedCoordinates = trimCoordinatesToDistance(
-                coordinates: route.coordinates,
+                coordinates: route.waypoints,
                 targetDistance: route.totalDistance
             )
             
@@ -51,7 +51,8 @@ class RouteManager: ObservableObject {
                 imageName: route.imageName,
                 region: route.region,
                 startCoordinate: route.startCoordinate,
-                coordinates: trimmedCoordinates
+                waypoints: trimmedCoordinates,
+                segments: []
             )
         }
         
@@ -69,46 +70,39 @@ class RouteManager: ObservableObject {
         }
     
     func beginRouteTracking() {
-        guard let selectedRoute = selectedRoute else { return }
-        // First try to find existing progress for this route
-        let existingProgress = healthDataStore.fetchRouteProgress(for: selectedRoute.id)
-        
-        if let existingProgress = existingProgress, !existingProgress.isCompleted {
-            // Resume existing progress
-            currentProgress = existingProgress
-        } else {
-            // Create new progress if none exists or if previous one was completed
-            let progress = RouteProgress(
-                id: UUID(),
-                routeId: selectedRoute.id,
-                startDate: Date(),
-                completedDistance: 0,
-                lastUpdated: Date(),
-                completedMilestones: Set<UUID>(),
-                totalDistance: selectedRoute.totalDistance,
-                dailyProgress: [
-                    RouteProgress.DailyProgress(
-                        date: Date(),
-                        distance: 0
-                    )
-                ],
-                isCompleted: false
-            )
-            currentProgress = progress
-        }
-        
-        routeCoordinates = selectedRoute.coordinates
-        calculateCumulativeDistances()
-        currentRouteCoordinate = selectedRoute.coordinates.first
-        currentMapRegion = MKCoordinateRegion(
-            center: selectedRoute.startCoordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        )
-        HealthKitManager.shared.markRouteStart()
-        activeRouteIds.insert(selectedRoute.id)
-        updateProgress(withDistance: currentProgress?.completedDistance ?? 0, source: "initial")
-        saveProgress()
-    }
+          guard let selectedRoute = selectedRoute else { return }
+          let existingProgress = healthDataStore.fetchRouteProgress(for: selectedRoute.id)
+          
+          if let existingProgress = existingProgress, !existingProgress.isCompleted {
+              currentProgress = existingProgress
+          } else {
+              let progress = RouteProgress(
+                  id: UUID(),
+                  routeId: selectedRoute.id,
+                  startDate: Date(),
+                  completedDistance: 0,
+                  lastUpdated: Date(),
+                  completedMilestones: Set<UUID>(),
+                  totalDistance: selectedRoute.totalDistance,
+                  dailyProgress: [:],  // Changed to empty dictionary
+                  isCompleted: false,
+                  completionDate: nil
+              )
+              currentProgress = progress
+          }
+          
+          routeCoordinates = selectedRoute.waypoints  // Changed from coordinates to waypoints
+          calculateCumulativeDistances()
+          currentRouteCoordinate = selectedRoute.waypoints.first
+          currentMapRegion = MKCoordinateRegion(
+              center: selectedRoute.startCoordinate,
+              span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+          )
+          HealthKitManager.shared.markRouteStart()
+          activeRouteIds.insert(selectedRoute.id)
+          updateProgress(withDistance: currentProgress?.completedDistance ?? 0, source: "initial")
+          saveProgress()
+      }
     
 
     func pauseTracking() {
@@ -188,7 +182,7 @@ class RouteManager: ObservableObject {
     func updateProgress(withDistance distance: Double, isManual: Bool = false, source: String = "unknown") {
         guard var progress = currentProgress,
               let route = progress.currentRoute,
-                activeRouteIds.contains(route.id) else {
+              activeRouteIds.contains(route.id) else {
             return
         }
         
@@ -196,48 +190,38 @@ class RouteManager: ObservableObject {
         print("- Distance: \(distance) km")
         print("- Current completed milestones count: \(progress.completedMilestones.count)")
         
-        let calendar = Calendar.current
-        let today = calendar.startOfDay(for: Date())
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "yyyy-MM-dd"
+        let todayString = dateFormatter.string(from: Date())
         
-        if let lastProgress = progress.dailyProgress.last,
-           calendar.startOfDay(for: lastProgress.date) == today {
-            // Update today's progress
-            var updatedDailyProgress = progress.dailyProgress
-            updatedDailyProgress[updatedDailyProgress.count - 1].distance = distance
-            progress.dailyProgress = updatedDailyProgress
-        } else {
-            // Add new day's progress
-            progress.dailyProgress.append(
-                RouteProgress.DailyProgress(
-                    date: Date(),
-                    distance: distance
-                )
-            )
-        }
-        
-        let totalCompleted = progress.dailyProgress.reduce(0) { $0 + $1.distance }
-        progress.completedDistance = isManual ? distance : max(distance, progress.completedDistance)
+        // Update daily progress in dictionary format
+        progress.updateDailyProgress(distance: distance, for: todayString)
+
+        progress.updateCompletedDistance(distance, isManual: isManual)
         
         let routeTotalKm = route.totalDistance / 1000
         let percentComplete = distance / routeTotalKm
         
-        // Update position marker
         if percentComplete > 0 && percentComplete < 1 {
-            let targetDistance = distance * 1000 // Convert to meters
+            let targetDistance = distance * 1000
             updatePositionMarker(targetDistance: targetDistance)
         }
         
         // Check for new milestones
         for milestone in route.milestones.sorted(by: { $0.distanceFromStart < $1.distanceFromStart }) {
-            let milestoneDistanceKm = milestone.distanceFromStart / 1000
-            if totalCompleted >= milestoneDistanceKm && !progress.completedMilestones.contains(milestone.id) {
-                progress.completedMilestones.insert(milestone.id)
-                recentlyUnlockedMilestone = milestone
-                print("✅ Milestone unlocked: \(milestone.name) at \(milestoneDistanceKm) km")
-                milestoneCompletedPublisher.send(milestone)
-                // Add notification or celebration effect here
+                let milestoneDistanceKm = milestone.distanceFromStart / 1000
+                if distance >= milestoneDistanceKm && !progress.completedMilestones.contains(milestone.id) {
+                    progress.addCompletedMilestone(milestone.id)
+                    recentlyUnlockedMilestone = milestone
+                    print("✅ Milestone unlocked: \(milestone.name) at \(milestoneDistanceKm) km")
+                    milestoneCompletedPublisher.send(milestone)
+                }
             }
-        }
+        
+        if distance >= routeTotalKm && !progress.isCompleted {
+               progress.markCompleted()
+           }
+           
         
         currentProgress = progress
         saveProgress()
@@ -301,30 +285,31 @@ class RouteManager: ObservableObject {
     }
     
     private func loadProgress() {
-        // Fetch the most recent incomplete route progress
-        let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
-        fetchRequest.predicate = NSPredicate(format: "isCompleted == %@", NSNumber(value: false))
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
-        fetchRequest.fetchLimit = 1
-        
-        do {
-            if let entity = try healthDataStore.persistentContainer.viewContext.fetch(fetchRequest).first {
-                currentProgress = RouteProgress(
-                    id: entity.id ?? UUID(),
-                    routeId: entity.routeId ?? UUID(),
-                    startDate: entity.startDate ?? Date(),
-                    completedDistance: entity.completedDistance,
-                    lastUpdated: entity.lastUpdated ?? Date(),
-                    completedMilestones: entity.getCompletedMilestones(),
-                    totalDistance: entity.totalDistance,
-                    dailyProgress: entity.getDailyProgress(),
-                    isCompleted: false
-                )
+            let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
+            fetchRequest.predicate = NSPredicate(format: "isCompleted == %@", NSNumber(value: false))
+            fetchRequest.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
+            fetchRequest.fetchLimit = 1
+            
+            do {
+                if let entity = try healthDataStore.persistentContainer.viewContext.fetch(fetchRequest).first {
+                    currentProgress = RouteProgress(
+                        id: entity.id ?? UUID(),
+                        routeId: entity.routeId ?? UUID(),
+                        startDate: entity.startDate ?? Date(),
+                        completedDistance: entity.completedDistance,
+                        lastUpdated: entity.lastUpdated ?? Date(),
+                        completedMilestones: entity.getCompletedMilestones(),
+                        totalDistance: entity.totalDistance,
+                        dailyProgress: entity.getDailyProgress(),
+                        isCompleted: entity.isCompleted,
+                        completionDate: entity.completionDate
+                    )
+                }
+            } catch {
+                print("Failed to load progress: \(error)")
             }
-        } catch {
-            print("Failed to load progress: \(error)")
         }
-    }
+
     
     func resetProgress() {
         if let progress = currentProgress {

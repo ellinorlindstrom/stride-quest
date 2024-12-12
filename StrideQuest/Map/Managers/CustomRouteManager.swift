@@ -9,13 +9,14 @@ struct Waypoint: Identifiable {
 class CustomRouteManager: ObservableObject {
     @Published var waypoints: [Waypoint] = []
     @Published var totalDistance: Double = 0
+    @Published var routeSegments: [RouteSegment] = []  // Add this to store segments
     static let shared = CustomRouteManager()
     
     func addWaypoint(_ coordinate: CLLocationCoordinate2D) {
         if let lastWaypoint = waypoints.last {
             let distance = calculateDistance(from: lastWaypoint.coordinate, to: coordinate)
-                        totalDistance += distance
-                    }
+            totalDistance += distance
+        }
         waypoints.append(Waypoint(coordinate: coordinate))
     }
     
@@ -33,13 +34,19 @@ class CustomRouteManager: ObservableObject {
             totalDistance: totalDistance,
             milestones: [], // Optional: Add milestones if needed
             imageName: "defaultImage",
-            region: "Unknown Region", // Optional: Define the map region
+            region: "Unknown Region",
             startCoordinate: waypoints.first?.coordinate ?? CLLocationCoordinate2D(),
-            coordinates: waypoints.map {$0.coordinate}
+            waypoints: waypoints.map { $0.coordinate },  // Changed from coordinates to waypoints
+            segments: routeSegments  // Add the segments here
         )
         
         // Notify the RouteManager to add this new route
         RouteManager.shared.availableRoutes.append(newRoute)
         return newRoute
+    }
+    
+    // Add function to update route segments
+    func updateRouteSegments(_ segments: [RouteSegment]) {
+        routeSegments = segments
     }
 }

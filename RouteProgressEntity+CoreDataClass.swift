@@ -10,7 +10,7 @@ import Foundation
 import CoreData
 
 public class RouteProgressEntity: NSManagedObject {
-    // Add these convenience methods
+    // For completed milestones
     func setCompletedMilestones(_ milestones: Set<UUID>) {
         do {
             self.completedMilestones = try JSONEncoder().encode(milestones)
@@ -29,7 +29,8 @@ public class RouteProgressEntity: NSManagedObject {
         }
     }
     
-    func setDailyProgress(_ progress: [RouteProgress.DailyProgress]) {
+    // For daily progress with new dictionary structure
+    func setDailyProgress(_ progress: [String: Double]) {
         do {
             self.dailyProgressData = try JSONEncoder().encode(progress)
         } catch {
@@ -37,13 +38,29 @@ public class RouteProgressEntity: NSManagedObject {
         }
     }
     
-    func getDailyProgress() -> [RouteProgress.DailyProgress] {
-        guard let data = dailyProgressData else { return [] }
+    func getDailyProgress() -> [String: Double] {
+        guard let data = dailyProgressData else { return [:] }
         do {
-            return try JSONDecoder().decode([RouteProgress.DailyProgress].self, from: data)
+            return try JSONDecoder().decode([String: Double].self, from: data)
         } catch {
             print("Error decoding daily progress: \(error)")
-            return []
+            return [:]
         }
     }
+    
+    // Helper method to convert old format to new if needed
+    func getDailyProgressArray() -> [RouteProgress.DailyProgress] {
+        let progressDict = getDailyProgress()
+        
+        return progressDict.compactMap { dateString, distance in
+            guard let date = Self.dateFormatter.date(from: dateString) else { return nil }
+            return RouteProgress.DailyProgress(date: date, distance: distance)
+        }.sorted { $0.date < $1.date }
+    }
+    
+    static private let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
 }

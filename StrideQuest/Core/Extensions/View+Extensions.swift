@@ -129,116 +129,12 @@ extension RouteManager {
                     distanceFromStart: 386000,
                     imageName: "sahagun"
                 ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "León",
-                    description: "Historic city with Gothic cathedral",
-                    distanceFromStart: 412000,
-                    imageName: "leon"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Hospital de Órbigo",
-                    description: "Town with longest medieval bridge in Spain",
-                    distanceFromStart: 438000,
-                    imageName: "hospital-orbigo"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Astorga",
-                    description: "Roman city with Gaudí palace",
-                    distanceFromStart: 464000,
-                    imageName: "astorga"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Rabanal del Camino",
-                    description: "Mountain village with Templar history",
-                    distanceFromStart: 490000,
-                    imageName: "rabanal"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Ponferrada",
-                    description: "City with Templar castle",
-                    distanceFromStart: 516000,
-                    imageName: "ponferrada"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Villafranca del Bierzo",
-                    description: "Gateway to Galicia",
-                    distanceFromStart: 542000,
-                    imageName: "villafranca"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "O Cebreiro",
-                    description: "Celtic mountain village",
-                    distanceFromStart: 568000,
-                    imageName: "cebreiro"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Triacastela",
-                    description: "Ancient pilgrim hospital site",
-                    distanceFromStart: 594000,
-                    imageName: "triacastela"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Sarria",
-                    description: "Popular starting point for shorter pilgrimages",
-                    distanceFromStart: 620000,
-                    imageName: "sarria"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Portomarín",
-                    description: "Town with fortress-church",
-                    distanceFromStart: 646000,
-                    imageName: "portomarin"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Palas de Rei",
-                    description: "Medieval town in green Galicia",
-                    distanceFromStart: 672000,
-                    imageName: "palas-de-rei"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Melide",
-                    description: "Town famous for Galician octopus",
-                    distanceFromStart: 698000,
-                    imageName: "melide"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Arzúa",
-                    description: "Town known for local cheese",
-                    distanceFromStart: 724000,
-                    imageName: "arzua"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Monte do Gozo",
-                    description: "Hill with first view of Santiago",
-                    distanceFromStart: 799000,
-                    imageName: "monte-do-gozo"
-                ),
-                RouteMilestone(
-                    routeId: UUID(),
-                    name: "Santiago de Compostela",
-                    description: "Final destination with its famous cathedral",
-                    distanceFromStart: 825000,
-                    imageName: "santiago"
-                )
+                
             ],
             imageName: "camino-de-santiago",
                 region: "Spain",
                 startCoordinate: CLLocationCoordinate2D(latitude: 43.1631, longitude: -1.2358),
-                coordinates: [
+                waypoints: [
                     // France to Pamplona
                     CLLocationCoordinate2D(latitude: 43.1631, longitude: -1.2358), // Saint-Jean-Pied-de-Port
                     CLLocationCoordinate2D(latitude: 43.1589, longitude: -1.2401), // Rue de la Citadelle
@@ -308,156 +204,50 @@ extension RouteManager {
                     CLLocationCoordinate2D(latitude: 42.8567, longitude: -8.3892), // O Pedrouzo
                     CLLocationCoordinate2D(latitude: 42.8712, longitude: -8.4712), // Monte do Gozo
                     CLLocationCoordinate2D(latitude: 42.8805, longitude: -8.5459)  // Santiago de Compostela
-                ]
+                ],
+            segments: []
             ),
-           
+        
         VirtualRoute(
             id: greatWallId,
             name: "Great Wall Adventure",
             description: "Trek along sections of China's Great Wall from Mutianyu to Jinshanling",
             totalDistance: 65000,
             milestones: [
-                   RouteMilestone(
-                    routeId: greatWallId,
-                       name: "Mutianyu Entrance",
-                       description: "Starting point at the restored Mutianyu section",
-                       distanceFromStart: 0,
-                       imageName: "mutianyu_entrance"
-                   ),
-                   RouteMilestone(
-                    routeId: greatWallId,
-                       name: "Tower 6",
-                       description: "Scenic viewpoint of mountain ranges",
-                       distanceFromStart: 850, 
-                       imageName: "tower_6"
-                   ),
-                   RouteMilestone(
-                    routeId: greatWallId,
-                       name: "Tower 14",
-                       description: "Highest point of Mutianyu section",
-                       distanceFromStart: 1800,
-                       imageName: "tower_14"
-                   ),
-                   RouteMilestone(
-                    routeId: greatWallId,
-                       name: "Mutianyu-Gubeikou Junction",
-                       description: "Connection to the wild wall section",
-                       distanceFromStart: 3500,
-                       imageName: "mutianyu_junction"
-                   ),
-                   RouteMilestone(
-                    routeId: UUID(),
-                       name: "Gubeikou Village",
-                       description: "Ancient garrison town with rich history",
-                       distanceFromStart: 8000,
-                       imageName: "gubeikou_village"
-                   ),
-                   RouteMilestone(
-                    routeId: UUID(),
-                       name: "24-Eye Tower",
-                       description: "Famous watchtower with panoramic views",
-                       distanceFromStart: 12000,
-                       imageName: "24_eye_tower"
-                   ),
-                   RouteMilestone(
-                    routeId: UUID(),
-                       name: "General Tower",
-                       description: "Historic military command post",
-                       distanceFromStart: 15000,
-                       imageName: "general_tower"
-                   ),
-                   RouteMilestone(
-                        routeId: UUID(),
-                       name: "Simatai West",
-                       description: "Beginning of the steepest section",
-                       distanceFromStart: 25000,
-                       imageName: "simatai_west"
-                   ),
-                   RouteMilestone(
-                    routeId: UUID(),
-                       name: "Heaven Ladder",
-                       description: "Challenging steep ascent with incredible views",
-                       distanceFromStart: 35000,
-                       imageName: "heaven_ladder"
-                   ),
-                   RouteMilestone(
-                    routeId: UUID(),
-                       name: "Taochun Tower",
-                       description: "Unique architecture with Buddhist influences",
-                       distanceFromStart: 45000,
-                       imageName: "taochun_tower"
-                   ),
-                   RouteMilestone(
-                    routeId: UUID(),
-                       name: "Jinshanling Entrance",
-                       description: "Most picturesque section of the wall",
-                       distanceFromStart: 65000,
-                       imageName: "jinshanling"
-                   )
-               ],
-               imageName: "great-wall-adventure",
-               region: "China",
-               startCoordinate: CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704),
-            coordinates: [
-                    // Mutianyu Section (elevation in meters)
-                    CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704), // Mutianyu Entrance, 450m
-                    CLLocationCoordinate2D(latitude: 40.4334, longitude: 116.5712), // Start of steps, 480m
-                    CLLocationCoordinate2D(latitude: 40.4356, longitude: 116.5723), // Base of incline, 520m
-                    CLLocationCoordinate2D(latitude: 40.4389, longitude: 116.5767), // Tower 4, 665m
-                    CLLocationCoordinate2D(latitude: 40.4417, longitude: 116.5815), // Tower 6, 708m
-                    CLLocationCoordinate2D(latitude: 40.4445, longitude: 116.5842), // Tower 8, 730m
-                    CLLocationCoordinate2D(latitude: 40.4468, longitude: 116.5867), // Tower 10, 754m
-                    CLLocationCoordinate2D(latitude: 40.4523, longitude: 116.5879), // Tower 12, 778m
-                    CLLocationCoordinate2D(latitude: 40.4593, longitude: 116.5891), // Tower 14, 803m
-                    
-                    // Transition to Gubeikou
-                    CLLocationCoordinate2D(latitude: 40.4654, longitude: 116.5923), // Ridge path, 795m
-                    CLLocationCoordinate2D(latitude: 40.4765, longitude: 116.5998), // Junction point, 750m
-                    CLLocationCoordinate2D(latitude: 40.4823, longitude: 116.6056), // Valley crossing, 685m
-                    CLLocationCoordinate2D(latitude: 40.4867, longitude: 116.6123), // Mountain base, 590m
-                    CLLocationCoordinate2D(latitude: 40.4901, longitude: 116.6187), // Gubeikou approach, 645m
-                    
-                    // Gubeikou Section
-                    CLLocationCoordinate2D(latitude: 40.4978, longitude: 116.6234), // Start of Gubeikou, 680m
-                    CLLocationCoordinate2D(latitude: 40.5054, longitude: 116.6298), // Gubeikou village, 715m
-                    CLLocationCoordinate2D(latitude: 40.5123, longitude: 116.6345), // Wohushan peak, 790m
-                    CLLocationCoordinate2D(latitude: 40.5167, longitude: 116.6389), // 24-Eye Tower, 835m
-                    CLLocationCoordinate2D(latitude: 40.5234, longitude: 116.6456), // Crescent Ridge, 805m
-                    CLLocationCoordinate2D(latitude: 40.5289, longitude: 116.6498), // General Tower, 845m
-                    
-                    // Transition to Jinshanling
-                    CLLocationCoordinate2D(latitude: 40.5345, longitude: 116.6567), // Mountain pass, 880m
-                    CLLocationCoordinate2D(latitude: 40.5456, longitude: 116.6789), // Valley approach, 790m
-                    CLLocationCoordinate2D(latitude: 40.5567, longitude: 116.6934), // Ridge climb, 850m
-                    CLLocationCoordinate2D(latitude: 40.5676, longitude: 116.7123), // Simatai West, 910m
-                    
-                    // Jinshanling Section (Adding many more points)
-                    CLLocationCoordinate2D(latitude: 40.5754, longitude: 116.7345), // Zhuanduokou Pass, 930m
-                    CLLocationCoordinate2D(latitude: 40.5812, longitude: 116.7567), // Small Jinshan Tower, 955m
-                    CLLocationCoordinate2D(latitude: 40.5876, longitude: 116.7876), // Heaven Ladder, 988m
-                    CLLocationCoordinate2D(latitude: 40.5923, longitude: 116.7989), // East Five-Window Tower, 965m
-                    CLLocationCoordinate2D(latitude: 40.5987, longitude: 116.8098), // Black Tower, 945m
-                    CLLocationCoordinate2D(latitude: 40.6045, longitude: 116.8167), // Watching Beijing Tower, 958m
-                    CLLocationCoordinate2D(latitude: 40.6123, longitude: 116.8234), // Taochun Tower, 967m
-                    
-                    // Enhanced Jinshanling to Simatai section (previously sparse)
-                    CLLocationCoordinate2D(latitude: 40.6178, longitude: 116.8345), // West Beacon Tower, 975m
-                    CLLocationCoordinate2D(latitude: 40.6234, longitude: 116.8456), // Cloud Stairs, 995m
-                    CLLocationCoordinate2D(latitude: 40.6312, longitude: 116.8567), // Fairy Tower, 1010m
-                    CLLocationCoordinate2D(latitude: 40.6389, longitude: 116.8678), // Eastern Five-Eyes Tower, 1020m
-                    CLLocationCoordinate2D(latitude: 40.6434, longitude: 116.8789), // Stairway to Heaven, 1035m
-                    CLLocationCoordinate2D(latitude: 40.6498, longitude: 116.8912), // Sky Bridge, 1048m
-                    CLLocationCoordinate2D(latitude: 40.6545, longitude: 116.9123), // Eagle Flying Tower, 1058m
-                    CLLocationCoordinate2D(latitude: 40.6589, longitude: 116.9345), // Simatai Ridge, 1065m
-                    CLLocationCoordinate2D(latitude: 40.6634, longitude: 116.9567), // Wangjing Tower, 1070m
-                    CLLocationCoordinate2D(latitude: 40.6678, longitude: 116.9789), // Heaven Bridge, 1080m
-                    CLLocationCoordinate2D(latitude: 40.6712, longitude: 117.0123), // Fairy Peak, 1090m
-                    CLLocationCoordinate2D(latitude: 40.6734, longitude: 117.1234), // East Watchtower, 1075m
-                    CLLocationCoordinate2D(latitude: 40.6748, longitude: 117.1876), // Dragon Head, 1062m
-                    CLLocationCoordinate2D(latitude: 40.6756, longitude: 117.2234), // Simatai East Gate, 1045m
-                    CLLocationCoordinate2D(latitude: 40.6764, longitude: 117.2754)  // Jinshanling Entrance, 1020m
-                ]
-            ),
+                RouteMilestone(
+                 routeId: greatWallId,
+                    name: "Mutianyu Entrance",
+                    description: "Starting point at the restored Mutianyu section",
+                    distanceFromStart: 0,
+                    imageName: "mutianyu_entrance"
+                ),
+                RouteMilestone(
+                 routeId: greatWallId,
+                    name: "Tower 6",
+                    description: "Scenic viewpoint of mountain ranges",
+                    distanceFromStart: 850,
+                    imageName: "tower_6"
+                ),
+                RouteMilestone(
+                 routeId: greatWallId,
+                    name: "Tower 14",
+                    description: "Highest point of Mutianyu section",
+                    distanceFromStart: 1800,
+                    imageName: "tower_14"
+                )
+            ],
+            imageName: "greatwall",  // or whatever image name you're using
+            region: "China",
+            startCoordinate: CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704), // Mutianyu coordinates
+            waypoints: [  // Add key waypoints along the route
+                CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704), // Mutianyu
+                // Add more waypoints as needed
+                CLLocationCoordinate2D(latitude: 40.6764, longitude: 117.2372)  // Jinshanling
+            ],
+            segments: []  // Add segments if you have them, or leave empty
+        ),
+           
+        
             
         VirtualRoute(
             name: "Great Ocean Walk",
@@ -573,7 +363,7 @@ extension RouteManager {
             imageName: "great-ocean-walk",
             region: "Australia",
             startCoordinate: CLLocationCoordinate2D(latitude: -38.7570, longitude: 143.6696),
-            coordinates: [
+            waypoints: [
                 // Apollo Bay to Marengo
                 CLLocationCoordinate2D(latitude: -38.7570, longitude: 143.6696), // Apollo Bay Visitor Centre
                 CLLocationCoordinate2D(latitude: -38.7609, longitude: 143.6662), // Apollo Bay Foreshore
@@ -635,7 +425,8 @@ extension RouteManager {
                 CLLocationCoordinate2D(latitude: -38.9634, longitude: 143.4101), // Gibson Steps approach
                 CLLocationCoordinate2D(latitude: -38.9712, longitude: 143.4012), // Gibson Steps
                 CLLocationCoordinate2D(latitude: -38.6634, longitude: 143.1051)  // Twelve Apostles Visitor Centre
-            ]
+            ],
+            segments: []
         ),
             
             VirtualRoute(
@@ -668,11 +459,12 @@ extension RouteManager {
                 imageName: "appalachian-trail-section",
                 region: "USA",
                 startCoordinate: CLLocationCoordinate2D(latitude: 37.3930, longitude: -80.0363),
-                coordinates: [
+                waypoints: [
                     CLLocationCoordinate2D(latitude: 37.3930, longitude: -80.0363),
                     CLLocationCoordinate2D(latitude: 38.9217, longitude: -78.1987),
                     CLLocationCoordinate2D(latitude: 45.9044, longitude: -68.9213)
-                ]
+                ],
+                segments: []
             ),
             
             VirtualRoute(
@@ -706,11 +498,12 @@ extension RouteManager {
                 imageName: "pct-segment",
                 region: "Western USA",
                 startCoordinate: CLLocationCoordinate2D(latitude: 41.8456, longitude: -122.5382),
-                coordinates: [
+                waypoints: [
                     CLLocationCoordinate2D(latitude: 41.8456, longitude: -122.5382),
                     CLLocationCoordinate2D(latitude: 42.0540, longitude: -122.6153),
                     CLLocationCoordinate2D(latitude: 42.9187, longitude: -122.1685)
-                ]
+                ],
+                segments: []
             ),
             
         VirtualRoute(
@@ -757,7 +550,7 @@ extension RouteManager {
             region: "Cusco Region, Peru",
             startCoordinate: CLLocationCoordinate2D(latitude: -13.5183, longitude: -71.9784), // Km 82
             //endCoordinate: CLLocationCoordinate2D(latitude: -13.1631, longitude: -72.5449), // Machu Picchu
-            coordinates: [
+            waypoints: [
                 CLLocationCoordinate2D(latitude: -13.5183, longitude: -71.9784), // Start at Km 82
                 CLLocationCoordinate2D(latitude: -13.4747, longitude: -72.0304), // Llactapata
                 CLLocationCoordinate2D(latitude: -13.4183, longitude: -72.0543), // Wayllabamba
@@ -766,7 +559,8 @@ extension RouteManager {
                 CLLocationCoordinate2D(latitude: -13.2937, longitude: -72.1832), // Wiñay Wayna
                 CLLocationCoordinate2D(latitude: -13.1868, longitude: -72.5508), // Sun Gate
                 CLLocationCoordinate2D(latitude: -13.1631, longitude: -72.5449)  // Machu Picchu
-            ]
+            ],
+            segments: []
             ),
         ]
         

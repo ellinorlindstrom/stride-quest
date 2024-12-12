@@ -12,7 +12,7 @@ struct MapContentView: View {
     var body: some View {
         Map(position: $cameraPosition, interactionModes: .all) {
             // Route polyline
-            MapPolyline(coordinates: route.coordinates)
+            MapPolyline(coordinates: route.waypoints)
                 .stroke(.gray, lineWidth: 3)
 
             // Progress polyline
@@ -21,7 +21,7 @@ struct MapContentView: View {
 
             // Milestone annotations
             ForEach(route.milestones) { milestone in
-                let coordinate = getMilestoneCoordinate(milestone: milestone, coordinates: route.coordinates)
+                let coordinate = getMilestoneCoordinate(milestone: milestone, coordinates: route.waypoints)
                 Annotation(milestone.name, coordinate: coordinate) {
                     MilestoneAnnotationView(
                         milestone: milestone,

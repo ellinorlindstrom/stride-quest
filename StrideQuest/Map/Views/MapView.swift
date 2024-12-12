@@ -121,11 +121,11 @@ struct MapView: View {
         }
         
         if percentComplete >= 1 {
-            progressPolyline = route.coordinates
+            progressPolyline = route.waypoints
             return
         }
         
-        let coordinates = route.coordinates
+        let coordinates = route.waypoints
         guard coordinates.count >= 2 else {
             progressPolyline = []
             return

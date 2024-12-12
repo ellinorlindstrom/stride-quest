@@ -16,7 +16,7 @@ class HealthDataStore {
             do {
                 let entities = try context.fetch(fetchRequest)
                 return entities.compactMap { entity in
-                    RouteProgress(
+                    return RouteProgress(
                         id: entity.id ?? UUID(),
                         routeId: entity.routeId ?? UUID(),
                         startDate: entity.startDate ?? Date(),
@@ -119,30 +119,31 @@ class HealthDataStore {
     }
     
     func fetchRouteProgress(for routeId: UUID) -> RouteProgress? {
-        let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
-        fetchRequest.predicate = NSPredicate(format: "routeId == %@ AND isCompleted == %@",
-                                           routeId as CVarArg,
-                                           NSNumber(value: false))
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
-        fetchRequest.fetchLimit = 1
-        
-        do {
-            if let entity = try persistentContainer.viewContext.fetch(fetchRequest).first {
-                return RouteProgress(
-                    id: entity.id ?? UUID(),
-                    routeId: entity.routeId ?? UUID(),
-                    startDate: entity.startDate ?? Date(),
-                    completedDistance: entity.completedDistance,
-                    lastUpdated: entity.lastUpdated ?? Date(),
-                    completedMilestones: entity.getCompletedMilestones(),
-                    totalDistance: entity.totalDistance,
-                    dailyProgress: entity.getDailyProgress(),
-                    isCompleted: false
-                )
+            let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
+            fetchRequest.predicate = NSPredicate(format: "routeId == %@ AND isCompleted == %@",
+                                               routeId as CVarArg,
+                                               NSNumber(value: false))
+            fetchRequest.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
+            fetchRequest.fetchLimit = 1
+            
+            do {
+                if let entity = try persistentContainer.viewContext.fetch(fetchRequest).first {
+                    return RouteProgress(
+                        id: entity.id ?? UUID(),
+                        routeId: entity.routeId ?? UUID(),
+                        startDate: entity.startDate ?? Date(),
+                        completedDistance: entity.completedDistance,
+                        lastUpdated: entity.lastUpdated ?? Date(),
+                        completedMilestones: entity.getCompletedMilestones(),
+                        totalDistance: entity.totalDistance,
+                        dailyProgress: entity.getDailyProgress(),
+                        isCompleted: entity.isCompleted,
+                        completionDate: entity.completionDate
+                    )
+                }
+            } catch {
+                print("Failed to fetch route progress: \(error)")
             }
-        } catch {
-            print("Failed to fetch route progress: \(error)")
+            return nil
         }
-        return nil
-    }
 }

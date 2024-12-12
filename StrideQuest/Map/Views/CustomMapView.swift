@@ -3,7 +3,8 @@ import SwiftUI
 
 struct CustomMapView: UIViewRepresentable {
     @Binding var region: MKCoordinateRegion
-    let waypoints: [Waypoint]  // Add this
+    let waypoints: [Waypoint]
+    let segments: [RouteSegment]  // Add this
     let onTap: (CLLocationCoordinate2D) -> Void
     
     func makeUIView(context: Context) -> MKMapView {
@@ -16,16 +17,40 @@ struct CustomMapView: UIViewRepresentable {
     
     func updateUIView(_ mapView: MKMapView, context: Context) {
         mapView.setRegion(region, animated: true)
-        
-        // Remove existing annotations
+        mapView.removeOverlays(mapView.overlays)
         mapView.removeAnnotations(mapView.annotations)
         
-        // Add annotations for waypoints
+        // Add waypoint annotations
         for (index, waypoint) in waypoints.enumerated() {
             let annotation = MKPointAnnotation()
             annotation.coordinate = waypoint.coordinate
             annotation.title = "Waypoint \(index + 1)"
             mapView.addAnnotation(annotation)
+        }
+        
+        // Add route segments
+        for segment in segments {
+            let coordinates = segment.path
+            let polyline = MKPolyline(coordinates: coordinates, count: coordinates.count)
+            mapView.addOverlay(polyline)
+        }
+    }
+    
+    private func calculateRoute(from source: CLLocationCoordinate2D,
+                              to destination: CLLocationCoordinate2D,
+                              on mapView: MKMapView) {
+        let sourcePlacemark = MKPlacemark(coordinate: source)
+        let destPlacemark = MKPlacemark(coordinate: destination)
+        
+        let request = MKDirections.Request()
+        request.source = MKMapItem(placemark: sourcePlacemark)
+        request.destination = MKMapItem(placemark: destPlacemark)
+        request.transportType = .walking // Can be .walking or .automobile
+        
+        let directions = MKDirections(request: request)
+        directions.calculate { response, error in
+            guard let route = response?.routes.first else { return }
+            mapView.addOverlay(route.polyline)
         }
     }
     
@@ -60,6 +85,17 @@ struct CustomMapView: UIViewRepresentable {
             }
             
             return annotationView
+        }
+        
+        // Customize route line appearance
+        func mapView(_ mapView: MKMapView, rendererFor overlay: MKOverlay) -> MKOverlayRenderer {
+            if let routePolyline = overlay as? MKPolyline {
+                let renderer = MKPolylineRenderer(polyline: routePolyline)
+                renderer.strokeColor = .purple
+                renderer.lineWidth = 4
+                return renderer
+            }
+            return MKOverlayRenderer()
         }
     }
 }
