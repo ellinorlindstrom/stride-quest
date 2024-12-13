@@ -38,14 +38,14 @@ class CustomRouteManager: ObservableObject {
         return fromLocation.distance(from: toLocation)
     }
     
-    func saveRoute(name: String, description: String) -> VirtualRoute {
+    func saveRoute(name: String, description: String, imageName: String? = nil) -> VirtualRoute {
             let newRoute = VirtualRoute(
                 id: UUID(),
                 name: name,
                 description: description,
                 totalDistance: totalDistance,
                 milestones: createDefaultMilestones(), // Add this helper method
-                imageName: "defaultImage",
+                imageName: imageName ?? .defaultRouteImage,
                 region: "Custom Route",
                 startCoordinate: waypoints.first?.coordinate ?? CLLocationCoordinate2D(),
                 waypoints: waypoints.map { $0.coordinate },
@@ -70,7 +70,7 @@ class CustomRouteManager: ObservableObject {
                     name: "Milestone \(Int(percentage * 100))%",
                     description: "You've completed \(Int(percentage * 100))% of your custom route!",
                     distanceFromStart: totalDistance * percentage,
-                    imageName: "milestone_default"
+                    imageName: .defaultMilestoneImage
                 )
             }
         }
