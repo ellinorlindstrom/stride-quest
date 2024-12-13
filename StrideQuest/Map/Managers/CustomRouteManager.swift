@@ -15,6 +15,7 @@ struct Waypoint: Identifiable {
 
 class CustomRouteManager: ObservableObject {
     @Published var waypoints: [Waypoint] = []
+    /// Total distance of the route in kilometers
     @Published var totalDistance: Double = 0
     @Published var routeSegments: [RouteSegment] = []
     static let shared = CustomRouteManager()
@@ -32,10 +33,11 @@ class CustomRouteManager: ObservableObject {
             }
         }
     
+    /// Calculates distance between two coordinates in kilometers
     func calculateDistance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
         let fromLocation = CLLocation(latitude: from.latitude, longitude: from.longitude)
         let toLocation = CLLocation(latitude: to.latitude, longitude: to.longitude)
-        return fromLocation.distance(from: toLocation)
+        return fromLocation.distance(from: toLocation) / 1000.0 
     }
     
     func saveRoute(name: String, description: String, imageName: String? = nil) -> VirtualRoute {

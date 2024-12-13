@@ -111,8 +111,7 @@ struct MapView: View {
             return
         }
         
-        let routeTotalKm = route.totalDistance / 1000
-        let percentComplete = progress.completedDistance / routeTotalKm
+        let percentComplete = progress.completedDistance / route.totalDistance
         
         if percentComplete <= 0 {
             progressPolyline = []
@@ -146,7 +145,7 @@ struct MapView: View {
         let scaleFactor = route.totalDistance / totalDistance
         cumulativeDistances = cumulativeDistances.map { $0 * scaleFactor }
         
-        let targetDistance = progress.completedDistance * 1000 // Convert to meters
+        let targetDistance = progress.completedDistance
         
         // Find the last point we've passed
         var lastPointIndex = 0

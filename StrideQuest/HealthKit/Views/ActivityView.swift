@@ -16,7 +16,7 @@ struct ActivityView: View {
             if healthKitManager.isAuthorized {
                 Text("Today's Distance")
                     .font(.headline)
-                Text(String(format: "%.2f km", healthKitManager.totalDistance / 1000))
+                Text(String(format: "%.2f km", healthKitManager.totalDistance))
                     .font(.title)
             } else {
                 Button("Authorize HealthKit")

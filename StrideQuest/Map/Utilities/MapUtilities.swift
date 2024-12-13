@@ -8,26 +8,18 @@
 import SwiftUI
 import MapKit
 
-func getMilestoneCoordinate(milestone: RouteMilestone, coordinates: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D {
-    let milestoneDistance = milestone.distanceFromStart
+func getMilestoneCoordinate(milestone: RouteMilestone, route: VirtualRoute, coordinates: [CLLocationCoordinate2D]) -> CLLocationCoordinate2D {
+    let milestoneDistanceInMeters = milestone.distanceFromStart // Convert km to meters if stored in km
     var currentDistance: Double = 0
-        
-    // Calculate total route distance first
-    var totalRouteDistance: Double = 0
-    for i in 1..<coordinates.count {
-        totalRouteDistance += calculateDistance(from: coordinates[i-1], to: coordinates[i])
-    }    
-    // Scale factor to match the milestone distances with the actual route coordinates
-    let scaleFactor = totalRouteDistance / 825000.0  // Using the final milestone distance as total
-    let scaledMilestoneDistance = milestoneDistance * scaleFactor
     
+    // No need for scaling factor - just use the actual distances
     for i in 1..<coordinates.count {
         let previous = coordinates[i - 1]
         let current = coordinates[i]
         let segmentDistance = calculateDistance(from: previous, to: current)
         
-        if currentDistance + segmentDistance >= scaledMilestoneDistance {
-            let remainingDistance = scaledMilestoneDistance - currentDistance
+        if currentDistance + segmentDistance >= milestoneDistanceInMeters {
+            let remainingDistance = milestoneDistanceInMeters - currentDistance
             let fraction = remainingDistance / segmentDistance
             let lat = previous.latitude + (current.latitude - previous.latitude) * fraction
             let lon = previous.longitude + (current.longitude - previous.longitude) * fraction

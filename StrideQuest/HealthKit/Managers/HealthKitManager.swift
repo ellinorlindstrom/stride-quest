@@ -5,23 +5,23 @@ class HealthKitManager: ObservableObject {
     static let shared = HealthKitManager()
     let healthStore = HKHealthStore()
     
+    /// Starting distance in kilometers when a route begins
     @Published var routeStartDistance: Double = 0
     @Published var isAuthorized = false
     @Published var totalDistance: Double = 0 {
         didSet {
             if !RouteManager.shared.activeRouteIds.isEmpty {
-                            let relativeDistance = max(0, totalDistance - routeStartDistance)
-                            let currentRouteDistance = relativeDistance / 1000
-                            RouteManager.shared.updateProgress(withDistance: currentRouteDistance, source: "healthkit")
-                    }
-                    
-                    HealthDataStore.shared.saveHealthData(
-                        totalDistance,
-                        date: Date(),
-                        type: HKQuantityType(.distanceWalkingRunning)
-                    )
-                }
+                let relativeDistance = max(0, totalDistance - routeStartDistance)
+                RouteManager.shared.updateProgress(withDistance: relativeDistance, source: "healthkit")
             }
+            
+            HealthDataStore.shared.saveHealthData(
+                totalDistance,
+                date: Date(),
+                type: HKQuantityType(.distanceWalkingRunning)
+            )
+        }
+    }
     
     private var observerQueries: [HKObserverQuery] = []
     
@@ -143,13 +143,13 @@ class HealthKitManager: ObservableObject {
         }
         
         group.notify(queue: DispatchQueue.main) { [weak self] in
-                self?.totalDistance = temporaryTotal
+            self?.totalDistance = temporaryTotal / 1000.0
             
             HealthDataStore.shared.saveHealthData(
-                        temporaryTotal,
-                        date: Date(),
-                        type: HKQuantityType(.distanceWalkingRunning)
-                    )
+                temporaryTotal / 1000.0,
+                date: Date(),
+                type: HKQuantityType(.distanceWalkingRunning)
+            )
         }
     }
     

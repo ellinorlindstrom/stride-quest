@@ -153,27 +153,27 @@ class RouteManager: ObservableObject {
         progress.updateCompletedDistance(distance, isManual: isManual)
         
         // Update current position on the route
-        if let newPosition = route.coordinate(at: distance * 1000) { // Convert km to meters
+        if let newPosition = route.coordinate(at: distance) {
             currentRouteCoordinate = newPosition
         }
         
         // Check for new milestones
         for milestone in route.milestones.sorted(by: { $0.distanceFromStart < $1.distanceFromStart }) {
-            let milestoneDistanceKm = milestone.distanceFromStart / 1000
-            if distance >= milestoneDistanceKm && !progress.completedMilestones.contains(milestone.id) {
-                progress.addCompletedMilestone(milestone.id)
-                recentlyUnlockedMilestone = milestone
-                milestoneCompletedPublisher.send(milestone)
-            }
-        }
-        
-        if distance >= (route.totalDistance / 1000) && !progress.isCompleted {
-            progress.markCompleted()
-        }
-        
-        currentProgress = progress
-        saveProgress()
-    }
+               if distance >= milestone.distanceFromStart && !progress.completedMilestones.contains(milestone.id) {
+                   progress.addCompletedMilestone(milestone.id)
+                   recentlyUnlockedMilestone = milestone
+                   milestoneCompletedPublisher.send(milestone)
+               }
+           }
+           
+           // Compare distances in km
+           if distance >= route.totalDistance && !progress.isCompleted {
+               progress.markCompleted()
+           }
+           
+           currentProgress = progress
+           saveProgress()
+       }
     
     func isMilestoneCompleted(_ milestone: RouteMilestone) -> Bool {
         guard let progress = currentProgress else {
@@ -230,7 +230,7 @@ class RouteManager: ObservableObject {
                 let end = coordinates[i + 1]
                 let startLocation = CLLocation(latitude: start.latitude, longitude: start.longitude)
                 let endLocation = CLLocation(latitude: end.latitude, longitude: end.longitude)
-                totalDistance += startLocation.distance(from: endLocation)
+                totalDistance += startLocation.distance(from: endLocation) / 1000.0
             }
         }
         

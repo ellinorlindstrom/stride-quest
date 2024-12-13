@@ -36,7 +36,7 @@ struct RouteProgressView: View {
                         VStack(alignment: .trailing) {
                             Text("Remaining")
                             Text(String(format: "%.2f km",
-                                        (route.totalDistance / 1000) - progress.completedDistance))
+                                        route.totalDistance - progress.completedDistance))
                                 .font(.headline)
                         }
                     }

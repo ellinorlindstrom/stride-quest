@@ -34,7 +34,7 @@ struct RouteDetailView: View {
                         .font(.title3)
                         .foregroundStyle(.secondary)
                     
-                    Text(String(format: "%.1f km", route.totalDistance / 1000))
+                    Text(String(format: "%.1f km", route.totalDistance))
                         .font(.headline)
                     
                     Text(route.description)

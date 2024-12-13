@@ -37,6 +37,7 @@ struct VirtualRoute: Identifiable, Codable {
     let id: UUID
     let name: String
     let description: String
+    /// Total distance of the route is in km
     let totalDistance: Double
     let milestones: [RouteMilestone]
     let imageName: String
@@ -46,9 +47,9 @@ struct VirtualRoute: Identifiable, Codable {
     let segments: [RouteSegment]
     
     var imageNameWithDefault: String {
-            // Check if imageName is empty or nil
-            return imageName.isEmpty ? .defaultRouteImage : imageName
-        }
+        // Check if imageName is empty or nil
+        return imageName.isEmpty ? .defaultRouteImage : imageName
+    }
     
     var startCoordinate: CLLocationCoordinate2D { codableStartCoordinate.coordinate }
     var waypoints: [CLLocationCoordinate2D] { codableWaypoints.map(\.coordinate) }
@@ -115,8 +116,8 @@ struct VirtualRoute: Identifiable, Codable {
     }
     
     private func interpolateCoordinate(from start: CLLocationCoordinate2D,
-                                     to end: CLLocationCoordinate2D,
-                                     fraction: Double) -> CLLocationCoordinate2D {
+                                       to end: CLLocationCoordinate2D,
+                                       fraction: Double) -> CLLocationCoordinate2D {
         let lat = start.latitude + (end.latitude - start.latitude) * fraction
         let lon = start.longitude + (end.longitude - start.longitude) * fraction
         return CLLocationCoordinate2D(latitude: lat, longitude: lon)
@@ -133,8 +134,8 @@ struct RouteMilestone: Identifiable, Codable {
     let imageName: String
     
     var imageNameWithDefault: String {
-            return imageName.isEmpty ? .defaultMilestoneImage : imageName
-        }
+        return imageName.isEmpty ? .defaultMilestoneImage : imageName
+    }
     
     init(id: UUID = UUID(),
          routeId: UUID,
@@ -170,7 +171,7 @@ struct RouteProgress: Codable {
     }
     
     var percentageCompleted: Double {
-        (completedDistance / (totalDistance / 1000)) * 100
+        (completedDistance / totalDistance) * 100 
     }
     
     var currentRoute: VirtualRoute? {
@@ -181,12 +182,11 @@ struct RouteProgress: Codable {
         guard let route = currentRoute else { return [] }
         guard completedDistance > 0 else { return [] }
         
-        let distanceInMeters = completedDistance * 1000 // Convert km to meters
         return route.fullPath.prefix { coordinate in
             let startCoord = route.startCoordinate
             let location1 = CLLocation(latitude: startCoord.latitude, longitude: startCoord.longitude)
             let location2 = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-            return location1.distance(from: location2) <= distanceInMeters
+            return location1.distance(from: location2) <= completedDistance
         }
     }
     
@@ -261,5 +261,5 @@ struct RouteProgress: Codable {
 
 extension String {
     static let defaultRouteImage = "great-wall-adventure"
-        static let defaultMilestoneImage = "inca-trail"
+    static let defaultMilestoneImage = "inca-trail"
 }

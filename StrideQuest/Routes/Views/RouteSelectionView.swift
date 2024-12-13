@@ -40,7 +40,7 @@ struct RouteCard: View {
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                 
-                Text(String(format: "%.1f km", route.totalDistance / 1000))
+                Text(String(format: "%.1f km", route.totalDistance))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
