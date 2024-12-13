@@ -236,7 +236,7 @@ extension RouteManager {
                     imageName: "tower_14"
                 )
             ],
-            imageName: "greatwall",  // or whatever image name you're using
+            imageName: "great-wall-adventure", 
             region: "China",
             startCoordinate: CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704), // Mutianyu coordinates
             waypoints: [  // Add key waypoints along the route

@@ -1,6 +1,9 @@
 import SwiftUI
 import MapKit
 
+import SwiftUI
+import MapKit
+
 struct CustomRouteView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var routeManager = CustomRouteManager.shared
@@ -11,13 +14,16 @@ struct CustomRouteView: View {
     @State private var searchText: String = ""
     @State private var searchResults: [MKMapItem] = []
     @State private var isShowingSearchResults = false
-    @State private var routeSegments: [RouteSegment] = []  // Add this to store segments
+    @State private var routeSegments: [RouteSegment] = []
+    @State private var routeName: String = ""
+    @State private var routeDescription: String = ""
+    @State private var showingAlert = false
     
     var body: some View {
         ZStack {
             CustomMapView(region: $mapRegion,
                         waypoints: routeManager.waypoints,
-                        segments: routeSegments) { coordinate in  // Pass segments here
+                        segments: routeSegments) { coordinate in
                 addWaypoint(location: coordinate)
             }
             .edgesIgnoringSafeArea(.all)
@@ -25,7 +31,6 @@ struct CustomRouteView: View {
             VStack {
                 // Search Bar
                 HStack {
-                    
                     Button(action: {
                         dismiss()
                     }) {
@@ -40,6 +45,7 @@ struct CustomRouteView: View {
                     })
                     .textFieldStyle(RoundedBorderTextFieldStyle())
                     .padding()
+                    
                     Button(action: {
                         searchForPlaces(query: searchText)
                         isShowingSearchResults = true
@@ -80,21 +86,42 @@ struct CustomRouteView: View {
                 
                 Spacer()
                 
-                // Save Button
-                Button(action: {
-                    saveRoute()
-                    dismiss()
-                }) {
-                    Text("Save Route")
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                VStack(spacing: 10) {
+                    // Route Name TextField
+                    TextField("Route Name", text: $routeName)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
                         .padding(.horizontal)
-                        .padding(.bottom)
+                    
+                    // Route Description TextField
+                    TextField("Route Description", text: $routeDescription)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding(.horizontal)
+                    
+                    // Save Button
+                    Button(action: {
+                        if !routeManager.waypoints.isEmpty {
+                            saveAndStartRoute()
+                        } else {
+                            showingAlert = true
+                        }
+                    }) {
+                        Text("Save and Start Route")
+                            .padding()
+                            .frame(maxWidth: .infinity)
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom)
                 }
+                .background(Color.white.opacity(0.9))
             }
+        }
+        .alert("No Waypoints", isPresented: $showingAlert) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text("Please add at least one waypoint to create a route.")
         }
     }
     
@@ -125,7 +152,6 @@ struct CustomRouteView: View {
         }
     }
     
-    // Modified to calculate route segments whenever waypoints change
     func addWaypoint(location: CLLocationCoordinate2D) {
         routeManager.addWaypoint(location)
         calculateRouteSegments()
@@ -141,19 +167,25 @@ struct CustomRouteView: View {
         var newSegments: [RouteSegment] = []
         let group = DispatchGroup()
         
+        // Only calculate segments between consecutive waypoints
         for i in 0..<(waypoints.count - 1) {
             group.enter()
-            calculateSegment(from: waypoints[i].coordinate,
-                           to: waypoints[i + 1].coordinate) { segment in
+            calculateSegment(
+                from: waypoints[i].coordinate,
+                to: waypoints[i + 1].coordinate
+            ) { segment in
                 if let segment = segment {
-                    newSegments.append(segment)
+                    DispatchQueue.main.async {
+                        newSegments.append(segment)
+                    }
                 }
                 group.leave()
             }
         }
         
         group.notify(queue: .main) {
-            routeSegments = newSegments
+            // Sort segments to ensure they're in the correct order
+            self.routeSegments = newSegments.enumerated().sorted { $0.0 < $1.0 }.map { $0.1 }
         }
     }
     
@@ -185,17 +217,16 @@ struct CustomRouteView: View {
         }
     }
     
-    func saveRoute() {
-        let routeName = "Custom Route"
-        let routeDescription = "Created by user"
+    private func saveAndStartRoute() {
+        let name = routeName.isEmpty ? "Custom Route" : routeName
+        let description = routeDescription.isEmpty ? "Created on \(Date().formatted())" : routeDescription
         
         // Update the route segments in CustomRouteManager
-        routeManager.updateRouteSegments(routeSegments)
-        
+        routeManager.routeSegments = routeSegments
         // Save the route
-        let route = routeManager.saveRoute(
-            name: routeName,
-            description: routeDescription
+        _ = routeManager.saveRoute(
+            name: name,
+            description: description
         )
         
         dismiss()
@@ -204,7 +235,6 @@ struct CustomRouteView: View {
     func calculateTotalDistance() -> Double {
         var totalDistance: CLLocationDistance = 0
         
-        // Calculate distance using the actual path segments
         for segment in routeSegments {
             let coordinates = segment.path
             for i in 0..<(coordinates.count - 1) {

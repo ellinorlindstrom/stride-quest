@@ -19,7 +19,6 @@ struct MapView: View {
                 MapContentView(
                     cameraPosition: $cameraPosition,
                     route: route,
-                    progressPolyline: progressPolyline,
                     currentPosition: progressPolyline.last ?? routeManager.currentRouteCoordinate,
                     routeManager: routeManager,
                     onMilestoneSelected: { milestone in

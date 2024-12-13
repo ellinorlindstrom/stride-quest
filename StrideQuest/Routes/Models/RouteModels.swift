@@ -1,93 +1,8 @@
-//import Foundation
-//import CoreLocation
-//
-//struct CodableCoordinate: Codable {
-//    let latitude: Double
-//    let longitude: Double
-//    
-//    var coordinate: CLLocationCoordinate2D {
-//        CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
-//    }
-//    
-//    init(coordinate: CLLocationCoordinate2D) {
-//        self.latitude = coordinate.latitude
-//        self.longitude = coordinate.longitude
-//    }
-//}
-//
-//struct VirtualRoute: Identifiable, Codable {
-//    let id: UUID
-//    let name: String
-//    let description: String
-//    let totalDistance: Double
-//    let milestones: [RouteMilestone]
-//    let imageName: String
-//    let region: String
-//    private let codableStartCoordinate: CodableCoordinate
-//    private let codableCoordinates: [CodableCoordinate]
-//    
-//    var startCoordinate: CLLocationCoordinate2D { codableStartCoordinate.coordinate }
-//    var coordinates: [CLLocationCoordinate2D] { codableCoordinates.map(\.coordinate) }
-//    
-//    init(id: UUID = UUID(),
-//         name: String,
-//         description: String,
-//         totalDistance: Double,
-//         milestones: [RouteMilestone],
-//         imageName: String,
-//         region: String,
-//         startCoordinate: CLLocationCoordinate2D,
-//         coordinates: [CLLocationCoordinate2D]) {
-//        self.id = id
-//        self.name = name
-//        self.description = description
-//        self.totalDistance = totalDistance
-//        self.milestones = milestones.map { milestone in
-//                RouteMilestone(
-//                    id: milestone.id,
-//                    routeId: id,
-//                    name: milestone.name,
-//                    description: milestone.description,
-//                    distanceFromStart: milestone.distanceFromStart,
-//                    imageName: milestone.imageName
-//                )
-//            }
-//        self.imageName = imageName
-//        self.region = region
-//        self.codableStartCoordinate = CodableCoordinate(coordinate: startCoordinate)
-//        self.codableCoordinates = coordinates.map(CodableCoordinate.init)
-//    }
-//}
-//
-//struct RouteMilestone: Identifiable, Codable {
-//    let id: UUID
-//    let routeId: UUID
-//    let name: String
-//    let description: String
-//    let distanceFromStart: Double
-//    let imageName: String
-//    
-//    init(id: UUID = UUID(),
-//         routeId: UUID,
-//         name: String,
-//         description: String,
-//         distanceFromStart: Double,
-//         imageName: String) {
-//        self.id = id
-//        self.routeId = routeId
-//        self.name = name
-//        self.description = description
-//        self.distanceFromStart = distanceFromStart
-//        self.imageName = imageName
-//    }
-//}
-//
-//
 import Foundation
 import CoreLocation
 import MapKit
 
-// Helper struct for coordinates
+// MARK: - Coordinate Helper
 struct CodableCoordinate: Codable {
     let latitude: Double
     let longitude: Double
@@ -102,11 +17,13 @@ struct CodableCoordinate: Codable {
     }
 }
 
-// New struct for route segments
-struct RouteSegment: Codable {
+// MARK: - Route Segment
+struct RouteSegment: Codable, Identifiable {
+    let id: UUID
     let coordinates: [CodableCoordinate]
     
     init(coordinates: [CLLocationCoordinate2D]) {
+        self.id = UUID()
         self.coordinates = coordinates.map(CodableCoordinate.init)
     }
     
@@ -115,7 +32,7 @@ struct RouteSegment: Codable {
     }
 }
 
-// Modified VirtualRoute
+// MARK: - Virtual Route
 struct VirtualRoute: Identifiable, Codable {
     let id: UUID
     let name: String
@@ -125,12 +42,15 @@ struct VirtualRoute: Identifiable, Codable {
     let imageName: String
     let region: String
     private let codableStartCoordinate: CodableCoordinate
-    private let codableWaypoints: [CodableCoordinate]  // Changed from coordinates to waypoints
-    private let segments: [RouteSegment]  // Added segments
+    private let codableWaypoints: [CodableCoordinate]
+    let segments: [RouteSegment]
     
     var startCoordinate: CLLocationCoordinate2D { codableStartCoordinate.coordinate }
     var waypoints: [CLLocationCoordinate2D] { codableWaypoints.map(\.coordinate) }
-    var routeSegments: [RouteSegment] { segments }
+    
+    var fullPath: [CLLocationCoordinate2D] {
+        segments.flatMap { $0.path }
+    }
     
     init(id: UUID = UUID(),
          name: String,
@@ -162,8 +82,41 @@ struct VirtualRoute: Identifiable, Codable {
         self.codableWaypoints = waypoints.map(CodableCoordinate.init)
         self.segments = segments
     }
+    
+    func coordinate(at distance: Double) -> CLLocationCoordinate2D? {
+        var accumulatedDistance: Double = 0
+        
+        for segment in segments {
+            let coordinates = segment.path
+            for i in 0..<(coordinates.count - 1) {
+                let start = coordinates[i]
+                let end = coordinates[i + 1]
+                let segmentDistance = CLLocation(latitude: start.latitude, longitude: start.longitude)
+                    .distance(from: CLLocation(latitude: end.latitude, longitude: end.longitude))
+                
+                if accumulatedDistance + segmentDistance > distance {
+                    let remainingDistance = distance - accumulatedDistance
+                    let fraction = remainingDistance / segmentDistance
+                    return interpolateCoordinate(from: start, to: end, fraction: fraction)
+                }
+                
+                accumulatedDistance += segmentDistance
+            }
+        }
+        
+        return segments.last?.path.last
+    }
+    
+    private func interpolateCoordinate(from start: CLLocationCoordinate2D,
+                                     to end: CLLocationCoordinate2D,
+                                     fraction: Double) -> CLLocationCoordinate2D {
+        let lat = start.latitude + (end.latitude - start.latitude) * fraction
+        let lon = start.longitude + (end.longitude - start.longitude) * fraction
+        return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+    }
 }
 
+// MARK: - Route Milestone
 struct RouteMilestone: Identifiable, Codable {
     let id: UUID
     let routeId: UUID
@@ -171,7 +124,7 @@ struct RouteMilestone: Identifiable, Codable {
     let description: String
     let distanceFromStart: Double
     let imageName: String
-
+    
     init(id: UUID = UUID(),
          routeId: UUID,
          name: String,
@@ -187,6 +140,7 @@ struct RouteMilestone: Identifiable, Codable {
     }
 }
 
+// MARK: - Route Progress
 struct RouteProgress: Codable {
     let id: UUID
     let routeId: UUID
@@ -204,10 +158,28 @@ struct RouteProgress: Codable {
         var distance: Double
     }
     
+    var percentageCompleted: Double {
+        (completedDistance / (totalDistance / 1000)) * 100
+    }
     
+    var currentRoute: VirtualRoute? {
+        RouteManager.shared.getRoute(by: routeId)
+    }
     
-    // Add this initializer
-    init(id: UUID,
+    var completedPath: [CLLocationCoordinate2D] {
+        guard let route = currentRoute else { return [] }
+        guard completedDistance > 0 else { return [] }
+        
+        let distanceInMeters = completedDistance * 1000 // Convert km to meters
+        return route.fullPath.prefix { coordinate in
+            let startCoord = route.startCoordinate
+            let location1 = CLLocation(latitude: startCoord.latitude, longitude: startCoord.longitude)
+            let location2 = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+            return location1.distance(from: location2) <= distanceInMeters
+        }
+    }
+    
+    init(id: UUID = UUID(),
          routeId: UUID,
          startDate: Date,
          completedDistance: Double = 0,
@@ -229,15 +201,6 @@ struct RouteProgress: Codable {
         self.completionDate = completionDate
     }
     
-    var percentageCompleted: Double {
-        (completedDistance / (totalDistance / 1000)) * 100
-    }
-    
-    var currentRoute: VirtualRoute? {
-        RouteManager.shared.getRoute(by: routeId)
-    }
-    
-    // Add mutating functions for updating progress
     mutating func updateProgress(distance: Double, date: Date) {
         completedDistance += distance
         lastUpdated = date
@@ -256,12 +219,12 @@ struct RouteProgress: Codable {
     mutating func updateDailyProgress(distance: Double, for date: String) {
         dailyProgress[date] = distance
     }
-
+    
     mutating func updateCompletedDistance(_ distance: Double, isManual: Bool) {
         completedDistance = isManual ? distance : max(distance, completedDistance)
         lastUpdated = Date()
     }
-
+    
     mutating func markCompleted() {
         isCompleted = true
         completionDate = Date()
@@ -271,18 +234,6 @@ struct RouteProgress: Codable {
         completedMilestones.insert(id)
     }
     
-    mutating func completeMilestone(_ id: UUID) {
-        completedMilestones.insert(id)
-    }
-    
-    // Helper for date formatting
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
-    
-    // Computed property to get daily progress as array
     var dailyProgressArray: [DailyProgress] {
         dailyProgress.compactMap { dateString, distance in
             guard let date = Self.dateFormatter.date(from: dateString) else { return nil }
@@ -290,19 +241,9 @@ struct RouteProgress: Codable {
         }.sorted { $0.date < $1.date }
     }
     
-    init(id: UUID = UUID(),
-         routeId: UUID,
-         startDate: Date,
-         totalDistance: Double) {
-        self.id = id
-        self.routeId = routeId
-        self.startDate = startDate
-        self.completedDistance = 0
-        self.lastUpdated = startDate
-        self.completedMilestones = []
-        self.totalDistance = totalDistance
-        self.dailyProgress = [:]
-        self.isCompleted = false
-        self.completionDate = nil
-    }
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
 }
