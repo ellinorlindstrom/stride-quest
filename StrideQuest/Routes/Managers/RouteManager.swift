@@ -208,11 +208,48 @@ class RouteManager: ObservableObject {
     }
     
     func saveCustomRoute(_ customRoute: VirtualRoute) {
+        // Add the custom route to available routes
         addCustomRoute(customRoute)
-        if let route = getRoute(by: customRoute.id) {
-            selectRoute(route)
-            beginRouteTracking()
+        
+        // Get the saved route and verify it exists
+        guard let route = getRoute(by: customRoute.id) else { return }
+        
+        // Select the route
+        selectRoute(route)
+        
+        // Initialize progress with the first waypoint
+        let progress = RouteProgress(
+            id: UUID(),
+            routeId: route.id,
+            startDate: Date(),
+            completedDistance: 0,
+            lastUpdated: Date(),
+            completedMilestones: Set<UUID>(),
+            totalDistance: route.totalDistance,
+            dailyProgress: [:],
+            isCompleted: false,
+            completionDate: nil
+        )
+        
+        // Set the initial position to the first waypoint
+        if let firstWaypoint = route.waypoints.first {
+            currentRouteCoordinate = firstWaypoint
+            currentMapRegion = MKCoordinateRegion(
+                center: firstWaypoint,
+                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
+            )
         }
+        
+        // Set the current progress
+        currentProgress = progress
+        
+        // Start tracking
+        HealthKitManager.shared.markRouteStart()
+        activeRouteIds.insert(route.id)
+        
+        // Initialize progress with 0 distance to setup initial state
+        updateProgress(withDistance: 0, source: "initial")
+        saveProgress()
     }
     
     func getRoute(by id: UUID) -> VirtualRoute? {

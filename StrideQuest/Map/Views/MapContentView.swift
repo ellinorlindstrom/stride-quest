@@ -7,6 +7,8 @@ struct MapContentView: View {
     let currentPosition: CLLocationCoordinate2D?
     let routeManager: RouteManager
     let onMilestoneSelected: (RouteMilestone) -> Void
+    @State private var snappedPathToCurrentPosition: [CLLocationCoordinate2D] = []
+
     
     var body: some View {
         Map(position: $cameraPosition, interactionModes: .all) {
@@ -14,11 +16,13 @@ struct MapContentView: View {
             MapPolyline(coordinates: route.fullPath)
                 .stroke(.yellow, lineWidth: 3)
             
-            // Progress polyline
-            if let progress = routeManager.currentProgress {
-                MapPolyline(coordinates: progress.completedPath)
-                    .stroke(.blue, lineWidth: 3)
-            }
+            // Progress polyline including current position
+                        if let progress = routeManager.currentProgress,
+                           let currentPosition = currentPosition {
+                            let completedCoordinates = progress.completedPath + [currentPosition]
+                            MapPolyline(coordinates: completedCoordinates)
+                                .stroke(.blue, lineWidth: 3)
+                        }
             
             // Milestone annotations
             ForEach(route.milestones) { milestone in

@@ -2,7 +2,7 @@
 //  DailyHealthData+CoreDataProperties.swift
 //  StrideQuest
 //
-//  Created by Ellinor Lindström on 2024-12-05.
+//  Created by Ellinor Lindström on 2024-12-14.
 //
 //
 
@@ -16,9 +16,9 @@ extension DailyHealthData {
         return NSFetchRequest<DailyHealthData>(entityName: "DailyHealthData")
     }
 
-    @NSManaged public var id: UUID?
     @NSManaged public var date: Date?
     @NSManaged public var distance: Double
+    @NSManaged public var id: UUID?
     @NSManaged public var type: String?
     @NSManaged public var routeProgress: RouteProgressEntity?
 

@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		C1304A142D01E131000E3C72 /* DailyHealthData+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1304A102D01E131000E3C72 /* DailyHealthData+CoreDataClass.swift */; };
-		C1304A152D01E131000E3C72 /* DailyHealthData+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1304A112D01E131000E3C72 /* DailyHealthData+CoreDataProperties.swift */; };
-		C1304A162D01E131000E3C72 /* RouteProgressEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1304A122D01E131000E3C72 /* RouteProgressEntity+CoreDataClass.swift */; };
-		C1304A172D01E131000E3C72 /* RouteProgressEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1304A132D01E131000E3C72 /* RouteProgressEntity+CoreDataProperties.swift */; };
 		C174E1962CEC833B00E16571 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = C174E1952CEC832400E16571 /* .gitignore */; };
+		C1B366692D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B366602D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataProperties.swift */; };
+		C1B3666B2D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B3665F2D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataClass.swift */; };
+		C1B3666E2D0DBBC200AD5B1F /* DailyHealthData+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B3666D2D0DBBC200AD5B1F /* DailyHealthData+CoreDataProperties.swift */; };
+		C1B366712D0DBD7900AD5B1F /* DailyHealthData+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B366702D0DBCFA00AD5B1F /* DailyHealthData+CoreDataClass.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,14 +33,14 @@
 
 /* Begin PBXFileReference section */
 		C11DA87A2CECCD6300002654 /* StrideQuest.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = StrideQuest.entitlements; sourceTree = "<group>"; };
-		C1304A102D01E131000E3C72 /* DailyHealthData+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DailyHealthData+CoreDataClass.swift"; sourceTree = "<group>"; };
-		C1304A112D01E131000E3C72 /* DailyHealthData+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DailyHealthData+CoreDataProperties.swift"; sourceTree = "<group>"; };
-		C1304A122D01E131000E3C72 /* RouteProgressEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RouteProgressEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
-		C1304A132D01E131000E3C72 /* RouteProgressEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RouteProgressEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		C174E1602CEC7FC000E16571 /* StrideQuest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = StrideQuest.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		C174E1772CEC7FC600E16571 /* StrideQuestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StrideQuestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C174E1812CEC7FC600E16571 /* StrideQuestUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StrideQuestUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C174E1952CEC832400E16571 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
+		C1B3665F2D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RouteProgressEntity+CoreDataClass.swift"; sourceTree = "<group>"; };
+		C1B366602D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RouteProgressEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		C1B3666D2D0DBBC200AD5B1F /* DailyHealthData+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DailyHealthData+CoreDataProperties.swift"; sourceTree = "<group>"; };
+		C1B366702D0DBCFA00AD5B1F /* DailyHealthData+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DailyHealthData+CoreDataClass.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -102,10 +102,10 @@
 		C174E1572CEC7FC000E16571 = {
 			isa = PBXGroup;
 			children = (
-				C1304A102D01E131000E3C72 /* DailyHealthData+CoreDataClass.swift */,
-				C1304A112D01E131000E3C72 /* DailyHealthData+CoreDataProperties.swift */,
-				C1304A122D01E131000E3C72 /* RouteProgressEntity+CoreDataClass.swift */,
-				C1304A132D01E131000E3C72 /* RouteProgressEntity+CoreDataProperties.swift */,
+				C1B366702D0DBCFA00AD5B1F /* DailyHealthData+CoreDataClass.swift */,
+				C1B3666D2D0DBBC200AD5B1F /* DailyHealthData+CoreDataProperties.swift */,
+				C1B3665F2D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataClass.swift */,
+				C1B366602D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataProperties.swift */,
 				C11DA87A2CECCD6300002654 /* StrideQuest.entitlements */,
 				C174E1952CEC832400E16571 /* .gitignore */,
 				C174E1622CEC7FC000E16571 /* StrideQuest */,
@@ -270,10 +270,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				C1304A142D01E131000E3C72 /* DailyHealthData+CoreDataClass.swift in Sources */,
-				C1304A152D01E131000E3C72 /* DailyHealthData+CoreDataProperties.swift in Sources */,
-				C1304A162D01E131000E3C72 /* RouteProgressEntity+CoreDataClass.swift in Sources */,
-				C1304A172D01E131000E3C72 /* RouteProgressEntity+CoreDataProperties.swift in Sources */,
+				C1B366692D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataProperties.swift in Sources */,
+				C1B3666B2D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataClass.swift in Sources */,
+				C1B3666E2D0DBBC200AD5B1F /* DailyHealthData+CoreDataProperties.swift in Sources */,
+				C1B366712D0DBD7900AD5B1F /* DailyHealthData+CoreDataClass.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
