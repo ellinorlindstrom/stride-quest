@@ -87,16 +87,6 @@ class HealthKitManager: ObservableObject {
             observerQueries.append(query)
             healthStore.execute(query)
             
-            // Enable immediate background updates
-            let anchorQuery = HKAnchoredObjectQuery(type: distanceType, predicate: nil, anchor: nil, limit: HKObjectQueryNoLimit) { [weak self] _, samples, _, _, error in
-                if error == nil && samples?.count ?? 0 > 0 {
-                    DispatchQueue.main.async {
-                        self?.fetchTotalDistance()
-                    }
-                }
-            }
-            
-            healthStore.execute(anchorQuery)
         }
     }
     

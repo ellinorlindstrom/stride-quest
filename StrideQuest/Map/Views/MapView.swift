@@ -136,7 +136,7 @@ struct MapView: View {
         for i in 1..<coordinates.count {
             let previous = coordinates[i-1]
             let current = coordinates[i]
-            let segmentDistance = calculateDistance(from: previous, to: current)
+            let segmentDistance = previous.distance(to: current) 
             totalDistance += segmentDistance
             cumulativeDistances.append(totalDistance)
         }

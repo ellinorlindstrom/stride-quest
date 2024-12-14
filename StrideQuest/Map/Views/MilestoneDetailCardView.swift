@@ -14,15 +14,8 @@ struct MilestoneDetailCard: View {
                     Spacer()
                     Button(action: {
                         withAnimation {
-                            print("🔘 Close button pressed")
-                            print("🔘 isShowing before: \(isShowing)")
-                            print("🔘 selectedMilestone before: \(String(describing: selectedMilestone))")
-                            
                             isShowing = false
                             selectedMilestone = nil
-                            
-                            print("🔘 isShowing after: \(isShowing)")
-                            print("🔘 selectedMilestone after: \(String(describing: selectedMilestone))")
                         }
                         
                     }) {

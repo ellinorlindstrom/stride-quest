@@ -4,7 +4,7 @@ import MapKit
 import SwiftUI
 import MapKit
 
-struct CustomRouteView: View {
+struct RouteCreationView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var routeManager = CustomRouteManager.shared
     @State private var mapRegion = MKCoordinateRegion(

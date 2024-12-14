@@ -112,10 +112,10 @@ class RouteManager: ObservableObject {
         }
         
         currentRouteCoordinate = selectedRoute.waypoints.first
-        currentMapRegion = MKCoordinateRegion(
+        updateMapRegion(MKCoordinateRegion(
             center: selectedRoute.startCoordinate,
             span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        )
+        ))
         
         HealthKitManager.shared.markRouteStart()
         activeRouteIds.insert(selectedRoute.id)
@@ -232,12 +232,12 @@ class RouteManager: ObservableObject {
         )
         
         // Set the initial position to the first waypoint
-        if let firstWaypoint = route.waypoints.first {
+        if let firstWaypoint = route.waypoints.first {  
             currentRouteCoordinate = firstWaypoint
-            currentMapRegion = MKCoordinateRegion(
+            updateMapRegion(MKCoordinateRegion(
                 center: firstWaypoint,
                 span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            )
+            ))
         }
         
         // Set the current progress
@@ -254,6 +254,10 @@ class RouteManager: ObservableObject {
     
     func getRoute(by id: UUID) -> VirtualRoute? {
         availableRoutes.first { route in route.id == id }
+    }
+    
+    func updateMapRegion(_ region: MKCoordinateRegion) {
+        currentMapRegion = region
     }
 
     // MARK: - Private Methods

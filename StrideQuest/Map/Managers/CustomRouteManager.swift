@@ -28,17 +28,10 @@ class CustomRouteManager: ObservableObject {
             let order = waypoints.count  // Use array count as order
             waypoints.append(Waypoint(coordinate: coordinate, order: order))
             if let lastWaypoint = waypoints.dropLast().last {
-                let distance = calculateDistance(from: lastWaypoint.coordinate, to: coordinate)
+                let distance = lastWaypoint.coordinate.distance(to: coordinate)
                 totalDistance += distance
             }
         }
-    
-    /// Calculates distance between two coordinates in kilometers
-    func calculateDistance(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) -> Double {
-        let fromLocation = CLLocation(latitude: from.latitude, longitude: from.longitude)
-        let toLocation = CLLocation(latitude: to.latitude, longitude: to.longitude)
-        return fromLocation.distance(from: toLocation) / 1000.0 
-    }
     
     func saveRoute(name: String, description: String, imageName: String? = nil) -> VirtualRoute {
             let newRoute = VirtualRoute(

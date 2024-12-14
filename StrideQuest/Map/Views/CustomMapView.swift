@@ -4,7 +4,7 @@ import SwiftUI
 struct CustomMapView: UIViewRepresentable {
     @Binding var region: MKCoordinateRegion
     let waypoints: [Waypoint]
-    let segments: [RouteSegment]  // Add this
+    let segments: [RouteSegment]  
     let onTap: (CLLocationCoordinate2D) -> Void
     
     func makeUIView(context: Context) -> MKMapView {
