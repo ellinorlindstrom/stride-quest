@@ -93,31 +93,3 @@ struct ProgressBar: View {
     }
 }
 
-struct MilestoneCard: View {
-    @ObservedObject private var routeManager = RouteManager.shared
-    let milestone: RouteMilestone
-    
-    var body: some View {
-        VStack {
-            Image(milestone.imageName)
-                .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 100, height: 100)
-                .clipShape(Circle())
-                .overlay(
-                    Circle()
-                        .stroke(routeManager.isMilestoneCompleted(milestone) ? Color.green : Color.gray, lineWidth: 4)
-                )
-            
-            Text(milestone.name)
-                .font(.caption)
-                .multilineTextAlignment(.center)
-            
-            if routeManager.isMilestoneCompleted(milestone) {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(.green)
-            }
-        }
-        .frame(width: 120)
-    }
-}

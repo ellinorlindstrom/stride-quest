@@ -67,14 +67,14 @@ extension RouteManager {
                         name: "Km 82 (Piscacucho)",
                         description: "Starting point of the Inca Trail",
                         distanceFromStart: 0,
-                        imageName: "km82"
+                        imageName: ""
                     ),
                     RouteMilestone(
                         routeId: incaTrailId,
                         name: "Dead Woman's Pass",
                         description: "Highest point of the trail (4,215m)",
                         distanceFromStart: 14333,
-                        imageName: "dead_womans_pass"
+                        imageName: ""
                     ),
                     RouteMilestone(
                         routeId: incaTrailId,

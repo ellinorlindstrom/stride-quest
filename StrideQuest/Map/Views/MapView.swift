@@ -60,7 +60,7 @@ struct MapView: View {
             ConfettiView(isShowing: $showConfetti)
             
             if showMilestoneCard, let milestone = selectedMilestone {
-                MilestoneDetailCard(
+                MilestoneCard(
                     milestone: milestone,
                     routeId: routeManager.currentProgress?.currentRoute?.id ?? UUID(),
                     isShowing: $showMilestoneCard,

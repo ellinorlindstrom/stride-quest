@@ -1,6 +1,7 @@
 import SwiftUI
 
-struct MilestoneDetailCard: View {
+struct MilestoneCard: View {
+    @ObservedObject private var routeManager = RouteManager.shared
     let milestone: RouteMilestone
     let routeId: UUID
     @Binding var isShowing: Bool
@@ -71,7 +72,7 @@ struct MilestoneDetailCard: View {
             .transition(.scale.combined(with: .opacity))
             .offset(y: -50)
         } else {
-            EmptyView() // Don't display anything if IDs don't match
+            EmptyView()
         }
     }
     

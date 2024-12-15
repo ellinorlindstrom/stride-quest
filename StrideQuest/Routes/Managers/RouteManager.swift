@@ -158,7 +158,9 @@ class RouteManager: ObservableObject {
         }
         
         // Check for new milestones
+        print("🚀 updateProgress - Current Distance: \(distance)")
         for milestone in route.milestones.sorted(by: { $0.distanceFromStart < $1.distanceFromStart }) {
+            print("🔍 Checking milestone: \(milestone.name), Distance From Start: \(milestone.distanceFromStart)")
                if distance >= milestone.distanceFromStart && !progress.completedMilestones.contains(milestone.id) {
                    progress.addCompletedMilestone(milestone.id)
                    recentlyUnlockedMilestone = milestone
@@ -173,9 +175,11 @@ class RouteManager: ObservableObject {
            
            currentProgress = progress
            saveProgress()
+        
        }
     
     func isMilestoneCompleted(_ milestone: RouteMilestone) -> Bool {
+        print("🏆 Milestone completed: \(milestone.name)")
         guard let progress = currentProgress else {
             print("❌ No current progress")
             return false
