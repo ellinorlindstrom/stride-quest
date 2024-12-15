@@ -7,6 +7,7 @@ import MapKit
 struct RouteCreationView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var routeManager = CustomRouteManager.shared
+    @StateObject private var locationManager = LocationManager()
     @State private var mapRegion = MKCoordinateRegion(
         center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
         span: MKCoordinateSpan(latitudeDelta: 0.1, longitudeDelta: 0.1)
@@ -19,40 +20,18 @@ struct RouteCreationView: View {
     @State private var routeDescription: String = ""
     @State private var showingAlert = false
     @State private var searchTask: DispatchWorkItem?
-    
-    private struct CustomSearchFieldStyle: TextFieldStyle {
-        func _body(configuration: TextField<Self._Label>) -> some View {
-            configuration
-                .padding(.vertical, 8)
-                .padding(.horizontal, 12)
-                .background(Color(.systemGray6))
-                .cornerRadius(8)
-        }
-    }
-    
-    private struct CustomRouteFieldStyle: TextFieldStyle {
-        func _body(configuration: TextField<Self._Label>) -> some View {
-            configuration
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-        }
-    }
-    
-    private func dismissKeyboard() {
-        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
-                                      to: nil,
-                                      from: nil,
-                                      for: nil)
-    }
+    @State private var landmarks: [MKMapItem] = []
     
     var body: some View {
         ZStack {
-            CustomMapView(region: $mapRegion,
-                          waypoints: routeManager.waypoints,
-                          segments: routeSegments) { coordinate in
-                addWaypoint(location: coordinate)
-            }
+            RouteCreationMapView(region: $locationManager.region,
+                                 waypoints: routeManager.waypoints,
+                                 segments: routeSegments,
+                                 onTap: { coordinate in
+                                     addWaypoint(location: coordinate)
+                                 }
+                                // landmarks: $landmarks
+                             )
                           .edgesIgnoringSafeArea(.all)
             
             VStack(spacing: 0) {
@@ -240,6 +219,32 @@ struct RouteCreationView: View {
             // Sort segments to ensure they're in the correct order
             self.routeSegments = newSegments.enumerated().sorted { $0.0 < $1.0 }.map { $0.1 }
         }
+    }
+    
+    private struct CustomSearchFieldStyle: TextFieldStyle {
+        func _body(configuration: TextField<Self._Label>) -> some View {
+            configuration
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+        }
+    }
+    
+    private struct CustomRouteFieldStyle: TextFieldStyle {
+        func _body(configuration: TextField<Self._Label>) -> some View {
+            configuration
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+        }
+    }
+    
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
+                                      to: nil,
+                                      from: nil,
+                                      for: nil)
     }
     
     func calculateSegment(from source: CLLocationCoordinate2D,

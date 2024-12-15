@@ -16,7 +16,7 @@ struct MapView: View {
         ZStack {
             if let progress = routeManager.currentProgress,
                let route = progress.currentRoute {
-                MapContentView(
+                RouteMapView(
                     cameraPosition: $cameraPosition,
                     route: route,
                     currentPosition: progressPolyline.last ?? routeManager.currentRouteCoordinate,

@@ -1,10 +1,10 @@
 import MapKit
 import SwiftUI
 
-struct CustomMapView: UIViewRepresentable {
+struct RouteCreationMapView: UIViewRepresentable {
     @Binding var region: MKCoordinateRegion
     let waypoints: [Waypoint]
-    let segments: [RouteSegment]  
+    let segments: [RouteSegment]
     let onTap: (CLLocationCoordinate2D) -> Void
     
     func makeUIView(context: Context) -> MKMapView {
@@ -45,8 +45,7 @@ struct CustomMapView: UIViewRepresentable {
         let request = MKDirections.Request()
         request.source = MKMapItem(placemark: sourcePlacemark)
         request.destination = MKMapItem(placemark: destPlacemark)
-        request.transportType = .walking // Can be .walking or .automobile
-        
+        request.transportType = .walking
         let directions = MKDirections(request: request)
         directions.calculate { response, error in
             guard let route = response?.routes.first else { return }
@@ -59,9 +58,9 @@ struct CustomMapView: UIViewRepresentable {
     }
     
     class Coordinator: NSObject, MKMapViewDelegate {
-        var parent: CustomMapView
+        var parent: RouteCreationMapView
         
-        init(_ parent: CustomMapView) {
+        init(_ parent: RouteCreationMapView) {
             self.parent = parent
         }
         
