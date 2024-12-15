@@ -18,86 +18,132 @@ struct RouteCreationView: View {
     @State private var routeName: String = ""
     @State private var routeDescription: String = ""
     @State private var showingAlert = false
+    @State private var searchTask: DispatchWorkItem?
+    
+    private struct CustomSearchFieldStyle: TextFieldStyle {
+        func _body(configuration: TextField<Self._Label>) -> some View {
+            configuration
+                .padding(.vertical, 8)
+                .padding(.horizontal, 12)
+                .background(Color(.systemGray6))
+                .cornerRadius(8)
+        }
+    }
+    
+    private struct CustomRouteFieldStyle: TextFieldStyle {
+        func _body(configuration: TextField<Self._Label>) -> some View {
+            configuration
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+        }
+    }
+    
+    private func dismissKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder),
+                                      to: nil,
+                                      from: nil,
+                                      for: nil)
+    }
     
     var body: some View {
         ZStack {
             CustomMapView(region: $mapRegion,
-                        waypoints: routeManager.waypoints,
-                        segments: routeSegments) { coordinate in
+                          waypoints: routeManager.waypoints,
+                          segments: routeSegments) { coordinate in
                 addWaypoint(location: coordinate)
             }
-            .edgesIgnoringSafeArea(.all)
+                          .edgesIgnoringSafeArea(.all)
             
-            VStack {
-                // Search Bar
-                HStack {
-                    Button(action: {
-                        dismiss()
-                    }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundColor(.gray)
-                            .font(.title2)
-                    }
-                    
-                    TextField("Search for a location", text: $searchText, onCommit: {
-                        searchForPlaces(query: searchText)
-                        isShowingSearchResults = true
-                    })
-                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding()
-                    
-                    Button(action: {
-                        searchForPlaces(query: searchText)
-                        isShowingSearchResults = true
-                    }) {
-                        Image(systemName: "magnifyingglass")
-                    }
-                }
-                .background(Color.white)
-                .cornerRadius(10)
-                .padding()
-                
-                // Search Results
-                if isShowingSearchResults && !searchResults.isEmpty {
-                    List(searchResults, id: \.self) { item in
-                        Button(action: {
-                            if let location = item.placemark.location?.coordinate {
-                                addWaypoint(location: location)
-                                mapRegion.center = location
-                                isShowingSearchResults = false
-                                searchText = ""
-                            }
-                        }) {
-                            VStack(alignment: .leading) {
-                                Text(item.name ?? "Unknown Location")
-                                if let address = item.placemark.title {
-                                    Text(address)
-                                        .font(.caption)
-                                        .foregroundColor(.gray)
+            VStack(spacing: 0) {
+                // Search Bar and Results Container
+                VStack(spacing: 0) {
+                    // Search Bar
+                    HStack(spacing: 12) {
+                        Button(action: { dismiss() }) {
+                            Image(systemName: "arrowshape.left.fill")
+                                .foregroundColor(.gray)
+                                .imageScale(.large)
+                        }
+                        .padding(.leading)
+                        
+                        TextField("Search for a location", text: $searchText)
+                            .textFieldStyle(CustomSearchFieldStyle())
+                            .onChange(of: searchText) { oldValue, newValue in
+                                searchTask?.cancel()
+                                
+                                if newValue.count >= 2 {
+                                    let task = DispatchWorkItem {
+                                        searchForPlaces(query: newValue)
+                                        isShowingSearchResults = true
+                                    }
+                                    searchTask = task
+                                    
+                                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: task)
+                                } else {
+                                    searchResults = []
+                                    isShowingSearchResults = false
                                 }
                             }
+                        
+                        Button(action: {
+                            searchText = ""
+                        }) {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.gray)
+                                .imageScale(.large)
                         }
+                        .padding(.trailing)
                     }
-                    .frame(maxHeight: 200)
-                    .background(Color.white)
-                    .cornerRadius(10)
-                    .padding(.horizontal)
+                    .padding(.vertical, 12)
+                    
+                    // Search Results
+                    if isShowingSearchResults && !searchResults.isEmpty {
+                        List(searchResults, id: \.self) { item in
+                            Button(action: {
+                                if let location = item.placemark.location?.coordinate {
+                                    dismissKeyboard()
+                                    mapRegion.center = location
+                                    isShowingSearchResults = false
+                                    searchText = ""
+                                }
+                            }) {
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(item.name ?? "Unknown Location")
+                                        .foregroundColor(.primary)
+                                    if let address = item.placemark.title {
+                                        Text(address)
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                    }
+                                }
+                                .padding(.vertical, 4)
+                            }
+                        }
+                        .listStyle(PlainListStyle())
+                        .frame(maxHeight: 250)
+                    }
                 }
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.systemBackground))
+                        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 2)
+                )
+                .padding(.horizontal)
+                .padding(.top)
                 
                 Spacer()
                 
-                VStack(spacing: 10) {
-                    // Route Name TextField
-                    TextField("Route Name", text: $routeName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.horizontal)
+                VStack(spacing: 16) {
+                    VStack(spacing: 12) {
+                        TextField("Route Name", text: $routeName)
+                            .textFieldStyle(CustomRouteFieldStyle())
+                        
+                        TextField("Route Description", text: $routeDescription)
+                            .textFieldStyle(CustomRouteFieldStyle())
+                    }
+                    .padding(.horizontal)
                     
-                    // Route Description TextField
-                    TextField("Route Description", text: $routeDescription)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .padding(.horizontal)
-                    
-                    // Save Button
                     Button(action: {
                         if !routeManager.waypoints.isEmpty {
                             saveAndStartRoute()
@@ -106,16 +152,23 @@ struct RouteCreationView: View {
                         }
                     }) {
                         Text("Save and Start Route")
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.blue)
+                            .font(.headline)
                             .foregroundColor(.white)
-                            .cornerRadius(10)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .fill(Color.blue)
+                            )
                     }
                     .padding(.horizontal)
-                    .padding(.bottom)
                 }
-                .background(Color.white.opacity(0.9))
+                .padding(.vertical, 20)
+                .background(
+                    RoundedRectangle(cornerRadius: 20)
+                        .fill(Color(.systemBackground))
+                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: -4)
+                )
             }
         }
         .alert("No Waypoints", isPresented: $showingAlert) {
@@ -190,8 +243,8 @@ struct RouteCreationView: View {
     }
     
     func calculateSegment(from source: CLLocationCoordinate2D,
-                         to destination: CLLocationCoordinate2D,
-                         completion: @escaping (RouteSegment?) -> Void) {
+                          to destination: CLLocationCoordinate2D,
+                          completion: @escaping (RouteSegment?) -> Void) {
         let sourcePlacemark = MKPlacemark(coordinate: source)
         let destPlacemark = MKPlacemark(coordinate: destination)
         
@@ -239,9 +292,9 @@ struct RouteCreationView: View {
             let coordinates = segment.path
             for i in 0..<(coordinates.count - 1) {
                 let location1 = CLLocation(latitude: coordinates[i].latitude,
-                                         longitude: coordinates[i].longitude)
+                                           longitude: coordinates[i].longitude)
                 let location2 = CLLocation(latitude: coordinates[i + 1].latitude,
-                                         longitude: coordinates[i + 1].longitude)
+                                           longitude: coordinates[i + 1].longitude)
                 totalDistance += location1.distance(from: location2)
             }
         }

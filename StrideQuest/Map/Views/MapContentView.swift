@@ -21,7 +21,7 @@ struct MapContentView: View {
                            let currentPosition = currentPosition {
                             let completedCoordinates = progress.completedPath + [currentPosition]
                             MapPolyline(coordinates: completedCoordinates)
-                                .stroke(.blue, lineWidth: 3)
+                                .stroke(.purple, lineWidth: 3)
                         }
             
             // Milestone annotations
