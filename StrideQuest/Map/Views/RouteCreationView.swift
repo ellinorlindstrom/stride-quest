@@ -1,9 +1,6 @@
 import SwiftUI
 import MapKit
 
-import SwiftUI
-import MapKit
-
 struct RouteCreationView: View {
     @Environment(\.dismiss) private var dismiss
     @ObservedObject var routeManager = CustomRouteManager.shared
@@ -21,6 +18,8 @@ struct RouteCreationView: View {
     @State private var showingAlert = false
     @State private var searchTask: DispatchWorkItem?
     @State private var landmarks: [MKMapItem] = []
+    @FocusState private var isSearchFocused: Bool
+    @State private var selectedLocation: CLLocationCoordinate2D?
     
     var body: some View {
         ZStack {
@@ -30,7 +29,6 @@ struct RouteCreationView: View {
                                  onTap: { coordinate in
                                      addWaypoint(location: coordinate)
                                  }
-                                // landmarks: $landmarks
                              )
                           .edgesIgnoringSafeArea(.all)
             
@@ -48,6 +46,16 @@ struct RouteCreationView: View {
                         
                         TextField("Search for a location", text: $searchText)
                             .textFieldStyle(CustomSearchFieldStyle())
+                            .focused($isSearchFocused)
+                            .submitLabel(.search)
+                            .onSubmit {
+                                print("Search submitted with text: \(searchText)") // Add debug print
+                                if !searchText.isEmpty {
+                                    print("Calling searchForPlaces")  // Add debug print
+                                    searchForPlaces(query: searchText, autoSelectFirst: true)
+                                    isShowingSearchResults = true
+                                }
+                            }
                             .onChange(of: searchText) { oldValue, newValue in
                                 searchTask?.cancel()
                                 
@@ -57,22 +65,26 @@ struct RouteCreationView: View {
                                         isShowingSearchResults = true
                                     }
                                     searchTask = task
-                                    
                                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3, execute: task)
                                 } else {
                                     searchResults = []
                                     isShowingSearchResults = false
                                 }
                             }
-                        
-                        Button(action: {
-                            searchText = ""
-                        }) {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundColor(.gray)
-                                .imageScale(.large)
+                        if !searchText.isEmpty {
+                            Button(action: {
+                                searchText = ""
+                                searchResults = [] // Add this
+                                isShowingSearchResults = false // Add this
+                                isSearchFocused = false // Add this
+                            }) {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.gray)
+                                    .imageScale(.large)
+                            }
+                            
+                            .padding(.trailing)
                         }
-                        .padding(.trailing)
                     }
                     .padding(.vertical, 12)
                     
@@ -82,7 +94,7 @@ struct RouteCreationView: View {
                             Button(action: {
                                 if let location = item.placemark.location?.coordinate {
                                     dismissKeyboard()
-                                    mapRegion.center = location
+                                    locationManager.region.center = location
                                     isShowingSearchResults = false
                                     searchText = ""
                                 }
@@ -157,8 +169,11 @@ struct RouteCreationView: View {
         }
     }
     
-    func searchForPlaces(query: String) {
+    func searchForPlaces(query: String, autoSelectFirst: Bool = false) {
+        print("searchForPlaces called with query: \(query)")
+        
         guard !query.isEmpty else {
+            print("Query is empty, returning")
             searchResults = []
             return
         }
@@ -168,16 +183,28 @@ struct RouteCreationView: View {
         searchRequest.region = mapRegion
         
         let search = MKLocalSearch(request: searchRequest)
+        print("Starting search")
         search.start { response, error in
             DispatchQueue.main.async {
                 if let error = error {
-                    print("Error searching for places: \(error.localizedDescription)")
+                    print("Search error: \(error.localizedDescription)")
                     return
                 }
                 
                 if let response = response {
+                    print("Found \(response.mapItems.count) results")
                     self.searchResults = response.mapItems
+                    
+                    // Auto-select first result if requested
+                    if autoSelectFirst, let firstItem = response.mapItems.first,
+                       let location = firstItem.placemark.location?.coordinate {
+                        self.dismissKeyboard()
+                        self.locationManager.region.center = location
+                        self.isShowingSearchResults = false
+                        self.searchText = ""
+                    }
                 } else {
+                    print("No response received")
                     self.searchResults = []
                 }
             }
@@ -305,5 +332,11 @@ struct RouteCreationView: View {
         }
         
         return totalDistance
+    }
+}
+
+struct RouteCreationView_Previews: PreviewProvider {
+    static var previews: some View {
+        RouteCreationView()
     }
 }
