@@ -220,12 +220,16 @@ struct RouteProgress: Codable {
     }
     
     var percentageCompleted: Double {
-        (completedDistance / totalDistance) * 100 
-    }
+            (min(completedDistance, totalDistance) / totalDistance) * 100
+        }
     
     var currentRoute: VirtualRoute? {
         RouteManager.shared.getRoute(by: routeId)
     }
+    
+    var remainingDistance: Double {
+            max(0, totalDistance - completedDistance)
+        }
     
     var completedPath: [CLLocationCoordinate2D] {
         guard let route = currentRoute else { return [] }
@@ -235,7 +239,7 @@ struct RouteProgress: Codable {
             let startCoord = route.startCoordinate
             let location1 = CLLocation(latitude: startCoord.latitude, longitude: startCoord.longitude)
             let location2 = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-            return location1.distance(from: location2) <= completedDistance
+            return location1.distance(from: location2) <= min(completedDistance, totalDistance)
         }
     }
     
@@ -262,28 +266,36 @@ struct RouteProgress: Codable {
     }
     
     mutating func updateProgress(distance: Double, date: Date) {
+        let cappedDistance = min(distance, totalDistance)
         completedDistance += distance
         lastUpdated = date
         
         let dateFormatter = DateFormatter()
         dateFormatter.dateFormat = "yyyy-MM-dd"
         let dateString = dateFormatter.string(from: date)
-        dailyProgress[dateString, default: 0] += distance
+        dailyProgress[dateString, default: 0] = cappedDistance
         
-        if completedDistance >= totalDistance && !isCompleted {
+        if cappedDistance >= totalDistance && !isCompleted {
             isCompleted = true
             completionDate = date
         }
     }
     
     mutating func updateDailyProgress(distance: Double, for date: String) {
-        dailyProgress[date] = distance
-    }
+            let cappedDistance = min(distance, totalDistance)
+            dailyProgress[date] = cappedDistance
+        }
     
     mutating func updateCompletedDistance(_ distance: Double, isManual: Bool) {
-        completedDistance = isManual ? distance : max(distance, completedDistance)
-        lastUpdated = Date()
-    }
+           let cappedDistance = min(distance, totalDistance)
+           completedDistance = isManual ? cappedDistance : min(cappedDistance, totalDistance)
+           lastUpdated = Date()
+           
+           if completedDistance >= totalDistance {
+               isCompleted = true
+               completionDate = Date()
+           }
+       }
     
     mutating func markCompleted() {
         isCompleted = true

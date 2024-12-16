@@ -99,38 +99,37 @@ class RouteManager: ObservableObject {
             return
         }
         
-        print("📍 RouteManager - Receiving update from \(source)")
-        print("- Distance: \(distance) km")
+        let cappedDistance = min(distance, route.totalDistance)
         
         let todayString = DateFormatter().string(from: Date())
         progress.updateDailyProgress(distance: distance, for: todayString)
         progress.updateCompletedDistance(distance, isManual: isManual)
         
         // Update current position on the route
-        if let newPosition = route.coordinate(at: distance) {
+        if let newPosition = route.coordinate(at: cappedDistance) {
             currentRouteCoordinate = newPosition
         }
         
         // Check for new milestones
-        print("🚀 updateProgress - Current Distance: \(distance)")
+        print("🚀 updateProgress - Current Distance: \(cappedDistance)")
         for milestone in route.milestones.sorted(by: { $0.distanceFromStart < $1.distanceFromStart }) {
-            print("🔍 Checking milestone: \(milestone.name), Distance From Start: \(milestone.distanceFromStart)")
-               if distance >= milestone.distanceFromStart && !progress.completedMilestones.contains(milestone.id) {
-                   progress.addCompletedMilestone(milestone.id)
-                   recentlyUnlockedMilestone = milestone
-                   milestoneCompletedPublisher.send(milestone)
-               }
-           }
-           
-           // Compare distances in km
-           if distance >= route.totalDistance && !progress.isCompleted {
-               progress.markCompleted()
-           }
-           
-           currentProgress = progress
-           saveProgress()
+                    print("🔍 Checking milestone: \(milestone.name), Distance From Start: \(milestone.distanceFromStart)")
+                    if cappedDistance >= milestone.distanceFromStart && !progress.completedMilestones.contains(milestone.id) {
+                        progress.addCompletedMilestone(milestone.id)
+                        recentlyUnlockedMilestone = milestone
+                        milestoneCompletedPublisher.send(milestone)
+                    }
+                }
+                
+                // Compare distances in km
+                if cappedDistance >= route.totalDistance && !progress.isCompleted {
+                    progress.markCompleted()
+                }
+                
+                currentProgress = progress
+                saveProgress()
+            }
         
-       }
     
     func isMilestoneCompleted(_ milestone: RouteMilestone) -> Bool {
         print("🏆 Milestone completed: \(milestone.name)")
