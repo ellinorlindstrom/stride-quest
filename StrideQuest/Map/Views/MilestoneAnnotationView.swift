@@ -7,7 +7,7 @@ struct MilestoneAnnotationView: View {
     let coordinate: CLLocationCoordinate2D
     let isCompleted: Bool
     let onTap: () -> Void
-    let currentRouteId: UUID  // Add this
+    let currentRouteId: UUID  
     
     var body: some View {
         Image(systemName: "mappin.circle.fill")

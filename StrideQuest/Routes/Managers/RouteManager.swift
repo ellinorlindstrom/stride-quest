@@ -40,44 +40,12 @@ class RouteManager: ObservableObject {
         loadSavedRoutes()
         
         // Initialize predefined routes
-        var routes = initializeRoutes()
-        
-        // Process each route to ensure proper segments
-        routes = routes.map { route in
-            // Create segments between consecutive waypoints
-            var routeSegments: [RouteSegment] = []
-            
-            if route.waypoints.count >= 2 {
-                for i in 0..<(route.waypoints.count - 1) {
-                    let start = route.waypoints[i]
-                    let end = route.waypoints[i + 1]
-                    
-                    // Create a direct segment between waypoints
-                    let segment = RouteSegment(coordinates: [start, end])
-                    routeSegments.append(segment)
-                }
+        Task {
+            let routes = await initializeRoutes()
+            DispatchQueue.main.async {
+                self.availableRoutes = routes
             }
-            
-            // Calculate total distance based on segments
-            let totalDistance = calculateTotalSegmentDistance(segments: routeSegments)
-            
-            return VirtualRoute(
-                id: route.id,
-                name: route.name,
-                description: route.description,
-                totalDistance: totalDistance,
-                milestones: route.milestones,
-                imageName: route.imageName,
-                region: route.region,
-                startCoordinate: route.waypoints.first ?? CLLocationCoordinate2D(),
-                waypoints: route.waypoints,
-                segments: routeSegments
-            )
         }
-        
-        self.availableRoutes = routes
-        loadProgress()
-        loadCompletedRoutes()
     }
 
     // MARK: - Public Methods
@@ -123,20 +91,6 @@ class RouteManager: ObservableObject {
         saveProgress()
     }
     
-    func pauseTracking() {
-        if let selectedRoute = selectedRoute {
-            activeRouteIds.remove(selectedRoute.id)
-        }
-        saveProgress()
-    }
-    
-    func stopRoute() {
-        if let selectedRoute = selectedRoute {
-            activeRouteIds.remove(selectedRoute.id)
-        }
-        selectedRoute = nil
-        saveProgress()
-    }
     
     func updateProgress(withDistance distance: Double, isManual: Bool = false, source: String = "unknown") {
         guard var progress = currentProgress,
@@ -187,74 +141,6 @@ class RouteManager: ObservableObject {
         return progress.completedMilestones.contains(milestone.id)
     }
     
-    func resetProgress() {
-        if let progress = currentProgress {
-            let context = healthDataStore.persistentContainer.viewContext
-            let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
-            fetchRequest.predicate = NSPredicate(format: "id == %@", progress.id as CVarArg)
-            
-            do {
-                if let entity = try context.fetch(fetchRequest).first {
-                    context.delete(entity)
-                    try context.save()
-                }
-            } catch {
-                print("Failed to reset progress: \(error)")
-            }
-        }
-        currentProgress = nil
-    }
-
-    func addCustomRoute(_ route: VirtualRoute) {
-        let adjustedRoute = validateAndAdjustRoute(route)
-        availableRoutes.append(adjustedRoute)
-        saveRoutes()
-    }
-    
-    func saveCustomRoute(_ customRoute: VirtualRoute) {
-        // Add the custom route to available routes
-        addCustomRoute(customRoute)
-        
-        // Get the saved route and verify it exists
-        guard let route = getRoute(by: customRoute.id) else { return }
-        
-        // Select the route
-        selectRoute(route)
-        
-        // Initialize progress with the first waypoint
-        let progress = RouteProgress(
-            id: UUID(),
-            routeId: route.id,
-            startDate: Date(),
-            completedDistance: 0,
-            lastUpdated: Date(),
-            completedMilestones: Set<UUID>(),
-            totalDistance: route.totalDistance,
-            dailyProgress: [:],
-            isCompleted: false,
-            completionDate: nil
-        )
-        
-        // Set the initial position to the first waypoint
-        if let firstWaypoint = route.waypoints.first {  
-            currentRouteCoordinate = firstWaypoint
-            updateMapRegion(MKCoordinateRegion(
-                center: firstWaypoint,
-                span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-            ))
-        }
-        
-        // Set the current progress
-        currentProgress = progress
-        
-        // Start tracking
-        HealthKitManager.shared.markRouteStart()
-        activeRouteIds.insert(route.id)
-        
-        // Initialize progress with 0 distance to setup initial state
-        updateProgress(withDistance: 0, source: "initial")
-        saveProgress()
-    }
     
     func getRoute(by id: UUID) -> VirtualRoute? {
         availableRoutes.first { route in route.id == id }
@@ -363,9 +249,4 @@ class RouteManager: ObservableObject {
         completedRoutes = fetchedRoutes
     }
 
-    // MARK: - Computed Properties
-    var availableUncompletedRoutes: [VirtualRoute] {
-        let completedRouteIds = Set(completedRoutes.map { $0.routeId })
-        return availableRoutes.filter { !completedRouteIds.contains($0.id) }
-    }
 }

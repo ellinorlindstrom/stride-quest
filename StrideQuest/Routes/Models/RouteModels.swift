@@ -3,7 +3,7 @@ import CoreLocation
 import MapKit
 
 // MARK: - Coordinate Helper
-struct CodableCoordinate: Codable {
+struct CodableCoordinate: Codable, Hashable {
     let latitude: Double
     let longitude: Double
     
@@ -18,9 +18,27 @@ struct CodableCoordinate: Codable {
 }
 
 // MARK: - Route Segment
-struct RouteSegment: Codable, Identifiable {
+struct RouteSegment: Codable, Identifiable, Hashable {
     let id: UUID
     let coordinates: [CodableCoordinate]
+    
+    static func createWalkingSegment(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D) async throws -> RouteSegment {
+        let request = MKDirections.Request()
+        request.transportType = .walking
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: start))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: end))
+        
+        let directions = MKDirections(request: request)
+        let response = try await directions.calculate()
+        
+        guard let route = response.routes.first else {
+            throw NSError(domain: "RouteSegmentError", code: 1, userInfo: [NSLocalizedDescriptionKey: "No route found"])
+        }
+        
+        // Extract all points from the polyline
+        let coordinates = route.polyline.coordinates
+        return RouteSegment(coordinates: coordinates)
+    }
     
     init(coordinates: [CLLocationCoordinate2D]) {
         self.id = UUID()
@@ -29,6 +47,36 @@ struct RouteSegment: Codable, Identifiable {
     
     var path: [CLLocationCoordinate2D] {
         coordinates.map(\.coordinate)
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+    
+    static func == (lhs: RouteSegment, rhs: RouteSegment) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    var distance: Double {
+        var totalDistance: Double = 0
+        let coordinates = self.path
+        
+        for i in 0..<(coordinates.count - 1) {
+            let start = coordinates[i]
+            let end = coordinates[i + 1]
+            let startLocation = CLLocation(latitude: start.latitude, longitude: start.longitude)
+            let endLocation = CLLocation(latitude: end.latitude, longitude: end.longitude)
+            totalDistance += startLocation.distance(from: endLocation) / 1000
+        }
+        return totalDistance
+    }
+}
+
+extension MKPolyline {
+    var coordinates: [CLLocationCoordinate2D] {
+        var coords = [CLLocationCoordinate2D](repeating: CLLocationCoordinate2D(), count: pointCount)
+        getCoordinates(&coords, range: NSRange(location: 0, length: pointCount))
+        return coords
     }
 }
 
@@ -57,6 +105,7 @@ struct VirtualRoute: Identifiable, Codable {
     var fullPath: [CLLocationCoordinate2D] {
         segments.flatMap { $0.path }
         
+    
         
     }
     

@@ -65,9 +65,9 @@ struct ContentView: View {
         .sheet(isPresented: $showingCompletedRoutes) {
             CompletedRoutesView()
         }
-        .sheet(isPresented: $showingCustomRouteCreation) {
-            RouteCreationView()
-        }
+//        .sheet(isPresented: $showingCustomRouteCreation) {
+//            RouteCreationView()
+//        }
         .sheet(isPresented: $showingSettings) {
         }
         .onAppear {
