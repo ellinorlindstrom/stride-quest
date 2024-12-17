@@ -94,56 +94,33 @@ class RouteManager: ObservableObject {
     }
     
     private func handleRouteCompletion(_ progress: RouteProgress) {
-        print("🎬 Starting handleRouteCompletion")
-        print("  - Progress ID: \(progress.id)")
-        print("  - Is Completed Flag: \(progress.isCompleted)")
-        
         guard progress.isCompleted,
               let routeId = progress.currentRoute?.id else {
-            print("❌ Failed to complete route: missing data")
-            print("  - Is Completed: \(progress.isCompleted)")
-            print("  - Has Route ID: \(progress.currentRoute?.id != nil)")
             return
         }
-        
-        print("🏁 Processing completion for route: \(routeId)")
-        
         // Perform UI updates on main thread
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
-            
-            print("📱 Executing main thread updates")
-            
             // Remove from active routes
             self.activeRouteIds.remove(routeId)
-            print("✅ Removed from active routes")
-            
             // Add to completed routes if not already there
             let alreadyCompleted = self.completedRoutes.contains(where: { $0.routeId == routeId })
-            print("  - Already in completed routes: \(alreadyCompleted)")
-            
             if !alreadyCompleted {
-                print("✅ Adding to completed routes")
                 self.completedRoutes.append(progress)
                 
                 // Notify observers of the change
                 self.objectWillChange.send()
-                print("✅ Sent objectWillChange notification")
-                
                 // Save on background thread
                 Task {
                     await MainActor.run {
                         self.healthDataStore.updateRouteProgress(progress)
-                        print("✅ Saved to CoreData")
                         self.loadCompletedRoutes()
-                        print("✅ Reloaded completed routes")
                     }
                 }
             }
             
             // Clear current progress after adding to completed routes
             if self.currentProgress?.routeId == routeId {
-                print("✅ Clearing current progress")
                 self.currentProgress = nil
             }
         }
@@ -161,21 +138,16 @@ class RouteManager: ObservableObject {
     func updateProgress(withDistance distance: Double, isManual: Bool = false, source: String = "unknown") {
         // First check if we have a current progress
         guard let currentProgressCheck = currentProgress else {
-            print("❌ updateProgress - Early return: No current progress")
             return
         }
         
         // Then check if we can get the route
         guard let route = currentProgressCheck.currentRoute else {
-            print("❌ updateProgress - Early return: No route found")
             return
         }
         
         // Finally check if the route is active
         guard activeRouteIds.contains(route.id) else {
-            print("❌ updateProgress - Early return: Route is not active")
-            print("  - Route ID: \(route.id)")
-            print("  - Active IDs: \(activeRouteIds)")
             return
         }
         
@@ -183,8 +155,8 @@ class RouteManager: ObservableObject {
         let cappedDistance = min(distance, route.totalDistance)
         
         let todayString = DateFormatter().string(from: Date())
-        progress.updateDailyProgress(distance: cappedDistance, for: todayString)
-        progress.updateCompletedDistance(cappedDistance, isManual: isManual)
+        progress.updateDailyProgress(distance: distance, for: todayString)
+        progress.updateCompletedDistance(distance, isManual: isManual)
         
         // Update current position on the route
         if let newPosition = route.coordinate(at: cappedDistance) {
@@ -192,9 +164,6 @@ class RouteManager: ObservableObject {
         }
         
         // Check for new milestones
-        print("🚀 updateProgress - Current Distance: \(cappedDistance)")
-        print("📏 Route total distance: \(route.totalDistance)")
-        
         for milestone in route.milestones.sorted(by: { $0.distanceFromStart < $1.distanceFromStart }) {
             if cappedDistance >= milestone.distanceFromStart && !progress.completedMilestones.contains(milestone.id) {
                 progress.addCompletedMilestone(milestone.id)
@@ -206,35 +175,23 @@ class RouteManager: ObservableObject {
         // Check for route completion with a small epsilon for floating-point comparison
         let epsilon = 0.0001 // Small tolerance value
         let isAtOrPastEnd = (cappedDistance + epsilon) >= route.totalDistance
-        
-        print("🎯 Completion check:")
-        print("  - Completed Distance: \(cappedDistance)")
-        print("  - Total Distance: \(route.totalDistance)")
-        print("  - Difference: \(route.totalDistance - cappedDistance)")
-        print("  - Is Already Completed: \(progress.isCompleted)")
-        print("  - Is At or Past End: \(isAtOrPastEnd)")
+
         
         // Handle both newly completed routes and routes that were marked completed but not processed
         if isAtOrPastEnd {
-            print("🎯 Route at completion threshold")
             
             if !progress.isCompleted {
-                print("📍 Marking route as completed")
                 progress.markCompleted()
             }
             
             // Check if this route is already in completedRoutes
             let isInCompletedRoutes = completedRoutes.contains(where: { $0.routeId == route.id })
-            print("📍 Route in completed routes: \(isInCompletedRoutes)")
             
             if !isInCompletedRoutes {
-                print("📍 Processing completion")
                 currentProgress = progress
                 handleRouteCompletion(progress)
-                print("✅ Route completion handled")
                 return
             } else {
-                print("📍 Route already processed as completed")
             }
         }
         
@@ -249,7 +206,6 @@ class RouteManager: ObservableObject {
     
     func isMilestoneCompleted(_ milestone: RouteMilestone) -> Bool {
         guard let progress = currentProgress else {
-            print("❌ No current progress")
             return false
         }
         return progress.completedMilestones.contains(milestone.id)

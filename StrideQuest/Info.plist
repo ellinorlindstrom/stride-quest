@@ -46,5 +46,7 @@
     <string>Used for accessibility voice control features</string>
     <key>NSSpeechRecognitionUsageDescription</key>
     <string>Used for accessibility voice control features</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>We need access to your photos to set your profile picture.</string>
 </dict>
 </plist>

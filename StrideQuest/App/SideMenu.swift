@@ -2,13 +2,14 @@ import SwiftUI
 
 struct SideMenu: View {
     @GestureState private var dragOffset: CGFloat = 0
-    let authManager: AuthenticationManager
+    @ObservedObject var authManager: AuthenticationManager
     @Binding var showingRouteSelection: Bool
     @Binding var showingManualEntry: Bool
     @Binding var showingCompletedRoutes: Bool
     @Binding var showingCustomRouteCreation: Bool
     @Binding var showingSettings: Bool
     @Binding var isMenuShowing: Bool
+    @State private var showImagePicker = false
     
     var body: some View {
         GeometryReader { geometry in
@@ -26,12 +27,50 @@ struct SideMenu: View {
                     VStack(alignment: .leading, spacing: 0) {
                         // Header
                         VStack(alignment: .leading, spacing: 12) {
-                            Image(systemName: "person.circle.fill")
-                                .font(.system(size: 60))
-                                .foregroundStyle(.gray)
-                            Text("Welcome")
-                                .font(.system(.subheadline, design: .monospaced))
-                                .foregroundStyle(.secondary)
+                            // Profile Image
+                            Button(action: {
+                                showImagePicker = true
+                            }) {
+                                if let profileImage = authManager.profileImage {
+                                    Image(uiImage: profileImage)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 60, height: 60)
+                                        .clipShape(Circle())
+                                        .overlay(Circle().stroke(Color.white, lineWidth: 2))
+                                } else {
+                                    ZStack {
+                                        Circle()
+                                            .fill(Color(red: 0.075, green: 0.278, blue: 0.396))
+                                            .frame(width: 60, height: 60)
+                                        Image(systemName: "person.fill")
+                                            .font(.system(size: 30))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                            }
+                            .sheet(isPresented: $showImagePicker) {
+                                ImagePicker(image: Binding(
+                                    get: { authManager.profileImage },
+                                    set: { newImage in
+                                        if let image = newImage {
+                                            authManager.saveProfileImage(image)
+                                        }
+                                    }
+                                ))
+                            }
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Welcome")
+                                    .font(.system(.subheadline, design: .monospaced))
+                                    .foregroundStyle(.secondary)
+                                
+                                if let userName = authManager.userName {
+                                    let firstName = userName.components(separatedBy: " ").first ?? userName
+                                    Text(firstName)
+                                        .font(.system(.headline, design: .monospaced))
+                                        .foregroundStyle(.primary)
+                                }
+                            }
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 25)
@@ -54,10 +93,12 @@ struct SideMenu: View {
                                 showingCompletedRoutes = true
                                 isMenuShowing = false
                             }
+                            
                             MenuButton(icon: "pencil.line", title: "Add Custom Route") {
                                 showingCustomRouteCreation = true
                                 isMenuShowing = false
                             }
+                            
                             MenuButton(icon: "gearshape.fill", title: "Settings") {
                                 showingSettings = true
                                 isMenuShowing = false
@@ -99,6 +140,10 @@ struct SideMenu: View {
                     }
                 }
         )
+        .onAppear {
+            print("Auth state: \(authManager.isAuthenticated)")
+            print("Username: \(authManager.userName ?? "nil")")
+        }
     }
 }
 struct MenuButton: View {

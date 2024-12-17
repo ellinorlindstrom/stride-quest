@@ -49,6 +49,7 @@ struct ContentView: View {
                             showingSettings: $showingSettings,
                             isMenuShowing: $isMenuShowing
                         )
+                        .environmentObject(authManager)
                         .transition(.move(edge: .leading))
                     }
                 }
@@ -65,10 +66,9 @@ struct ContentView: View {
         .sheet(isPresented: $showingCompletedRoutes) {
             CompletedRoutesView()
         }
-//        .sheet(isPresented: $showingCustomRouteCreation) {
-//            RouteCreationView()
-//        }
+
         .sheet(isPresented: $showingSettings) {
+            SettingsView(authManager: authManager )
         }
         .onAppear {
             authManager.checkAuthentication()
