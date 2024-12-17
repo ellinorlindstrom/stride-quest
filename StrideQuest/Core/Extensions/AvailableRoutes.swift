@@ -326,14 +326,14 @@ extension RouteManager {
                 RouteMilestone(
                     routeId: RouteConstants.kyotoPhilosophersPath,
                     name: "Ginkaku-ji",
-                    description: "Silver Pavilion Temple",
+                    description: "The Silver Pavilion, a Zen temple of extraordinary beauty. Its minimalist design, moss garden, and sand sculptures exemplify Japanese aesthetics and the pursuit of perfection in simplicity.",
                     distanceFromStart: 0,
                     imageName: "ginkakuji"
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.kyotoPhilosophersPath,
                     name: "Nanzen-ji",
-                    description: "Important Zen temple",
+                    description: "One of Japan's most important Zen temples, featuring magnificent gates, a surprising aqueduct, and tranquil rock gardens. The temple grounds offer a perfect blend of architecture and nature.",
                     distanceFromStart: 2.000,
                     imageName: "nanzenji"
                 )
@@ -358,21 +358,21 @@ extension RouteManager {
                 RouteMilestone(
                     routeId: RouteConstants.seoulCityWall,
                     name: "Heunginjimun Gate",
-                    description: "Historic East Gate",
+                    description: "Also known as Dongdaemun, this majestic gate served as the major eastern entrance to Seoul during the Joseon Dynasty. Now it stands as a proud symbol of Korea's architectural heritage.",
                     distanceFromStart: 0,
                     imageName: "heunginjimun"
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.seoulCityWall,
                     name: "Namsan Seoul Tower",
-                    description: "Iconic tower with city views",
+                    description: "Rising 236m above sea level, this iconic communication and observation tower offers 360-degree views of the sprawling metropolis. Famous for its love locks and rotating restaurant.",
                     distanceFromStart: 9.000,
                     imageName: "namsan"
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.seoulCityWall,
                     name: "Sukjeongmun Gate",
-                    description: "North Gate of Seoul",
+                    description: "The Great Northern Gate of Seoul's historical city wall, offering panoramic views of the city. This restored gate represents the northern guardian of Seoul's traditional boundaries.",
                     distanceFromStart: 18.000,
                     imageName: "sukjeongmun"
                 )
@@ -398,23 +398,23 @@ extension RouteManager {
                 RouteMilestone(
                     routeId: RouteConstants.bondiToBronte,
                     name: "Bondi Beach",
-                    description: "Famous Australian beach",
+                    description: "Australia's most famous beach, known for its golden sand, pristine waves, and vibrant atmosphere. A paradise for surfers, swimmers, and sunbathers, showcasing the ultimate Aussie beach lifestyle.",
                     distanceFromStart: 0,
                     imageName: "bondi"
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.bondiToBronte,
                     name: "Tamarama Beach",
-                    description: "Scenic small beach",
+                    description: "Nicknamed 'Glamarama' by locals, this small but picturesque beach offers dramatic cliffs, excellent surfing conditions, and a more intimate atmosphere than its famous neighbors.",
                     distanceFromStart: 1.200,
                     imageName: "tamarama"
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.bondiToBronte,
                     name: "Bronte Beach",
-                    description: "Popular swimming and surfing spot",
+                    description: "A charming family-friendly beach featuring a historic ocean pool, excellent cafes, and a large grassy park perfect for picnics. Popular with both locals and visitors for its natural rock pool.",
                     distanceFromStart: 2.500,
-                    imageName: "bronte"
+                    imageName: "bondi-bronte"
                 )
             ],
             imageName: "bondi-bronte",

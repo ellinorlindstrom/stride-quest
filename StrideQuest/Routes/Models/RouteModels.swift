@@ -105,7 +105,7 @@ struct VirtualRoute: Identifiable, Codable {
     var fullPath: [CLLocationCoordinate2D] {
         segments.flatMap { $0.path }
         
-    
+        
         
     }
     
@@ -141,36 +141,10 @@ struct VirtualRoute: Identifiable, Codable {
     }
     
     func coordinate(at distance: Double) -> CLLocationCoordinate2D? {
-        var accumulatedDistance: Double = 0
-        
-        for segment in segments {
-            let coordinates = segment.path
-            for i in 0..<(coordinates.count - 1) {
-                let start = coordinates[i]
-                let end = coordinates[i + 1]
-                let segmentDistance = CLLocation(latitude: start.latitude, longitude: start.longitude)
-                    .distance(from: CLLocation(latitude: end.latitude, longitude: end.longitude))
-                
-                if accumulatedDistance + segmentDistance > distance {
-                    let remainingDistance = distance - accumulatedDistance
-                    let fraction = remainingDistance / segmentDistance
-                    return interpolateCoordinate(from: start, to: end, fraction: fraction)
-                }
-                
-                accumulatedDistance += segmentDistance
-            }
-        }
-        
-        return segments.last?.path.last
+        // Delegate to RouteUtils
+        return RouteUtils.findCoordinate(distance: distance, in: self)
     }
     
-    private func interpolateCoordinate(from start: CLLocationCoordinate2D,
-                                       to end: CLLocationCoordinate2D,
-                                       fraction: Double) -> CLLocationCoordinate2D {
-        let lat = start.latitude + (end.latitude - start.latitude) * fraction
-        let lon = start.longitude + (end.longitude - start.longitude) * fraction
-        return CLLocationCoordinate2D(latitude: lat, longitude: lon)
-    }
 }
 
 // MARK: - Route Milestone
@@ -220,16 +194,16 @@ struct RouteProgress: Codable {
     }
     
     var percentageCompleted: Double {
-            (min(completedDistance, totalDistance) / totalDistance) * 100
-        }
+        (min(completedDistance, totalDistance) / totalDistance) * 100
+    }
     
     var currentRoute: VirtualRoute? {
         RouteManager.shared.getRoute(by: routeId)
     }
     
     var remainingDistance: Double {
-            max(0, totalDistance - completedDistance)
-        }
+        max(0, totalDistance - completedDistance)
+    }
     
     var completedPath: [CLLocationCoordinate2D] {
         guard let route = currentRoute else { return [] }
@@ -282,19 +256,19 @@ struct RouteProgress: Codable {
     }
     
     mutating func updateDailyProgress(distance: Double, for date: String) {
-            let cappedDistance = min(distance, totalDistance)
-            dailyProgress[date] = cappedDistance
-        }
+        let cappedDistance = min(distance, totalDistance)
+        dailyProgress[date] = cappedDistance
+    }
     
     mutating func updateCompletedDistance(_ distance: Double, isManual: Bool) {
-           let cappedDistance = min(distance, totalDistance)
-           completedDistance = isManual ? cappedDistance : min(cappedDistance, totalDistance)
-           lastUpdated = Date()
-           
-           if completedDistance >= totalDistance {
-               completionDate = Date()
-           }
-       }
+        let cappedDistance = min(distance, totalDistance)
+        completedDistance = isManual ? cappedDistance : min(cappedDistance, totalDistance)
+        lastUpdated = Date()
+        
+        if completedDistance >= totalDistance {
+            completionDate = Date()
+        }
+    }
     
     mutating func markCompleted() {
         isCompleted = true

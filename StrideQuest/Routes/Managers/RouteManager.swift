@@ -25,14 +25,12 @@ class RouteManager: ObservableObject {
     @Published var currentMapRegion: MKCoordinateRegion?
     @Published var availableRoutes: [VirtualRoute] = []
     
-    // MARK: - Private Properties
     private let healthDataStore = HealthDataStore.shared
     private let userDefaults = UserDefaults.standard
     private let routesKey = "savedRoutes"
     private let progressKey = "currentRouteProgress"
     private let completedRoutesKey = "completedRoutesKey"
     
-    // MARK: - Initialization
     init() {
         self.availableRoutes = []
         
@@ -93,7 +91,7 @@ class RouteManager: ObservableObject {
         saveProgress()
     }
     
-    private func handleRouteCompletion(_ progress: RouteProgress) {
+    func handleRouteCompletion(_ progress: RouteProgress) {
         guard progress.isCompleted,
               let routeId = progress.currentRoute?.id else {
             return
@@ -220,79 +218,9 @@ class RouteManager: ObservableObject {
         currentMapRegion = region
     }
     
-    // MARK: - Private Methods
-    private func calculateTotalSegmentDistance(segments: [RouteSegment]) -> Double {
-        var totalDistance: Double = 0
-        
-        for segment in segments {
-            let coordinates = segment.path
-            for i in 0..<(coordinates.count - 1) {
-                let start = coordinates[i]
-                let end = coordinates[i + 1]
-                let startLocation = CLLocation(latitude: start.latitude, longitude: start.longitude)
-                let endLocation = CLLocation(latitude: end.latitude, longitude: end.longitude)
-                totalDistance += startLocation.distance(from: endLocation) / 1000.0
-            }
-        }
-        
-        return totalDistance
-    }
-    
-    private func validateAndAdjustRoute(_ route: VirtualRoute) -> VirtualRoute {
-        let totalDistance = calculateTotalSegmentDistance(segments: route.segments)
-        
-        return VirtualRoute(
-            id: route.id,
-            name: route.name,
-            description: route.description,
-            totalDistance: totalDistance,
-            milestones: route.milestones,
-            imageName: route.imageName,
-            region: route.region,
-            startCoordinate: route.startCoordinate,
-            waypoints: route.waypoints,
-            segments: route.segments
-        )
-    }
-    
-    private func saveRoutes() {
-        do {
-            let routeData = try JSONEncoder().encode(availableRoutes)
-            userDefaults.set(routeData, forKey: routesKey)
-        } catch {
-            print("Error saving routes: \(error)")
-        }
-    }
-    
     private func saveProgress() {
         guard let progress = currentProgress else { return }
         healthDataStore.updateRouteProgress(progress)
-    }
-    
-    private func loadProgress() {
-        let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
-        fetchRequest.predicate = NSPredicate(format: "isCompleted == %@", NSNumber(value: false))
-        fetchRequest.sortDescriptors = [NSSortDescriptor(key: "startDate", ascending: false)]
-        fetchRequest.fetchLimit = 1
-        
-        do {
-            if let entity = try healthDataStore.persistentContainer.viewContext.fetch(fetchRequest).first {
-                currentProgress = RouteProgress(
-                    id: entity.id ?? UUID(),
-                    routeId: entity.routeId ?? UUID(),
-                    startDate: entity.startDate ?? Date(),
-                    completedDistance: entity.completedDistance,
-                    lastUpdated: entity.lastUpdated ?? Date(),
-                    completedMilestones: entity.getCompletedMilestones(),
-                    totalDistance: entity.totalDistance,
-                    dailyProgress: entity.getDailyProgress(),
-                    isCompleted: entity.isCompleted,
-                    completionDate: entity.completionDate
-                )
-            }
-        } catch {
-            print("Failed to load progress: \(error)")
-        }
     }
     
     private func saveCompletedRoutes() {
