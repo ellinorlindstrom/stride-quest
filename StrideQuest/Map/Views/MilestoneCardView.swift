@@ -89,7 +89,6 @@ struct MilestoneCard: View {
     }
     private var isFinalMilestone: Bool {
         guard let route = routeManager.getRoute(by: routeId) else { return false }
-        // Use small epsilon for floating point comparison
         return abs(milestone.distanceFromStart - route.totalDistance) < 0.1
     }
     
@@ -98,18 +97,13 @@ struct MilestoneCard: View {
             isShowing = false
             selectedMilestone = nil
             
-            // If this is the final milestone and we should complete the route
-            if isFinalMilestone && shouldCompleteRoute {
-                if var progress = routeManager.currentProgress {
-                    // Complete the route after card dismissal
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        progress.markCompleted()
-                        routeManager.handleRouteCompletion(progress)
-                    }
+            if isFinalMilestone {
+                // Complete the route after card dismissal
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    routeManager.completeRoute()
                 }
             }
         }
     }
-    
 }
 

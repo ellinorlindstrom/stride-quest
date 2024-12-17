@@ -51,7 +51,7 @@ class RouteManager: ObservableObject {
     func isTracking(route: VirtualRoute) -> Bool {
         return activeRouteIds.contains(route.id)
     }
-
+    
     
     func selectRoute(_ route: VirtualRoute) {
         selectedRoute = route
@@ -89,39 +89,6 @@ class RouteManager: ObservableObject {
         activeRouteIds.insert(selectedRoute.id)
         updateProgress(withDistance: currentProgress?.completedDistance ?? 0, source: "initial")
         saveProgress()
-    }
-    
-    func handleRouteCompletion(_ progress: RouteProgress) {
-        guard progress.isCompleted,
-              let routeId = progress.currentRoute?.id else {
-            return
-        }
-        // Perform UI updates on main thread
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            // Remove from active routes
-            self.activeRouteIds.remove(routeId)
-            // Add to completed routes if not already there
-            let alreadyCompleted = self.completedRoutes.contains(where: { $0.routeId == routeId })
-            if !alreadyCompleted {
-                self.completedRoutes.append(progress)
-                
-                // Notify observers of the change
-                self.objectWillChange.send()
-                // Save on background thread
-                Task {
-                    await MainActor.run {
-                        self.healthDataStore.updateRouteProgress(progress)
-                        self.loadCompletedRoutes()
-                    }
-                }
-            }
-            
-            // Clear current progress after adding to completed routes
-            if self.currentProgress?.routeId == routeId {
-                self.currentProgress = nil
-            }
-        }
     }
     
     private func loadCompletedRoutes() {
@@ -167,36 +134,80 @@ class RouteManager: ObservableObject {
                 progress.addCompletedMilestone(milestone.id)
                 recentlyUnlockedMilestone = milestone
                 milestoneCompletedPublisher.send(milestone)
-            }
-        }
-        
-        // Check for route completion with a small epsilon for floating-point comparison
-        let epsilon = 0.0001 // Small tolerance value
-        let isAtOrPastEnd = (cappedDistance + epsilon) >= route.totalDistance
-
-        
-        // Handle both newly completed routes and routes that were marked completed but not processed
-        if isAtOrPastEnd {
-            
-            if !progress.isCompleted {
-                progress.markCompleted()
-            }
-            
-            // Check if this route is already in completedRoutes
-            let isInCompletedRoutes = completedRoutes.contains(where: { $0.routeId == route.id })
-            
-            if !isInCompletedRoutes {
+                
+                //        // Check for route completion with a small epsilon for floating-point comparison
+                //        let epsilon = 0.0001 // Small tolerance value
+                //        let isAtOrPastEnd = (cappedDistance + epsilon) >= route.totalDistance
+                //
+                //
+                //        // Handle both newly completed routes and routes that were marked completed but not processed
+                //        if isAtOrPastEnd {
+                //
+                //            if !progress.isCompleted {
+                //                progress.markCompleted()
+                //            }
+                //
+                //            // Check if this route is already in completedRoutes
+                //            let isInCompletedRoutes = completedRoutes.contains(where: { $0.routeId == route.id })
+                //
+                //            if !isInCompletedRoutes {
                 currentProgress = progress
                 handleRouteCompletion(progress)
                 return
-            } else {
-            }
+            } /*else {*/
         }
-        
         currentProgress = progress
         saveProgress()
     }
     
+    func completeRoute() {
+        guard let progress = currentProgress,
+              let route = progress.currentRoute else {
+            return
+        }
+        
+        var updatedProgress = progress
+        updatedProgress.markCompleted()
+        
+        handleRouteCompletion(updatedProgress)
+    }
+
+    func handleRouteCompletion(_ progress: RouteProgress) {
+        guard progress.isCompleted,
+              let routeId = progress.currentRoute?.id else {
+            return
+        }
+        
+        // Perform UI updates on main thread
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
+            // Remove from active routes
+            self.activeRouteIds.remove(routeId)
+            
+            // Add to completed routes if not already there
+            let alreadyCompleted = self.completedRoutes.contains(where: { $0.routeId == routeId })
+            if !alreadyCompleted {
+                self.completedRoutes.append(progress)
+                
+                // Notify observers of the change
+                self.objectWillChange.send()
+                
+                // Save on background thread
+                Task {
+                    await MainActor.run {
+                        self.healthDataStore.updateRouteProgress(progress)
+                        self.loadCompletedRoutes()
+                    }
+                }
+            }
+            
+            // Clear current progress after adding to completed routes
+            if self.currentProgress?.routeId == routeId {
+                self.currentProgress = nil
+            }
+        }
+    }
     func isRouteCompleted(_ routeId: UUID) -> Bool {
         completedRoutes.contains { $0.routeId == routeId }
     }
@@ -231,32 +242,32 @@ class RouteManager: ObservableObject {
     
     func cleanupCompletedRoutes() {
         let validRouteIds = [RouteConstants.camino, RouteConstants.norwegianFjords, RouteConstants.bostonFreedom, RouteConstants.vancouverSeawall, RouteConstants.kyotoPhilosophersPath, RouteConstants.seoulCityWall, RouteConstants.bondiToBronte, RouteConstants.tableMount]
-            
-            // Filter out completed routes that don't match our valid IDs
-            completedRoutes = completedRoutes.filter { progress in
-                validRouteIds.contains(progress.routeId)
-            }
-            
-            // Save the cleaned up routes
-            for progress in completedRoutes {
-                healthDataStore.updateRouteProgress(progress)
-            }
-            
-            // Optional: Delete invalid entries from CoreData
-            let context = healthDataStore.persistentContainer.viewContext
-            let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
-            
-            do {
-                let entities = try context.fetch(fetchRequest)
-                for entity in entities {
-                    if let routeId = entity.routeId, !validRouteIds.contains(routeId) {
-                        context.delete(entity)
-                    }
-                }
-                try context.save()
-            } catch {
-                print("Error cleaning up CoreData: \(error)")
-            }
+        
+        // Filter out completed routes that don't match our valid IDs
+        completedRoutes = completedRoutes.filter { progress in
+            validRouteIds.contains(progress.routeId)
         }
-
+        
+        // Save the cleaned up routes
+        for progress in completedRoutes {
+            healthDataStore.updateRouteProgress(progress)
+        }
+        
+        // Optional: Delete invalid entries from CoreData
+        let context = healthDataStore.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
+        
+        do {
+            let entities = try context.fetch(fetchRequest)
+            for entity in entities {
+                if let routeId = entity.routeId, !validRouteIds.contains(routeId) {
+                    context.delete(entity)
+                }
+            }
+            try context.save()
+        } catch {
+            print("Error cleaning up CoreData: \(error)")
+        }
+    }
+    
 }
