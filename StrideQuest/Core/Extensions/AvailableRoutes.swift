@@ -246,21 +246,21 @@ extension RouteManager {
                 RouteMilestone(
                     routeId: RouteConstants.bostonFreedom,
                     name: "Boston Common",
-                    description: "America's oldest public park",
+                    description: "America's oldest public park, established in 1634. Once a cattle grazing ground, it's now the starting point of the Freedom Trail and a vibrant urban green space in the heart of Boston.",
                     distanceFromStart: 0,
                     imageName: "boston-common"
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.bostonFreedom,
                     name: "Paul Revere House",
-                    description: "Historic home of American patriot",
+                    description: "The oldest remaining structure in downtown Boston (c. 1680) and home to Revolutionary War hero Paul Revere. This remarkably preserved colonial dwelling offers a glimpse into 18th-century Boston life.",
                     distanceFromStart: 2.500,
                     imageName: "paul-revere"
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.bostonFreedom,
                     name: "USS Constitution",
-                    description: "Historic naval vessel",
+                    description: "The world's oldest commissioned warship still afloat (1797). 'Old Ironsides' earned her nickname during the War of 1812 and continues to be a symbol of American naval excellence.",
                     distanceFromStart: 4.000,
                     imageName: "uss-constitution"
                 )
@@ -286,21 +286,21 @@ extension RouteManager {
                 RouteMilestone(
                     routeId: RouteConstants.vancouverSeawall,
                     name: "Coal Harbour",
-                    description: "Starting point with city views",
+                    description: "A sophisticated waterfront neighborhood offering stunning views of the North Shore mountains, float planes taking off, and luxury yachts. The starting point showcases Vancouver's blend of urban and natural beauty.",
                     distanceFromStart: 0,
                     imageName: "coal-harbour"
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.vancouverSeawall,
                     name: "Lions Gate Bridge",
-                    description: "Iconic suspension bridge",
+                    description: "An iconic suspension bridge connecting Vancouver to the North Shore. This National Historic Site offers spectacular views of Stanley Park, the harbor, and the city skyline.",
                     distanceFromStart: 5.000,
                     imageName: "lions-gate"
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.vancouverSeawall,
                     name: "English Bay",
-                    description: "Beautiful beach area",
+                    description: "A vibrant beach area famous for stunning sunsets and the annual Celebration of Light fireworks competition. Popular among cyclists, swimmers, and beach volleyball enthusiasts.",
                     distanceFromStart: 10.000,
                     imageName: "english-bay"
                 )
