@@ -12,51 +12,77 @@ struct CompletedRoutesView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingRouteSelection = false
     
-    var body: some View {
-        NavigationView {
-            Group {
-                if routeManager.completedRoutes.isEmpty {
-                    VStack(spacing: 20) {
-                        Image(systemName: "flag.checkered.circle.fill")
-                            .font(.system(size: 60))
-                            .foregroundColor(.gray)
-                        
-                        Text("No Completed Routes Yet")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Text("Your completed journeys will appear here")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        
-                        Button("Start a New Journey") {
-                            showingRouteSelection = true
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .tint(.blue)
-                        .padding(.top)
-                    }
-                    .sheet(isPresented: $showingRouteSelection) {
-                        RouteSelectionView(onRouteSelected: {
-                            dismiss()
-                        })
-                    }
-                    .padding()
-                    .multilineTextAlignment(.center)
-                } else {
-                    List {
-                        ForEach(routeManager.completedRoutes, id: \.id) { progress in
-                            if let route = progress.currentRoute {
-                                CompletedRouteCard(route: route, progress: progress)
+    private func debugLog() {
+            print("\n📱 CompletedRoutesView Debug Info:")
+            print("  - Total completed routes: \(routeManager.completedRoutes.count)")
+            
+            for (index, progress) in routeManager.completedRoutes.enumerated() {
+                print("\n  Route \(index + 1):")
+                print("    - Progress ID: \(progress.id)")
+                print("    - Route ID: \(progress.routeId)")
+                print("    - Has current route?: \(progress.currentRoute != nil)")
+                print("    - Completed Distance: \(progress.completedDistance)")
+                print("    - Is Completed: \(progress.isCompleted)")
+                if let route = progress.currentRoute {
+                    print("    - Route name: \(route.name)")
+                }
+            }
+        }
+        
+        var body: some View {
+            NavigationStack {
+                ZStack {
+                    if routeManager.completedRoutes.isEmpty {
+                        VStack(spacing: 20) {
+                            Image(systemName: "flag.checkered.circle.fill")
+                                .font(.system(size: 60))
+                                .foregroundColor(.gray)
+                            
+                            Text("No Completed Routes Yet")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                            
+                            Text("Your completed journeys will appear here")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Button("Start a New Journey") {
+                                showingRouteSelection = true
                             }
+                            .buttonStyle(.borderedProminent)
+                            .tint(.blue)
+                            .padding(.top)
+                        }
+                        .padding()
+                        .multilineTextAlignment(.center)
+                    } else {
+                        ScrollView {
+                            LazyVStack(spacing: 16) {
+                                ForEach(routeManager.completedRoutes, id: \.id) { progress in
+                                    if let route = progress.currentRoute {
+                                        CompletedRouteCard(route: route, progress: progress)
+                                    } else {
+                                        Text("Invalid Route (ID: \(progress.routeId))")
+                                            .foregroundColor(.red)
+                                    }
+                                }
+                            }
+                            .padding()
                         }
                     }
                 }
+                .navigationTitle("Completed Journeys")
+                .sheet(isPresented: $showingRouteSelection) {
+                    RouteSelectionView(onRouteSelected: {
+                        dismiss()
+                    })
+                }
             }
-            .navigationTitle("Completed Journeys")
+            .onAppear {
+                debugLog()
+            }
         }
     }
-}
 
 struct CompletedRouteCard: View {
     let route: VirtualRoute

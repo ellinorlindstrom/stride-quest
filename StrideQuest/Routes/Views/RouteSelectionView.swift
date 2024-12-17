@@ -2,12 +2,13 @@ import SwiftUI
 
 struct RouteSelectionView: View {
     @StateObject private var routeManager = RouteManager.shared
+    @State private var navigateToCompleted = false
     @Environment(\.dismiss) private var dismiss
     var onRouteSelected: (() -> Void)?
     
     var body: some View {
-        NavigationView {
-            List(routeManager.availableRoutes) { route in
+        NavigationStack {
+            List(availableRoutes) { route in // Use the filtered list here
                 NavigationLink(destination: RouteDetailView(route: route, onRouteSelected: {
                     onRouteSelected?()
                     dismiss()
@@ -16,6 +17,22 @@ struct RouteSelectionView: View {
                 }
             }
             .navigationTitle("Choose Your Journey")
+            .navigationDestination(isPresented: $navigateToCompleted) {
+                CompletedRoutesView()
+            }
+        }
+        .onReceive(routeManager.$completedRoutes) { _ in
+            // When completedRoutes updates, check if we should navigate
+            if let currentProgress = routeManager.currentProgress,
+               currentProgress.isCompleted {
+                navigateToCompleted = true
+            }
+        }
+    }
+    
+    var availableRoutes: [VirtualRoute] {
+        routeManager.availableRoutes.filter { route in
+            !routeManager.isRouteCompleted(route.id)
         }
     }
 }

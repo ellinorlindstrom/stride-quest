@@ -149,10 +149,8 @@ struct MapView: View {
     }
     
     private func handleMilestoneCompletion(_ milestone: RouteMilestone) {
-        print("🎉 Milestone completed: \(milestone.name), routeId: \(milestone.routeId)")
         if let currentRouteId = routeManager.currentProgress?.currentRoute?.id,
            milestone.routeId == currentRouteId {
-            print("🎯 Showing card for milestone: \(milestone.name)")
             selectedMilestone = milestone
             withAnimation(.easeInOut(duration: 0.3)) {
                 showMilestoneCard = true

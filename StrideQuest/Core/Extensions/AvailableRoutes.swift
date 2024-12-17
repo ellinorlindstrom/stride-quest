@@ -1,11 +1,17 @@
 import Foundation
 import CoreLocation
 
+enum RouteConstants {
+    static let camino = UUID(uuidString: "E5674600-8577-4DED-A7C7-24D836AC4842")!
+    static let incaTrail = UUID(uuidString: "18789900-8BE5-4EE2-8969-47019523AE88")!
+}
+
 extension RouteManager {
     func initializeRoutes() async -> [VirtualRoute] {
-        let caminoId = UUID()
-        let incaTrailId = UUID()
         
+        let caminoId = RouteConstants.camino
+        let incaTrailId = RouteConstants.incaTrail
+
         // Create routes with segments
         async let caminoRoute = createRouteWithSegments(
             id: caminoId,
@@ -194,4 +200,5 @@ extension RouteManager {
             segments: segments
         )
     }
+    
 }

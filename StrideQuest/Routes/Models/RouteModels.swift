@@ -292,7 +292,6 @@ struct RouteProgress: Codable {
            lastUpdated = Date()
            
            if completedDistance >= totalDistance {
-               isCompleted = true
                completionDate = Date()
            }
        }
