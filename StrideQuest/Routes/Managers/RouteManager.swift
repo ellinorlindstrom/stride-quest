@@ -302,7 +302,7 @@ class RouteManager: ObservableObject {
     }
     
     func cleanupCompletedRoutes() {
-            let validRouteIds = [RouteConstants.camino, RouteConstants.incaTrail]
+        let validRouteIds = [RouteConstants.camino, RouteConstants.norwegianFjords, RouteConstants.bostonFreedom, RouteConstants.vancouverSeawall, RouteConstants.kyotoPhilosophersPath, RouteConstants.seoulCityWall, RouteConstants.bondiToBronte, RouteConstants.tableMount]
             
             // Filter out completed routes that don't match our valid IDs
             completedRoutes = completedRoutes.filter { progress in
