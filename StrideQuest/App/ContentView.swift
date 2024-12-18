@@ -4,7 +4,6 @@ import CoreLocation
 
 struct ContentView: View {
     @EnvironmentObject var healthManager: HealthKitManager
-    @StateObject private var routeManager = RouteManager.shared
     @StateObject private var authManager = AuthenticationManager()
     @State private var showingRouteSelection = false
     @State private var showingManualEntry = false

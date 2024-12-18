@@ -8,7 +8,7 @@ import Foundation
 import SwiftUI
 
 struct CompletedRoutesView: View {
-    @ObservedObject private var routeManager = RouteManager.shared
+    @EnvironmentObject var routeManager: RouteManager
     @Environment(\.dismiss) private var dismiss
     @State private var showingRouteSelection = false
     

@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import SwiftUI
 
 enum RouteConstants {
     private static func createUUID(from string: String) -> UUID {
@@ -7,8 +8,6 @@ enum RouteConstants {
             return uuid
         } else {
             fatalError("Invalid UUID string: \(string)")
-            // Or alternatively, return a default UUID:
-            // return UUID()
         }
     }
     
@@ -31,13 +30,13 @@ enum RouteConstants {
     static let tableMount = createUUID(from: "66789012-DEF0-1234-5678-9ABCDEF01234")
 }
 
-extension RouteManager {
-    func initializeRoutes() async -> [VirtualRoute] {
+enum RouteFactory {
+    static func initializeRoutes() async -> [VirtualRoute] {
         async let routes = createAllRoutes()
         return (try? await routes) ?? []
     }
     
-    private func createAllRoutes() async throws -> [VirtualRoute] {
+    private static func createAllRoutes() async throws -> [VirtualRoute] {
         // Create all routes concurrently
         async let route1 = createCaminoRoute()
         async let route2 = createNorwegianFjordsRoute()
@@ -56,7 +55,7 @@ extension RouteManager {
         return try await updateRouteDistances(routes)
     }
     
-    private func updateRouteDistances(_ routes: [VirtualRoute]) async throws -> [VirtualRoute] {
+    private static func updateRouteDistances(_ routes: [VirtualRoute]) async throws -> [VirtualRoute] {
         return routes.map { route in
             var updatedMilestones = route.milestones
             
@@ -109,7 +108,7 @@ extension RouteManager {
         }
     }
     
-    private func createRouteWithSegments(
+    private static func createRouteWithSegments(
         id: UUID,
         name: String,
         description: String,
@@ -155,7 +154,7 @@ extension RouteManager {
     }
     
     // Create routes with segments
-    private func createCaminoRoute() async throws -> VirtualRoute {
+    private static func createCaminoRoute() async throws -> VirtualRoute {
         return try await createRouteWithSegments(
             id: RouteConstants.camino,
             name: "Camino de Santiago",
@@ -203,7 +202,7 @@ extension RouteManager {
     }
     
     // Norway - Moderate Hike
-    private func createNorwegianFjordsRoute() async throws -> VirtualRoute {
+    private static func createNorwegianFjordsRoute() async throws -> VirtualRoute {
         return try await createRouteWithSegments(
             id: RouteConstants.norwegianFjords,
             name: "Trolltunga Trail",
@@ -236,7 +235,7 @@ extension RouteManager {
     }
     
     // USA - Historical City Walk
-    private func createBostonFreedomRoute() async throws -> VirtualRoute {
+    private static func createBostonFreedomRoute() async throws -> VirtualRoute {
         return try await createRouteWithSegments(
             id: RouteConstants.bostonFreedom,
             name: "Boston Freedom Trail",
@@ -276,7 +275,7 @@ extension RouteManager {
     }
     
     // Canada - Urban Nature Walk
-    private func createVancouverSeawallRoute() async throws -> VirtualRoute {
+    private static func createVancouverSeawallRoute() async throws -> VirtualRoute {
         return try await createRouteWithSegments(
             id: RouteConstants.vancouverSeawall,
             name: "Stanley Park Seawall",
@@ -316,7 +315,7 @@ extension RouteManager {
     }
     
     // Japan - Cultural Walk
-    private func createKyotoPhilosophersRoute() async throws -> VirtualRoute {
+    private static func createKyotoPhilosophersRoute() async throws -> VirtualRoute {
         return try await createRouteWithSegments(
             id: RouteConstants.kyotoPhilosophersPath,
             name: "Philosopher's Path",
@@ -348,7 +347,7 @@ extension RouteManager {
     }
     
     // South Korea - Urban Historical
-    private func createSeoulCityWallRoute() async throws -> VirtualRoute {
+    private static func createSeoulCityWallRoute() async throws -> VirtualRoute {
         return try await createRouteWithSegments(
             id: RouteConstants.seoulCityWall,
             name: "Seoul City Wall Trail",
@@ -388,7 +387,7 @@ extension RouteManager {
     }
     
     // Australia - Coastal Walk
-    private func createBondiToBronteRoute() async throws -> VirtualRoute {
+    private static func createBondiToBronteRoute() async throws -> VirtualRoute {
         return try await createRouteWithSegments(
             id: RouteConstants.bondiToBronte,
             name: "Bondi to Bronte Coastal Walk",
@@ -428,7 +427,7 @@ extension RouteManager {
     }
     
     // South Africa - Mountain Hike
-    private func createTableMountainRoute() async throws -> VirtualRoute {
+    private static func createTableMountainRoute() async throws -> VirtualRoute {
         return try await createRouteWithSegments(
             id: RouteConstants.tableMount,
             name: "Table Mountain Platteklip Gorge",

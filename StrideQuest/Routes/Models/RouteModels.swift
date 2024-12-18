@@ -94,14 +94,8 @@ struct VirtualRoute: Identifiable, Codable {
     private let codableWaypoints: [CodableCoordinate]
     let segments: [RouteSegment]
     
-    var imageNameWithDefault: String {
-        // Check if imageName is empty or nil
-        return imageName.isEmpty ? .defaultRouteImage : imageName
-    }
-    
     var startCoordinate: CLLocationCoordinate2D { codableStartCoordinate.coordinate }
     var waypoints: [CLLocationCoordinate2D] { codableWaypoints.map(\.coordinate) }
-    
     var fullPath: [CLLocationCoordinate2D] {
         segments.flatMap { $0.path }
         
@@ -155,10 +149,6 @@ struct RouteMilestone: Identifiable, Codable {
     let description: String
     let distanceFromStart: Double
     let imageName: String
-    
-    var imageNameWithDefault: String {
-        return imageName.isEmpty ? .defaultMilestoneImage : imageName
-    }
     
     init(id: UUID = UUID(),
          routeId: UUID,
@@ -293,7 +283,3 @@ struct RouteProgress: Codable {
     }()
 }
 
-extension String {
-    static let defaultRouteImage = "great-wall-adventure"
-    static let defaultMilestoneImage = "inca-trail"
-}

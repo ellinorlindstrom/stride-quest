@@ -9,7 +9,7 @@ import SwiftUI
 import Foundation
 
 struct ManualDistanceEntryView: View {
-    @ObservedObject var routeManager = RouteManager.shared
+    @EnvironmentObject var routeManager: RouteManager
     @State private var additionalDistance = ""
     @Environment(\.dismiss) private var dismiss
     

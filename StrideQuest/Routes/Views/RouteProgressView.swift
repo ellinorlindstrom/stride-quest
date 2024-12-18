@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct RouteProgressView: View {
-    @StateObject private var routeManager = RouteManager.shared
+    @EnvironmentObject var routeManager: RouteManager
     @StateObject private var healthManager = HealthKitManager.shared
     @State private var showingRouteSelection = false
     

@@ -2,7 +2,8 @@ import SwiftUI
 import MapKit
 
 struct MilestoneAnnotationView: View {
-    @ObservedObject private var routeManager = RouteManager.shared
+    
+    @EnvironmentObject var routeManager: RouteManager
     let milestone: RouteMilestone
     let coordinate: CLLocationCoordinate2D
     let isCompleted: Bool

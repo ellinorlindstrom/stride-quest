@@ -5,7 +5,7 @@ class HealthDataStore {
     static let shared = HealthDataStore()
     let persistentContainer: NSPersistentContainer
     
-    init() {
+    private init() {
         persistentContainer = PersistenceController.shared.container
     }
     

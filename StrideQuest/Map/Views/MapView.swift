@@ -3,33 +3,27 @@ import MapKit
 import Combine
 
 struct MapView: View {
+    @EnvironmentObject var routeManager: RouteManager
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var isUserInteracting = false
-    @ObservedObject var routeManager = RouteManager.shared
-    @State private var progressPolyline: [CLLocationCoordinate2D] = []
     @State private var mapStyle = MapStyle.standard(elevation: .realistic)
-    @State private var showConfetti = false
-    @State private var selectedMilestone: RouteMilestone?
-    @State private var showMilestoneCard = false
-    
     
     var body: some View {
         ZStack {
             Map(position: $cameraPosition, interactionModes: .all) {
-                if let progress = routeManager.currentProgress,
-                   let route = progress.currentRoute {
+                if let route = routeManager.currentRoute {
                     // Route polyline
                     MapPolyline(coordinates: route.fullPath)
                         .stroke(.purple.opacity(0.4), lineWidth: 4)
                     
                     // Progress polyline
-                    if !progressPolyline.isEmpty {
-                        MapPolyline(coordinates: progressPolyline)
+                    if !routeManager.progressPolyline.isEmpty {
+                        MapPolyline(coordinates: routeManager.progressPolyline)
                             .stroke(.blue, lineWidth: 4)
                     }
                     
                     // Current position annotation
-                    if let currentPosition = progressPolyline.last ?? route.segments.first?.path.first {
+                    if let currentPosition = routeManager.progressPolyline.last ?? route.segments.first?.path.first {
                         Annotation("Current Position", coordinate: currentPosition) {
                             CurrentPositionView(coordinate: currentPosition)
                         }
@@ -48,7 +42,10 @@ struct MapView: View {
                                     isCompleted: routeManager.isMilestoneCompleted(milestone),
                                     onTap: {
                                         if routeManager.isMilestoneCompleted(milestone) {
-                                            handleMilestoneSelection(milestone, route: route)
+                                            routeManager.selectedMilestone = milestone
+                                            withAnimation {
+                                                routeManager.showMilestoneCard = true
+                                            }
                                         }
                                     },
                                     currentRouteId: route.id
@@ -71,128 +68,42 @@ struct MapView: View {
                 )
             )
             
-            ConfettiView(isShowing: $showConfetti)
+            ConfettiView(isShowing: $routeManager.showConfetti)
             
-            if showMilestoneCard, let milestone = selectedMilestone {
+            if routeManager.showMilestoneCard,
+               let milestone = routeManager.selectedMilestone,
+               let routeId = routeManager.currentRoute?.id {
                 MilestoneCard(
                     milestone: milestone,
-                    routeId: routeManager.currentProgress?.currentRoute?.id ?? UUID(),
-                    isShowing: $showMilestoneCard,
-                    selectedMilestone: $selectedMilestone
+                    routeId: routeId,
+                    isShowing: $routeManager.showMilestoneCard,
+                    selectedMilestone: $routeManager.selectedMilestone
                 )
                 .padding()
                 .transition(.move(edge: .bottom))
                 .zIndex(2)
             }
         }
-        .onChange(of: showMilestoneCard) { oldValue, newValue in
-            print("🎭 showMilestoneCard changed from \(oldValue) to \(newValue)")
-            if let milestone = selectedMilestone {
-                print("🎭 Selected milestone: \(milestone.name)")
-            }
+        .onChange(of: routeManager.showMilestoneCard) { oldValue, newValue in
+                    if !newValue {
+                        routeManager.selectedMilestone = nil
+                    }
         }
         .onAppear {
             setInitialCamera()
         }
         .onReceive(routeManager.$currentProgress) { _ in
-            updateProgressPolyline()
+            routeManager.updateProgressPolyline()
         }
         .onReceive(routeManager.$currentMapRegion) { region in
             if let region = region, !isUserInteracting {
                 cameraPosition = .region(region)
             }
         }
-        .onReceive(routeManager.milestoneCompletedPublisher) { milestone in
-            handleMilestoneCompletion(milestone)
-        }
     }
-    
-    private func handleMilestoneSelection(_ milestone: RouteMilestone, route: VirtualRoute) {
-        print("📍 Milestone tapped: \(milestone.name)")
-        print("📍 Current selectedMilestone before update: \(String(describing: selectedMilestone))")
-        
-        if milestone.routeId == route.id {
-            selectedMilestone = milestone
-            print("📍 selectedMilestone updated to: \(String(describing: selectedMilestone))")
-            
-            withAnimation {
-                showMilestoneCard = true
-            }
-            print("📍 showMilestoneCard set to: \(showMilestoneCard)")
-        } else {
-            print("🚫 Milestone routeId does not match current routeId.")
-        }
-    }
-    
-    private func handleMilestoneCompletion(_ milestone: RouteMilestone) {
-        if let currentRouteId = routeManager.currentProgress?.currentRoute?.id,
-           milestone.routeId == currentRouteId {
-            selectedMilestone = milestone
-            withAnimation(.easeInOut(duration: 0.3)) {
-                showMilestoneCard = true
-                showConfetti = true
-            }
-        } else {
-            print("🚫 Milestone routeId does not match current routeId.")
-        }
-    }
-    
-    private func updateProgressPolyline() {
-        guard let progress = routeManager.currentProgress,
-              let route = progress.currentRoute else {
-            progressPolyline = []
-            return
-        }
-        
-        var coordinates: [CLLocationCoordinate2D] = []
-        var accumulatedDistance: Double = 0
-        let targetDistance = progress.completedDistance
-        
-        print("⚡️ Updating progress polyline")
-        print("Total completed distance: \(targetDistance) km")
-        
-        // Always start with the first coordinate
-        if let firstCoord = route.segments.first?.path.first {
-            coordinates.append(firstCoord)
-        }
-        
-        // Early exit if we haven't moved from start
-        guard targetDistance > 0 else {
-            progressPolyline = coordinates
-            return
-        }
-        
-        outerLoop: for segment in route.segments {
-            let segmentCoordinates = segment.path
-            
-            for i in 0..<(segmentCoordinates.count - 1) {
-                let start = segmentCoordinates[i]
-                let end = segmentCoordinates[i + 1]
-                let pointDistance = RouteUtils.calculateDistance(from: start, to: end)
-                
-                if accumulatedDistance + pointDistance >= targetDistance {
-                    // We've found the segment containing our target distance
-                    let remainingDistance = targetDistance - accumulatedDistance
-                    let fraction = min(1.0, max(0.0, remainingDistance / pointDistance))
-                    
-                    if let interpolated = RouteUtils.interpolateCoordinate(from: start, to: end, fraction: fraction) {
-                        coordinates.append(interpolated)
-                    }
-                    break outerLoop // Exit both loops once we've found our target point
-                }
-                
-                coordinates.append(end)
-                accumulatedDistance += pointDistance
-            }
-        }
-        
-        progressPolyline = coordinates
-        print("Final polyline has \(coordinates.count) coordinates")
-    }
-    
     
     private func setInitialCamera() {
-        if let route = routeManager.currentProgress?.currentRoute {
+        if let route = routeManager.currentRoute {
             let span = MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
             cameraPosition = .region(MKCoordinateRegion(
                 center: route.startCoordinate,
@@ -201,5 +112,3 @@ struct MapView: View {
         }
     }
 }
-
-

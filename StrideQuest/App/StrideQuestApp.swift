@@ -2,6 +2,7 @@ import SwiftUI
 
 @main
 struct StrideQuestApp: App {
+    @StateObject private var routeManager = RouteManager.shared
     @StateObject private var authManager = AuthenticationManager()
     @StateObject private var healthManager = HealthKitManager.shared
     private let persistenceController = PersistenceController.shared
@@ -12,6 +13,7 @@ struct StrideQuestApp: App {
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .environmentObject(authManager)
                 .environmentObject(healthManager)
+                .environmentObject(routeManager)
                 .task {
                     await requestHealthKitAuthorization()
                 }

@@ -1,64 +1,68 @@
-import Foundation
-import CoreLocation
+import SwiftUI
 import MapKit
-import CoreData
 import Combine
 
+// MARK: - Central Route Management
 class RouteManager: ObservableObject {
+    private static let instance = RouteManager()
+        
+        static var shared: RouteManager {
+            return instance
+        }
+    
     // MARK: - Published Properties
-    let milestoneCompletedPublisher = PassthroughSubject<RouteMilestone, Never>()
-    static let shared = RouteManager()
+    @Published private(set) var availableRoutes: [VirtualRoute] = []
+    @Published private(set) var currentRoute: VirtualRoute?
+    @Published private(set) var currentProgress: RouteProgress?
     @Published private(set) var activeRouteIds: Set<UUID> = []
-    @Published private(set) var selectedRoute: VirtualRoute?
-    @Published var currentRouteCoordinate: CLLocationCoordinate2D?
-    @Published private(set) var currentProgress: RouteProgress? {
-        didSet {
-            print("RouteManager - Progress updated: \(currentProgress?.completedDistance ?? 0) km completed")
-        }
-    }
-    @Published private(set) var completedRoutes: [RouteProgress] = [] {
-        didSet {
-            saveCompletedRoutes()
-        }
-    }
-    @Published private(set) var recentlyUnlockedMilestone: RouteMilestone?
+    @Published private(set) var currentRouteCoordinate: CLLocationCoordinate2D?
     @Published var currentMapRegion: MKCoordinateRegion?
-    @Published var availableRoutes: [VirtualRoute] = []
+    @Published private(set) var completedRoutes: [RouteProgress] = []
+    @Published private(set) var recentlyUnlockedMilestone: RouteMilestone?
+    @Published private(set) var progressPolyline: [CLLocationCoordinate2D] = []
     
+    // MARK: - Private Properties
     private let healthDataStore = HealthDataStore.shared
-    private let userDefaults = UserDefaults.standard
-    private let routesKey = "savedRoutes"
-    private let progressKey = "currentRouteProgress"
-    private let completedRoutesKey = "completedRoutesKey"
+    private let milestoneCompletedPublisher = PassthroughSubject<RouteMilestone, Never>()
     
-    init() {
-        self.availableRoutes = []
-        
-        loadCompletedRoutes()
-        
-        // Initialize predefined routes
+    // MARK: - Milestone State
+    @Published var selectedMilestone: RouteMilestone?
+    //@Published var showMilestoneCard = false
+    @Published var showConfetti = false
+    
+    var showMilestoneCard: Bool = false {
+        willSet {
+            print("🔍 showMilestoneCard will change to \(newValue)")
+            print("🔍 Called from:")
+            Thread.callStackSymbols.forEach { print($0) }
+        }
+    }
+    
+    private init() {
+            
+            // Then load data
+            loadRoutes()
+            loadCompletedRoutes()
+        }
+    
+    // MARK: - Route Management
+    private func loadRoutes() {
         Task {
-            let routes = await initializeRoutes()
-            DispatchQueue.main.async {
+            let routes = await RouteFactory.initializeRoutes()
+            await MainActor.run {
                 self.availableRoutes = routes
-                self.cleanupCompletedRoutes()
-                self.loadCompletedRoutes()
             }
         }
     }
     
-    // MARK: - Public Methods
-    func isTracking(route: VirtualRoute) -> Bool {
-        return activeRouteIds.contains(route.id)
-    }
-    
-    
     func selectRoute(_ route: VirtualRoute) {
-        selectedRoute = route
+        currentRoute = route
     }
     
     func beginRouteTracking() {
-        guard let selectedRoute = selectedRoute else { return }
+        guard let selectedRoute = currentRoute else { return }
+        
+        // Check for existing progress
         let existingProgress = healthDataStore.fetchRouteProgress(for: selectedRoute.id)
         
         if let existingProgress = existingProgress, !existingProgress.isCompleted {
@@ -79,6 +83,7 @@ class RouteManager: ObservableObject {
             currentProgress = progress
         }
         
+        // Update map and tracking state
         currentRouteCoordinate = selectedRoute.waypoints.first
         updateMapRegion(MKCoordinateRegion(
             center: selectedRoute.startCoordinate,
@@ -91,183 +96,209 @@ class RouteManager: ObservableObject {
         saveProgress()
     }
     
-    private func loadCompletedRoutes() {
-        let fetchedRoutes = healthDataStore.fetchAllRouteProgress().filter { $0.isCompleted }
-        DispatchQueue.main.async {
-            self.completedRoutes = fetchedRoutes
-            self.objectWillChange.send()
+    // MARK: - Progress Polyline Management
+        func updateProgressPolyline() {
+            guard let progress = currentProgress,
+                  let route = currentRoute else {
+                progressPolyline = []
+                return
+            }
+            
+            var coordinates: [CLLocationCoordinate2D] = []
+            var accumulatedDistance: Double = 0
+            let targetDistance = progress.completedDistance
+            
+            print("⚡️ Updating progress polyline")
+            print("Total completed distance: \(targetDistance) km")
+            
+            // Always start with the first coordinate
+            if let firstCoord = route.segments.first?.path.first {
+                coordinates.append(firstCoord)
+            }
+            
+            // Early exit if we haven't moved from start
+            guard targetDistance > 0 else {
+                DispatchQueue.main.async {
+                    self.progressPolyline = coordinates
+                }
+                return
+            }
+            
+            outerLoop: for segment in route.segments {
+                let segmentCoordinates = segment.path
+                
+                for i in 0..<(segmentCoordinates.count - 1) {
+                    let start = segmentCoordinates[i]
+                    let end = segmentCoordinates[i + 1]
+                    let pointDistance = RouteUtils.calculateDistance(from: start, to: end)
+                    
+                    if accumulatedDistance + pointDistance >= targetDistance {
+                        // We've found the segment containing our target distance
+                        let remainingDistance = targetDistance - accumulatedDistance
+                        let fraction = min(1.0, max(0.0, remainingDistance / pointDistance))
+                        
+                        if let interpolated = RouteUtils.interpolateCoordinate(from: start, to: end, fraction: fraction) {
+                            coordinates.append(interpolated)
+                        }
+                        break outerLoop
+                    }
+                    
+                    coordinates.append(end)
+                    accumulatedDistance += pointDistance
+                }
+            }
+            
+            DispatchQueue.main.async {
+                self.progressPolyline = coordinates
+                print("Final polyline has \(coordinates.count) coordinates")
+            }
         }
-    }
-    
-    
+        
+        // Update the existing updateProgress function to call updateProgressPolyline
     func updateProgress(withDistance distance: Double, isManual: Bool = false, source: String = "unknown") {
-        // First check if we have a current progress
-        guard let currentProgressCheck = currentProgress else {
+        guard let progress = currentProgress,
+              let route = currentRoute,
+              activeRouteIds.contains(route.id) else {
             return
         }
-        
-        // Then check if we can get the route
-        guard let route = currentProgressCheck.currentRoute else {
-            return
-        }
-        
-        // Finally check if the route is active
-        guard activeRouteIds.contains(route.id) else {
-            return
-        }
-        
-        var progress = currentProgressCheck
+        var updatedProgress = progress
         let cappedDistance = min(distance, route.totalDistance)
         
         let todayString = DateFormatter().string(from: Date())
-        progress.updateDailyProgress(distance: distance, for: todayString)
-        progress.updateCompletedDistance(distance, isManual: isManual)
+        updatedProgress.updateDailyProgress(distance: distance, for: todayString)
+        updatedProgress.updateCompletedDistance(distance, isManual: isManual)
         
-        // Update current position on the route
+        // Update current position
         if let newPosition = route.coordinate(at: cappedDistance) {
             currentRouteCoordinate = newPosition
         }
         
-        // Check for new milestones
-        for milestone in route.milestones.sorted(by: { $0.distanceFromStart < $1.distanceFromStart }) {
-            if cappedDistance >= milestone.distanceFromStart && !progress.completedMilestones.contains(milestone.id) {
-                progress.addCompletedMilestone(milestone.id)
-                recentlyUnlockedMilestone = milestone
-                milestoneCompletedPublisher.send(milestone)
-                
-                //        // Check for route completion with a small epsilon for floating-point comparison
-                //        let epsilon = 0.0001 // Small tolerance value
-                //        let isAtOrPastEnd = (cappedDistance + epsilon) >= route.totalDistance
-                //
-                //
-                //        // Handle both newly completed routes and routes that were marked completed but not processed
-                //        if isAtOrPastEnd {
-                //
-                //            if !progress.isCompleted {
-                //                progress.markCompleted()
-                //            }
-                //
-                //            // Check if this route is already in completedRoutes
-                //            let isInCompletedRoutes = completedRoutes.contains(where: { $0.routeId == route.id })
-                //
-                //            if !isInCompletedRoutes {
-                currentProgress = progress
-                handleRouteCompletion(progress)
-                return
-            } /*else {*/
+        // Store the current progress before checking new milestones
+        currentProgress = updatedProgress
+        
+        // Only check for new milestones if we haven't already completed them
+        if !updatedProgress.completedMilestones.isEmpty {
+            print("🎯 Already completed milestones: \(updatedProgress.completedMilestones)")
         }
-        currentProgress = progress
+        checkMilestones(for: updatedProgress, at: cappedDistance)
+        
+        // Save after all updates
         saveProgress()
-    }
-    
-    func completeRoute() {
-        guard let progress = currentProgress,
-              let route = progress.currentRoute else {
-            return
-        }
-        
-        var updatedProgress = progress
-        updatedProgress.markCompleted()
-        
-        handleRouteCompletion(updatedProgress)
+        updateProgressPolyline()
     }
 
-    func handleRouteCompletion(_ progress: RouteProgress) {
-        guard progress.isCompleted,
-              let routeId = progress.currentRoute?.id else {
+    
+    
+    private func checkMilestones(for progress: RouteProgress, at distance: Double) {
+        guard let route = currentRoute else { return }
+        
+        // Only check milestones that haven't been completed yet
+        let uncompletedMilestones = route.milestones
+            .filter { !progress.completedMilestones.contains($0.id) }
+            .sorted(by: { $0.distanceFromStart < $1.distanceFromStart })
+        
+        for milestone in uncompletedMilestones {
+            if distance >= milestone.distanceFromStart {
+                handleMilestoneCompletion(milestone)
+            }
+        }
+    }
+    
+    // MARK: - Milestone Management
+    func handleMilestoneCompletion(_ milestone: RouteMilestone) {
+        guard let progress = currentProgress else {
+            print("❌ No current progress found")
             return
         }
         
-        // Perform UI updates on main thread
-        DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            
-            // Remove from active routes
-            self.activeRouteIds.remove(routeId)
-            
-            // Add to completed routes if not already there
-            let alreadyCompleted = self.completedRoutes.contains(where: { $0.routeId == routeId })
-            if !alreadyCompleted {
-                self.completedRoutes.append(progress)
-                
-                // Notify observers of the change
-                self.objectWillChange.send()
-                
-                // Save on background thread
-                Task {
-                    await MainActor.run {
-                        self.healthDataStore.updateRouteProgress(progress)
-                        self.loadCompletedRoutes()
-                    }
-                }
-            }
-            
-            // Clear current progress after adding to completed routes
-            if self.currentProgress?.routeId == routeId {
-                self.currentProgress = nil
+        print("🎯 Before completion - Completed milestones: \(progress.completedMilestones)")
+        
+        // Create new progress instance with updated milestones
+        var updatedProgress = progress
+        updatedProgress.addCompletedMilestone(milestone.id)
+        
+        // Important: Update the current progress
+        currentProgress = updatedProgress
+        
+        // Save immediately to persist the change
+        saveProgress()
+        
+        print("🎯 After completion - Completed milestones: \(updatedProgress.completedMilestones)")
+        
+        recentlyUnlockedMilestone = milestone
+        milestoneCompletedPublisher.send(milestone)
+        
+        // Only show UI if milestone was just completed
+        DispatchQueue.main.async {
+            self.selectedMilestone = milestone
+            withAnimation(.easeInOut(duration: 0.3)) {
+                self.showMilestoneCard = true
+                self.showConfetti = true
             }
         }
+        
+        // Check if route is completed
+        if progress.isCompleted {
+            handleRouteCompletion(progress)
+        }
     }
-    func isRouteCompleted(_ routeId: UUID) -> Bool {
-        completedRoutes.contains { $0.routeId == routeId }
-    }
-    
     
     func isMilestoneCompleted(_ milestone: RouteMilestone) -> Bool {
-        guard let progress = currentProgress else {
-            return false
-        }
-        return progress.completedMilestones.contains(milestone.id)
+        let isCompleted = currentProgress?.completedMilestones.contains(milestone.id) ?? false
+        print("🎯 Checking milestone completion for \(milestone.name)")
+        print("🎯 Current progress completed milestones: \(currentProgress?.completedMilestones ?? [])")
+        print("🎯 Is completed: \(isCompleted)")
+        return isCompleted
     }
     
+    // MARK: - Route Completion
+     func handleRouteCompletion(_ progress: RouteProgress) {
+        guard progress.isCompleted else { return }
+            
+            let routeId = progress.routeId 
+            
+        
+        DispatchQueue.main.async {
+            self.activeRouteIds.remove(routeId)
+            
+            if !self.completedRoutes.contains(where: { $0.routeId == routeId }) {
+                self.completedRoutes.append(progress)
+                self.healthDataStore.updateRouteProgress(progress)
+            }
+            
+            self.currentProgress = nil
+            self.currentRoute = nil
+        }
+    }
     
+    // MARK: - Utility Functions
+    
+    // In RouteManager class
     func getRoute(by id: UUID) -> VirtualRoute? {
-        availableRoutes.first { route in route.id == id }
+        return availableRoutes.first { route in route.id == id }
+    }
+    
+    private func loadCompletedRoutes() {
+        let fetchedRoutes = healthDataStore.fetchAllRouteProgress().filter { $0.isCompleted }
+        DispatchQueue.main.async {
+            self.completedRoutes = fetchedRoutes
+        }
+    }
+    
+    func saveProgress() {
+        if let progress = currentProgress {
+            healthDataStore.updateRouteProgress(progress)
+        }
     }
     
     func updateMapRegion(_ region: MKCoordinateRegion) {
         currentMapRegion = region
     }
     
-    private func saveProgress() {
-        guard let progress = currentProgress else { return }
-        healthDataStore.updateRouteProgress(progress)
+    func isTracking(route: VirtualRoute) -> Bool {
+        activeRouteIds.contains(route.id)
     }
-    
-    private func saveCompletedRoutes() {
-        completedRoutes.forEach { route in
-            healthDataStore.updateRouteProgress(route)
+    func isRouteCompleted(_ routeId: UUID) -> Bool {
+            completedRoutes.contains { $0.routeId == routeId }
         }
-    }
-    
-    func cleanupCompletedRoutes() {
-        let validRouteIds = [RouteConstants.camino, RouteConstants.norwegianFjords, RouteConstants.bostonFreedom, RouteConstants.vancouverSeawall, RouteConstants.kyotoPhilosophersPath, RouteConstants.seoulCityWall, RouteConstants.bondiToBronte, RouteConstants.tableMount]
-        
-        // Filter out completed routes that don't match our valid IDs
-        completedRoutes = completedRoutes.filter { progress in
-            validRouteIds.contains(progress.routeId)
-        }
-        
-        // Save the cleaned up routes
-        for progress in completedRoutes {
-            healthDataStore.updateRouteProgress(progress)
-        }
-        
-        // Optional: Delete invalid entries from CoreData
-        let context = healthDataStore.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<RouteProgressEntity>(entityName: "RouteProgressEntity")
-        
-        do {
-            let entities = try context.fetch(fetchRequest)
-            for entity in entities {
-                if let routeId = entity.routeId, !validRouteIds.contains(routeId) {
-                    context.delete(entity)
-                }
-            }
-            try context.save()
-        } catch {
-            print("Error cleaning up CoreData: \(error)")
-        }
-    }
-    
 }

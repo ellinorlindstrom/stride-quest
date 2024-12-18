@@ -10,7 +10,7 @@ import Foundation
 
 struct RouteDetailView: View {
     let route: VirtualRoute
-    @StateObject private var routeManager = RouteManager.shared
+    @EnvironmentObject var routeManager: RouteManager
     @Environment(\.dismiss) private var dismiss
     var onRouteSelected: (() -> Void)?
     

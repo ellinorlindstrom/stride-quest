@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RouteSelectionView: View {
-    @StateObject private var routeManager = RouteManager.shared
+    @EnvironmentObject var routeManager: RouteManager
     @State private var navigateToCompleted = false
     @Environment(\.dismiss) private var dismiss
     var onRouteSelected: (() -> Void)?

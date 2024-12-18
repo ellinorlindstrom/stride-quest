@@ -1,12 +1,13 @@
 import SwiftUI
 
 struct MilestoneCard: View {
-    @ObservedObject private var routeManager = RouteManager.shared
+    @EnvironmentObject var routeManager: RouteManager
     let milestone: RouteMilestone
     let routeId: UUID
     @Binding var isShowing: Bool
     @Binding var selectedMilestone: RouteMilestone?
     @State private var shouldCompleteRoute = false
+    
     
     var body: some View {
         if milestone.routeId == routeId {
@@ -93,14 +94,18 @@ struct MilestoneCard: View {
     }
     
     private func handleDismiss() {
-        withAnimation {
-            isShowing = false
-            selectedMilestone = nil
-            
-            if isFinalMilestone {
-                // Complete the route after card dismissal
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    routeManager.completeRoute()
+            withAnimation {
+                isShowing = false
+                $selectedMilestone.wrappedValue = nil
+                
+                if isFinalMilestone {
+                    // Complete the route after card dismissal
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                        if let currentProgress = routeManager.currentProgress {
+                            var updatedProgress = currentProgress
+                            updatedProgress.markCompleted()
+                            routeManager.handleRouteCompletion(updatedProgress)
+                    }
                 }
             }
         }
