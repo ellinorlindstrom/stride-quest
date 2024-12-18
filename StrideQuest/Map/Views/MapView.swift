@@ -13,7 +13,7 @@ struct MapView: View {
             Map(position: $cameraPosition, interactionModes: .all) {
                 if let route = routeManager.currentRoute {
                     // Route polyline
-                    MapPolyline(coordinates: route.fullPath)
+                    MapPolyline(coordinates: route.path)
                         .stroke(.purple.opacity(0.4), lineWidth: 4)
                     
                     // Progress polyline

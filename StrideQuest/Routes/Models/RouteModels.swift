@@ -2,8 +2,30 @@ import Foundation
 import CoreLocation
 import MapKit
 
+// MARK: - Errors
+enum RouteError: Error {
+    case noRouteFound
+    case invalidCoordinate
+    case invalidDistance
+}
+
+
+// MARK: - Protocols
+protocol Coordinate {
+    var latitude: Double { get }
+    var longitude: Double { get }
+    var coordinate: CLLocationCoordinate2D { get }
+}
+
+protocol Route {
+    var id: UUID { get }
+    var totalDistance: Double { get }
+    var path: [CLLocationCoordinate2D] { get }
+    func coordinate(at distance: Double) -> CLLocationCoordinate2D?
+}
+
 // MARK: - Coordinate Helper
-struct CodableCoordinate: Codable, Hashable {
+struct CodableCoordinate: Codable, Hashable, Coordinate {
     let latitude: Double
     let longitude: Double
     
@@ -22,39 +44,8 @@ struct RouteSegment: Codable, Identifiable, Hashable {
     let id: UUID
     let coordinates: [CodableCoordinate]
     
-    static func createWalkingSegment(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D) async throws -> RouteSegment {
-        let request = MKDirections.Request()
-        request.transportType = .walking
-        request.source = MKMapItem(placemark: MKPlacemark(coordinate: start))
-        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: end))
-        
-        let directions = MKDirections(request: request)
-        let response = try await directions.calculate()
-        
-        guard let route = response.routes.first else {
-            throw NSError(domain: "RouteSegmentError", code: 1, userInfo: [NSLocalizedDescriptionKey: "No route found"])
-        }
-        
-        // Extract all points from the polyline
-        let coordinates = route.polyline.coordinates
-        return RouteSegment(coordinates: coordinates)
-    }
-    
-    init(coordinates: [CLLocationCoordinate2D]) {
-        self.id = UUID()
-        self.coordinates = coordinates.map(CodableCoordinate.init)
-    }
-    
     var path: [CLLocationCoordinate2D] {
         coordinates.map(\.coordinate)
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(id)
-    }
-    
-    static func == (lhs: RouteSegment, rhs: RouteSegment) -> Bool {
-        lhs.id == rhs.id
     }
     
     var distance: Double {
@@ -64,28 +55,22 @@ struct RouteSegment: Codable, Identifiable, Hashable {
         for i in 0..<(coordinates.count - 1) {
             let start = coordinates[i]
             let end = coordinates[i + 1]
-            let startLocation = CLLocation(latitude: start.latitude, longitude: start.longitude)
-            let endLocation = CLLocation(latitude: end.latitude, longitude: end.longitude)
-            totalDistance += startLocation.distance(from: endLocation) / 1000
+            totalDistance += RouteUtils.calculateDistance(from: start, to: end)
         }
         return totalDistance
     }
-}
-
-extension MKPolyline {
-    var coordinates: [CLLocationCoordinate2D] {
-        var coords = [CLLocationCoordinate2D](repeating: CLLocationCoordinate2D(), count: pointCount)
-        getCoordinates(&coords, range: NSRange(location: 0, length: pointCount))
-        return coords
+    
+    init(coordinates: [CLLocationCoordinate2D]) {
+        self.id = UUID()
+        self.coordinates = coordinates.map(CodableCoordinate.init)
     }
 }
 
 // MARK: - Virtual Route
-struct VirtualRoute: Identifiable, Codable {
+struct VirtualRoute: Route, Identifiable, Codable {
     let id: UUID
     let name: String
     let description: String
-    /// Total distance of the route is in km
     let totalDistance: Double
     let milestones: [RouteMilestone]
     let imageName: String
@@ -96,12 +81,7 @@ struct VirtualRoute: Identifiable, Codable {
     
     var startCoordinate: CLLocationCoordinate2D { codableStartCoordinate.coordinate }
     var waypoints: [CLLocationCoordinate2D] { codableWaypoints.map(\.coordinate) }
-    var fullPath: [CLLocationCoordinate2D] {
-        segments.flatMap { $0.path }
-        
-        
-        
-    }
+    var path: [CLLocationCoordinate2D] { segments.flatMap(\.path) }
     
     init(id: UUID = UUID(),
          name: String,
@@ -117,16 +97,7 @@ struct VirtualRoute: Identifiable, Codable {
         self.name = name
         self.description = description
         self.totalDistance = totalDistance
-        self.milestones = milestones.map { milestone in
-            RouteMilestone(
-                id: milestone.id,
-                routeId: id,
-                name: milestone.name,
-                description: milestone.description,
-                distanceFromStart: milestone.distanceFromStart,
-                imageName: milestone.imageName
-            )
-        }
+        self.milestones = milestones.map { $0.with(routeId: id) }
         self.imageName = imageName
         self.region = region
         self.codableStartCoordinate = CodableCoordinate(coordinate: startCoordinate)
@@ -135,10 +106,8 @@ struct VirtualRoute: Identifiable, Codable {
     }
     
     func coordinate(at distance: Double) -> CLLocationCoordinate2D? {
-        // Delegate to RouteUtils
-        return RouteUtils.findCoordinate(distance: distance, in: self)
+        RouteUtils.findCoordinate(distance: distance, in: self)
     }
-    
 }
 
 // MARK: - Route Milestone
@@ -163,43 +132,63 @@ struct RouteMilestone: Identifiable, Codable {
         self.distanceFromStart = distanceFromStart
         self.imageName = imageName
     }
+    
+    func with(routeId: UUID) -> RouteMilestone {
+        RouteMilestone(
+            id: id,
+            routeId: routeId,
+            name: name,
+            description: description,
+            distanceFromStart: distanceFromStart,
+            imageName: imageName
+        )
+    }
 }
 
 // MARK: - Route Progress
 struct RouteProgress: Codable {
-    let id: UUID
-    let routeId: UUID
-    private(set) var startDate: Date
-    private(set) var completedDistance: Double
-    private(set) var lastUpdated: Date
-    private(set) var completedMilestones: Set<UUID>
-    let totalDistance: Double
-    private(set) var dailyProgress: [String: Double]
-    private(set) var isCompleted: Bool
-    private(set) var completionDate: Date?
-    
+    // MARK: - Nested Types
     struct DailyProgress: Codable {
         let date: Date
         var distance: Double
     }
     
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter
+    }()
+    
+    // MARK: - Properties
+    let id: UUID
+    let routeId: UUID
+    let totalDistance: Double
+    private(set) var startDate: Date
+    private(set) var completedDistance: Double
+    private(set) var lastUpdated: Date
+    private(set) var completedMilestones: Set<UUID>
+    private(set) var dailyProgress: [String: Double]
+    private(set) var isDistanceCompleted: Bool
+    private(set) var isCompleted: Bool
+    private(set) var completionDate: Date?
+    
+    // MARK: - Computed Properties
     var percentageCompleted: Double {
         (min(completedDistance, totalDistance) / totalDistance) * 100
-    }
-    
-    var currentRoute: VirtualRoute? {
-        RouteManager.shared.getRoute(by: routeId)
     }
     
     var remainingDistance: Double {
         max(0, totalDistance - completedDistance)
     }
     
+    var currentRoute: VirtualRoute? {
+        RouteManager.shared.getRoute(by: routeId)
+    }
+    
     var completedPath: [CLLocationCoordinate2D] {
-        guard let route = currentRoute else { return [] }
-        guard completedDistance > 0 else { return [] }
+        guard let route = currentRoute, completedDistance > 0 else { return [] }
         
-        return route.fullPath.prefix { coordinate in
+        return route.path.prefix { coordinate in
             let startCoord = route.startCoordinate
             let location1 = CLLocation(latitude: startCoord.latitude, longitude: startCoord.longitude)
             let location2 = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
@@ -207,6 +196,14 @@ struct RouteProgress: Codable {
         }
     }
     
+    var dailyProgressArray: [DailyProgress] {
+        dailyProgress.compactMap { dateString, distance in
+            guard let date = Self.dateFormatter.date(from: dateString) else { return nil }
+            return DailyProgress(date: date, distance: distance)
+        }.sorted { $0.date < $1.date }
+    }
+    
+    // MARK: - Initialization
     init(id: UUID = UUID(),
          routeId: UUID,
          startDate: Date,
@@ -215,6 +212,7 @@ struct RouteProgress: Codable {
          completedMilestones: Set<UUID> = [],
          totalDistance: Double,
          dailyProgress: [String: Double] = [:],
+         isDistanceCompleted: Bool = false,
          isCompleted: Bool = false,
          completionDate: Date? = nil) {
         self.id = id
@@ -225,40 +223,35 @@ struct RouteProgress: Codable {
         self.completedMilestones = completedMilestones
         self.totalDistance = totalDistance
         self.dailyProgress = dailyProgress
+        self.isDistanceCompleted = isDistanceCompleted
         self.isCompleted = isCompleted
         self.completionDate = completionDate
     }
     
+    // MARK: - Progress Update Methods
     mutating func updateProgress(distance: Double, date: Date) {
         let cappedDistance = min(distance, totalDistance)
         completedDistance += distance
         lastUpdated = date
         
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        let dateString = dateFormatter.string(from: date)
+        let dateString = Self.dateFormatter.string(from: date)
         dailyProgress[dateString, default: 0] = cappedDistance
         
-        if cappedDistance >= totalDistance && !isCompleted {
-            isCompleted = true
-            completionDate = date
-        }
+        checkDistanceCompletion(at: cappedDistance)
     }
     
     mutating func updateDailyProgress(distance: Double, for date: String) {
         let cappedDistance = min(distance, totalDistance)
         dailyProgress[date] = cappedDistance
     }
-    
-    mutating func updateCompletedDistance(_ distance: Double, isManual: Bool) {
-        let cappedDistance = min(distance, totalDistance)
-        completedDistance = isManual ? cappedDistance : min(cappedDistance, totalDistance)
-        lastUpdated = Date()
-        
-        if completedDistance >= totalDistance {
-            completionDate = Date()
+
+        mutating func updateCompletedDistance(_ distance: Double, isManual: Bool) {
+            let cappedDistance = min(distance, totalDistance)
+            completedDistance = isManual ? cappedDistance : min(cappedDistance, totalDistance)
+            lastUpdated = Date()
+            
+            checkDistanceCompletion(at: completedDistance)
         }
-    }
     
     mutating func markCompleted() {
         isCompleted = true
@@ -269,17 +262,16 @@ struct RouteProgress: Codable {
         completedMilestones.insert(id)
     }
     
-    var dailyProgressArray: [DailyProgress] {
-        dailyProgress.compactMap { dateString, distance in
-            guard let date = Self.dateFormatter.date(from: dateString) else { return nil }
-            return DailyProgress(date: date, distance: distance)
-        }.sorted { $0.date < $1.date }
-    }
+    mutating func finalizeCompletion() {
+            guard isDistanceCompleted && !isCompleted else { return }
+            isCompleted = true
+            completionDate = Date()
+        }
     
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter
-    }()
+    // MARK: - Private Helpers
+    private mutating func checkDistanceCompletion(at distance: Double) {
+            if distance >= totalDistance && !isDistanceCompleted {
+                isDistanceCompleted = true
+            }
+    }
 }
-

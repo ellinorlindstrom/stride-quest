@@ -94,20 +94,18 @@ struct MilestoneCard: View {
     }
     
     private func handleDismiss() {
-            withAnimation {
-                isShowing = false
-                $selectedMilestone.wrappedValue = nil
-                
-                if isFinalMilestone {
-                    // Complete the route after card dismissal
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                        if let currentProgress = routeManager.currentProgress {
-                            var updatedProgress = currentProgress
-                            updatedProgress.markCompleted()
-                            routeManager.handleRouteCompletion(updatedProgress)
+        withAnimation {
+                if shouldCompleteRoute {
+                    // Only complete the route if the button was pressed
+                    if let currentProgress = routeManager.currentProgress {
+                        var updatedProgress = currentProgress
+                        updatedProgress.finalizeCompletion() // Use new method
+                        routeManager.handleRouteCompletion(updatedProgress)
                     }
                 }
-            }
+                isShowing = false
+                selectedMilestone = nil
+            
         }
     }
 }

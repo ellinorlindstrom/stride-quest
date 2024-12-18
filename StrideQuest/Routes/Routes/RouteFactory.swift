@@ -123,7 +123,7 @@ enum RouteFactory {
         // Create walking segments between consecutive waypoints
         for i in 0..<(waypoints.count - 1) {
             do {
-                let segment = try await RouteSegment.createWalkingSegment(
+                let segment = try await RouteUtils.createWalkingSegment(
                     from: waypoints[i],
                     to: waypoints[i + 1]
                 )

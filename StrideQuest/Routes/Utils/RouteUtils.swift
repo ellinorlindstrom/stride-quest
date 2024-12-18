@@ -1,5 +1,6 @@
 import Foundation
 import CoreLocation
+import MapKit
 
 struct RouteUtils {
     /// Finds the coordinate along a route for a given distance.
@@ -61,5 +62,36 @@ struct RouteUtils {
         let startLocation = CLLocation(latitude: start.latitude, longitude: start.longitude)
         let endLocation = CLLocation(latitude: end.latitude, longitude: end.longitude)
         return startLocation.distance(from: endLocation) / 1000.0 // Convert to kilometers
+    }
+    
+    static func createWalkingSegment(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D) async throws -> RouteSegment {
+        // Validate coordinates
+        guard CLLocationCoordinate2DIsValid(start), CLLocationCoordinate2DIsValid(end) else {
+            throw RouteError.invalidCoordinate
+        }
+        
+        let request = MKDirections.Request()
+        request.transportType = .walking
+        request.source = MKMapItem(placemark: MKPlacemark(coordinate: start))
+        request.destination = MKMapItem(placemark: MKPlacemark(coordinate: end))
+        
+        let directions = MKDirections(request: request)
+        let response = try await directions.calculate()
+        
+        guard let route = response.routes.first else {
+            throw RouteError.noRouteFound
+        }
+        
+        let coordinates = route.polyline.coordinates
+        return RouteSegment(coordinates: coordinates)
+        
+    }
+}
+
+extension MKPolyline {
+    var coordinates: [CLLocationCoordinate2D] {
+        var coords = [CLLocationCoordinate2D](repeating: CLLocationCoordinate2D(), count: pointCount)
+        getCoordinates(&coords, range: NSRange(location: 0, length: pointCount))
+        return coords
     }
 }
