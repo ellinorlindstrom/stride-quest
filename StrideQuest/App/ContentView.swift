@@ -9,7 +9,6 @@ struct ContentView: View {
     @State private var showingManualEntry = false
     @State private var showingProgress = true
     @State private var showingCompletedRoutes = false
-    @State private var showingCustomRouteCreation = false
     @State private var showingSettings = false
     @State private var isMenuShowing = false
     
@@ -21,7 +20,6 @@ struct ContentView: View {
                     showingRouteSelection: $showingRouteSelection,
                     showingManualEntry: $showingManualEntry,
                     showingCompletedRoutes: $showingCompletedRoutes,
-                    showingCustomRouteCreation: $showingCustomRouteCreation,
                     showingSettings: $showingSettings,
                     isMenuShowing: $isMenuShowing
                 )
@@ -44,7 +42,6 @@ struct ContentView: View {
                             showingRouteSelection: $showingRouteSelection,
                             showingManualEntry: $showingManualEntry,
                             showingCompletedRoutes: $showingCompletedRoutes,
-                            showingCustomRouteCreation: $showingCustomRouteCreation,
                             showingSettings: $showingSettings,
                             isMenuShowing: $isMenuShowing
                         )

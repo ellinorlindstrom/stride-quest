@@ -1,8 +1,9 @@
 import Foundation
 import HealthKit
+import SwiftUI
 
 class HealthKitManager: ObservableObject {
-
+    @AppStorage("lastKnownDistance") private var lastKnownDistance: Double = 0
     static let shared = HealthKitManager()
     let healthStore = HKHealthStore()
     
@@ -33,6 +34,10 @@ class HealthKitManager: ObservableObject {
         HKQuantityType(.distanceSwimming),
         HKQuantityType(.distanceWheelchair),
     ]
+    
+    init() {
+        self.totalDistance = lastKnownDistance
+    }
     
     func markRouteStart() {
         routeStartDistance = totalDistance
@@ -67,67 +72,72 @@ class HealthKitManager: ObservableObject {
         }
     }
     
-    private func startObservingDistance() {
-        let distanceTypes = [
-            HKQuantityType(.distanceWalkingRunning),
-            HKQuantityType(.distanceCycling),
-            HKQuantityType(.distanceSwimming),
-            HKQuantityType(.distanceWheelchair),
-        ]
-        
-        for distanceType in distanceTypes {
-            let query = HKObserverQuery(sampleType: distanceType, predicate: nil) { [weak self] _, completion, error in
-                if error == nil {
-                    DispatchQueue.main.async {
-                        self?.fetchTotalDistance()
-                    }
-                }
-                completion()
-            }
-            
-            observerQueries.append(query)
-            healthStore.execute(query)
-            
-        }
-    }
+//    private func startObservingDistance() {
+//        let distanceTypes = [
+//            HKQuantityType(.distanceWalkingRunning),
+//            HKQuantityType(.distanceCycling),
+//            HKQuantityType(.distanceSwimming),
+//            HKQuantityType(.distanceWheelchair),
+//        ]
+//        
+//        for distanceType in distanceTypes {
+//            let query = HKObserverQuery(sampleType: distanceType, predicate: nil) { [weak self] _, completion, error in
+//                if error == nil {
+//                    DispatchQueue.main.async {
+//                        self?.fetchTotalDistance()
+//                    }
+//                }
+//                completion()
+//            }
+//            
+//            observerQueries.append(query)
+//            healthStore.execute(query)
+//            
+//        }
+//    }
     
     func fetchTotalDistance() {
-        let distanceTypes = [
-            HKQuantityType(.distanceWalkingRunning),
-            HKQuantityType(.distanceCycling),
-            HKQuantityType(.distanceSwimming),
-            HKQuantityType(.distanceWheelchair),
-        ]
-        
         let calendar = Calendar.current
         let now = Date()
         let startOfDay = calendar.startOfDay(for: now)
+        
+        let distanceTypes = [
+            HKQuantityType(.distanceWalkingRunning),
+            HKQuantityType(.distanceCycling),
+            HKQuantityType(.distanceSwimming),
+            HKQuantityType(.distanceWheelchair)
+        ]
         
         let predicate = HKQuery.predicateForSamples(
             withStart: startOfDay,
             end: now
         )
         
-        let group = DispatchGroup()
         var temporaryTotal: Double = 0
+        let group = DispatchGroup()
         
         for distanceType in distanceTypes {
             group.enter()
             
-            let query = HKStatisticsQuery(
+            let query = HKStatisticsCollectionQuery(
                 quantityType: distanceType,
                 quantitySamplePredicate: predicate,
-                options: .cumulativeSum
-            ) { _, result, error in
+                options: .cumulativeSum,
+                anchorDate: startOfDay,
+                intervalComponents: DateComponents(day: 1)
+            )
+            
+            query.initialResultsHandler = { query, results, error in
                 defer { group.leave() }
                 
-                guard let result = result,
-                      let sum = result.sumQuantity() else {
-                    return
-                }
+                guard let results = results else { return }
                 
-                let distance = sum.doubleValue(for: HKUnit.meter())
-                temporaryTotal += distance
+                results.enumerateStatistics(from: startOfDay, to: now) { statistics, stop in
+                    if let sum = statistics.sumQuantity() {
+                        let distance = sum.doubleValue(for: HKUnit.meter())
+                        temporaryTotal += distance
+                    }
+                }
             }
             
             healthStore.execute(query)
@@ -143,11 +153,33 @@ class HealthKitManager: ObservableObject {
             )
         }
     }
-    
-    deinit {
-        for query in observerQueries {
-            healthStore.stop(query)
+    private func startObservingDistance() {
+        // Immediate update when app becomes active
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(appBecameActive),
+            name: UIApplication.didBecomeActiveNotification,
+            object: nil
+        )
+        
+        // Set up observer queries for each distance type
+        for distanceType in typesToRead {
+            let query = HKObserverQuery(sampleType: distanceType, predicate: nil) { [weak self] _, completion, error in
+                if error == nil {
+                    DispatchQueue.main.async {
+                        self?.fetchTotalDistance()
+                    }
+                }
+                completion()
+            }
+            
+            observerQueries.append(query)
+            healthStore.execute(query)
         }
+    }
+
+    @objc private func appBecameActive() {
+        fetchTotalDistance()
     }
 }
 

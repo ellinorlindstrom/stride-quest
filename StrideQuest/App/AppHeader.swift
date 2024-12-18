@@ -8,7 +8,6 @@ struct AppHeader: View {
     @Binding var showingRouteSelection: Bool
     @Binding var showingManualEntry: Bool
     @Binding var showingCompletedRoutes: Bool
-    @Binding var showingCustomRouteCreation: Bool
     @Binding var showingSettings: Bool
     @Binding var isMenuShowing: Bool
     
