@@ -5,9 +5,7 @@ struct MilestoneCard: View {
     let milestone: RouteMilestone
     let routeId: UUID
     @Binding var isShowing: Bool
-    @Binding var selectedMilestone: RouteMilestone?
-    @State private var shouldCompleteRoute = false
-    
+    @Binding var selectedMilestone: RouteMilestone?    
     
     var body: some View {
         if milestone.routeId == routeId {
@@ -56,11 +54,9 @@ struct MilestoneCard: View {
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
                 
-                // Add Complete Route button for final milestone
                 if isFinalMilestone {
                     Button(action: {
-                        shouldCompleteRoute = true
-                        handleDismiss()
+                        completeRoute()
                     }) {
                         Text("Complete Route")
                             .font(.headline)
@@ -93,16 +89,28 @@ struct MilestoneCard: View {
         return abs(milestone.distanceFromStart - route.totalDistance) < 0.1
     }
     
-    private func handleDismiss() {
-        withAnimation {
-                if shouldCompleteRoute {
-                    // Only complete the route if the button was pressed
-                    if let currentProgress = routeManager.currentProgress {
-                        var updatedProgress = currentProgress
-                        updatedProgress.finalizeCompletion() // Use new method
-                        routeManager.handleRouteCompletion(updatedProgress)
-                    }
-                }
+    private func completeRoute() {
+            guard let currentProgress = routeManager.currentProgress else { return }
+            
+            // Create an updated progress with completion
+            var updatedProgress = currentProgress
+            updatedProgress.finalizeCompletion()
+            
+            // First save the updated progress
+            routeManager.saveProgress()
+            
+            // Then handle route completion
+            routeManager.handleRouteCompletion(updatedProgress)
+            
+            // Finally, dismiss the card
+            withAnimation {
+                isShowing = false
+                selectedMilestone = nil
+            }
+        }
+        
+        private func handleDismiss() {
+            withAnimation {
                 isShowing = false
                 selectedMilestone = nil
             
