@@ -67,7 +67,7 @@ struct RouteSegment: Codable, Identifiable, Hashable {
 }
 
 // MARK: - Virtual Route
-struct VirtualRoute: Route, Identifiable, Codable {
+struct VirtualRoute: Route, Identifiable, Codable, Equatable {
     let id: UUID
     let name: String
     let description: String
@@ -82,6 +82,10 @@ struct VirtualRoute: Route, Identifiable, Codable {
     var startCoordinate: CLLocationCoordinate2D { codableStartCoordinate.coordinate }
     var waypoints: [CLLocationCoordinate2D] { codableWaypoints.map(\.coordinate) }
     var path: [CLLocationCoordinate2D] { segments.flatMap(\.path) }
+    
+    static func == (lhs: VirtualRoute, rhs: VirtualRoute) -> Bool {
+            lhs.id == rhs.id
+        }
     
     init(id: UUID = UUID(),
          name: String,
@@ -111,13 +115,17 @@ struct VirtualRoute: Route, Identifiable, Codable {
 }
 
 // MARK: - Route Milestone
-struct RouteMilestone: Identifiable, Codable {
+struct RouteMilestone: Identifiable, Codable, Equatable {
     let id: UUID
     let routeId: UUID
     let name: String
     let description: String
     let distanceFromStart: Double
     let imageName: String
+    
+    static func == (lhs: RouteMilestone, rhs: RouteMilestone) -> Bool {
+            lhs.id == rhs.id
+        }
     
     init(id: UUID = UUID(),
          routeId: UUID,
@@ -181,12 +189,11 @@ struct RouteProgress: Codable {
         max(0, totalDistance - completedDistance)
     }
     
-    var currentRoute: VirtualRoute? {
-        RouteManager.shared.getRoute(by: routeId)
-    }
-    
     var completedPath: [CLLocationCoordinate2D] {
-        guard let route = currentRoute, completedDistance > 0 else { return [] }
+        guard let route = RouteManager.shared.getRoute(by: routeId),
+              completedDistance > 0 else {
+            return []
+        }
         
         return route.path.prefix { coordinate in
             let startCoord = route.startCoordinate

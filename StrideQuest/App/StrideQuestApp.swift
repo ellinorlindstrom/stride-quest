@@ -1,7 +1,18 @@
 import SwiftUI
+import BackgroundTasks
+
+class AppDelegate: NSObject, UIApplicationDelegate {
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        // Register background task
+        HealthKitManager.shared.registerBackgroundTasks()
+        
+        return true
+    }
+}
 
 @main
 struct StrideQuestApp: App {
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var routeManager = RouteManager.shared
     @StateObject private var authManager = AuthenticationManager()
     @StateObject private var healthManager = HealthKitManager.shared

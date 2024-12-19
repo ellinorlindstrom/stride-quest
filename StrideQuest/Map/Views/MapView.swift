@@ -84,6 +84,13 @@ struct MapView: View {
                 .zIndex(2)
             }
         }
+        .onReceive(routeManager.$currentMapRegion) { newRegion in
+                    if let region = newRegion, !isUserInteracting {
+                        withAnimation(.easeInOut(duration: 0.3)) {
+                            cameraPosition = .region(region)
+                        }
+                    }
+                }
         .onChange(of: routeManager.showMilestoneCard) { oldValue, newValue in
                     if !newValue {
                         routeManager.selectedMilestone = nil

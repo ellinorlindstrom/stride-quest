@@ -15,7 +15,7 @@ struct RouteProgressView: View {
     var body: some View {
         VStack(spacing: 20) {
             if let progress = routeManager.currentProgress,
-               let route = progress.currentRoute {
+               let route = routeManager.getRoute(by: progress.routeId) {
                 // Current route progress
                 VStack(alignment: .leading, spacing: 15) {
                     Text(route.name)
@@ -40,6 +40,9 @@ struct RouteProgressView: View {
                                 .font(.headline)
                         }
                     }
+                    .onAppear {
+                                routeManager.verifyTrackingState()
+                            }
                 }
                 .padding()
                 .background(Color.gray.opacity(0.1))
@@ -67,6 +70,7 @@ struct RouteProgressView: View {
         .sheet(isPresented: $showingRouteSelection) {
             RouteSelectionView()
         }
+   
     }
 }
 

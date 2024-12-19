@@ -4,26 +4,52 @@ import Combine
 
 // MARK: - Central Route Management
 class RouteManager: ObservableObject {
+    @Published var isActivelyTracking: Bool = false
+    // MARK: - Published Properties
+    @Published private(set) var availableRoutes: [VirtualRoute] = []
+    @Published private(set) var currentRoute: VirtualRoute?
+    @Published private(set) var currentProgress: RouteProgress?
+    //@Published private(set) var activeRouteIds: Set<UUID> = []
+    @Published private(set) var currentRouteCoordinate: CLLocationCoordinate2D?
+    @Published private(set) var currentMapRegion: MKCoordinateRegion?
+    @Published private(set) var completedRoutes: [RouteProgress] = []
+    @Published private(set) var recentlyUnlockedMilestone: RouteMilestone?
+    @Published private(set) var progressPolyline: [CLLocationCoordinate2D] = []
+    
+    internal func setAvailableRoutes(_ routes: [VirtualRoute]) {
+           availableRoutes = routes
+       }
+       
+       internal func setCurrentRoute(_ route: VirtualRoute?) {
+           currentRoute = route
+       }
+       
+       internal func setCurrentProgress(_ progress: RouteProgress?) {
+           currentProgress = progress
+       }
+       
+       internal func setRecentlyUnlockedMilestone(_ milestone: RouteMilestone?) {
+           recentlyUnlockedMilestone = milestone
+       }
+    
+    // MARK: - Private Properties
+    private let defaults = UserDefaults.standard
+    private let milestoneCompletedPublisher = PassthroughSubject<RouteMilestone, Never>()
+    
     private static let instance = RouteManager()
         
         static var shared: RouteManager {
             return instance
         }
     
-    // MARK: - Published Properties
-    @Published private(set) var availableRoutes: [VirtualRoute] = []
-    @Published private(set) var currentRoute: VirtualRoute?
-    @Published private(set) var currentProgress: RouteProgress?
-    @Published private(set) var activeRouteIds: Set<UUID> = []
-    @Published private(set) var currentRouteCoordinate: CLLocationCoordinate2D?
-    @Published var currentMapRegion: MKCoordinateRegion?
-    @Published private(set) var completedRoutes: [RouteProgress] = []
-    @Published private(set) var recentlyUnlockedMilestone: RouteMilestone?
-    @Published private(set) var progressPolyline: [CLLocationCoordinate2D] = []
+    private init() {
+            
+            restoreState()
+            loadRoutes()
+            loadCompletedRoutes()
+        }
     
-    // MARK: - Private Properties
-    private let healthDataStore = HealthDataStore.shared
-    private let milestoneCompletedPublisher = PassthroughSubject<RouteMilestone, Never>()
+    let healthDataStore = HealthDataStore.shared
     
     // MARK: - Milestone State
     @Published var selectedMilestone: RouteMilestone?
@@ -33,19 +59,97 @@ class RouteManager: ObservableObject {
     var showMilestoneCard: Bool = false {
         willSet {
             print("🔍 showMilestoneCard will change to \(newValue)")
-            print("🔍 Called from:")
-            Thread.callStackSymbols.forEach { print($0) }
         }
     }
     
-    private init() {
-            
-            // Then load data
-            loadRoutes()
-            loadCompletedRoutes()
-        }
     
     // MARK: - Route Management
+    func selectRoute(_ route: VirtualRoute) {
+            // Only allow selecting a route if it's the next available one
+            guard isRouteAvailable(route) else { return }
+            
+            currentRoute = route
+            saveState()
+        }
+    
+    // In RouteManager
+    func selectAndStartRoute(_ route: VirtualRoute) {
+        guard isRouteAvailable(route) else {
+            print("❌ Route not available")
+            return
+        }
+        
+        print("🎯 Starting route selection process")
+        
+        // Set tracking state first
+        isActivelyTracking = true
+        print("  - Set isActivelyTracking to true")
+        
+        // Set the current route
+        setCurrentRoute(route)
+        print("  - Current route set to: \(route.name)")
+        
+        // Initialize fresh progress
+        let newProgress = initializeProgress(for: route)
+        setCurrentProgress(newProgress)
+        print("  - Initialized new progress")
+        
+        // Start HealthKit tracking
+        HealthKitManager.shared.markRouteStart()
+        print("  - Called HealthKit markRouteStart")
+        
+        // Force initial distance fetch
+        HealthKitManager.shared.fetchTotalDistance()
+        print("  - Fetching initial distance")
+        
+        saveState()
+        print("  - State saved")
+        
+        // Verify final state
+        print("Final state check:")
+        print("  - isActivelyTracking: \(isActivelyTracking)")
+        print("  - Current route exists: \(currentRoute != nil)")
+        print("  - Current progress exists: \(currentProgress != nil)")
+        print("  - HealthKit isTrackingRoute: \(HealthKitManager.shared.isTrackingRoute)")
+    }
+    
+    func focusMapOnCurrentRoute() {
+            guard let route = currentRoute else { return }
+            
+            // Set a closer zoom level when actively tracking
+            let span = MKCoordinateSpan(
+                latitudeDelta: isActivelyTracking ? 0.05 : 0.2,
+                longitudeDelta: isActivelyTracking ? 0.05 : 0.2
+            )
+            
+            let region = MKCoordinateRegion(
+                center: route.startCoordinate,
+                span: span
+            )
+            
+            DispatchQueue.main.async {
+                self.currentMapRegion = region
+            }
+        }
+        
+        func isRouteAvailable(_ route: VirtualRoute) -> Bool {
+            // First route is always available
+            if completedRoutes.isEmpty {
+                return route == availableRoutes.first
+            }
+            
+            // Find the index of the last completed route
+            guard let lastCompletedRoute = completedRoutes.last,
+                  let lastCompletedIndex = availableRoutes.firstIndex(where: { $0.id == lastCompletedRoute.routeId }),
+                  let newRouteIndex = availableRoutes.firstIndex(where: { $0.id == route.id })
+            else {
+                return false
+            }
+            
+            // Only allow selecting the next route in sequence
+            return newRouteIndex == lastCompletedIndex + 1
+        }
+    
     private func loadRoutes() {
         Task {
             let routes = await RouteFactory.initializeRoutes()
@@ -55,45 +159,8 @@ class RouteManager: ObservableObject {
         }
     }
     
-    func selectRoute(_ route: VirtualRoute) {
-        currentRoute = route
-    }
-    
     func beginRouteTracking() {
-        guard let selectedRoute = currentRoute else { return }
-        
-        // Check for existing progress
-        let existingProgress = healthDataStore.fetchRouteProgress(for: selectedRoute.id)
-        
-        if let existingProgress = existingProgress, !existingProgress.isCompleted {
-            currentProgress = existingProgress
-        } else {
-            let progress = RouteProgress(
-                id: UUID(),
-                routeId: selectedRoute.id,
-                startDate: Date(),
-                completedDistance: 0,
-                lastUpdated: Date(),
-                completedMilestones: Set<UUID>(),
-                totalDistance: selectedRoute.totalDistance,
-                dailyProgress: [:],
-                isCompleted: false,
-                completionDate: nil
-            )
-            currentProgress = progress
-        }
-        
-        // Update map and tracking state
-        currentRouteCoordinate = selectedRoute.waypoints.first
-        updateMapRegion(MKCoordinateRegion(
-            center: selectedRoute.startCoordinate,
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        ))
-        
-        HealthKitManager.shared.markRouteStart()
-        activeRouteIds.insert(selectedRoute.id)
-        updateProgress(withDistance: currentProgress?.completedDistance ?? 0, source: "initial")
-        saveProgress()
+        startTracking()
     }
     
     // MARK: - Progress Polyline Management
@@ -157,10 +224,10 @@ class RouteManager: ObservableObject {
         // Update the existing updateProgress function to call updateProgressPolyline
     func updateProgress(withDistance distance: Double, isManual: Bool = false, source: String = "unknown") {
         guard let progress = currentProgress,
-              let route = currentRoute,
-              activeRouteIds.contains(route.id) else {
-            return
-        }
+                      let route = currentRoute else {
+                    return
+                }
+        print("📊 Updating progress - Distance: \(distance), Source: \(source)")
         var updatedProgress = progress
         let cappedDistance = min(distance, route.totalDistance)
         
@@ -175,14 +242,7 @@ class RouteManager: ObservableObject {
         
         // Store the current progress before checking new milestones
         currentProgress = updatedProgress
-        
-        // Only check for new milestones if we haven't already completed them
-        if !updatedProgress.completedMilestones.isEmpty {
-            print("🎯 Already completed milestones: \(updatedProgress.completedMilestones)")
-        }
         checkMilestones(for: updatedProgress, at: cappedDistance)
-        
-        // Save after all updates
         saveProgress()
         updateProgressPolyline()
     }
@@ -244,10 +304,14 @@ class RouteManager: ObservableObject {
     }
     
     func isMilestoneCompleted(_ milestone: RouteMilestone) -> Bool {
+        print("🎯 Checking milestone completion:")
+        print("  - Milestone: \(milestone.name)")
+        print("  - isActivelyTracking: \(isActivelyTracking)")
+        print("  - Current Progress exists: \(currentProgress != nil)")
+        print("  - HealthKit isTrackingRoute: \(HealthKitManager.shared.isTrackingRoute)")
+        
         let isCompleted = currentProgress?.completedMilestones.contains(milestone.id) ?? false
-        print("🎯 Checking milestone completion for \(milestone.name)")
-        print("🎯 Current progress completed milestones: \(currentProgress?.completedMilestones ?? [])")
-        print("🎯 Is completed: \(isCompleted)")
+        print("  - Is completed: \(isCompleted)")
         return isCompleted
     }
     
@@ -259,7 +323,7 @@ class RouteManager: ObservableObject {
             
         
         DispatchQueue.main.async {
-            self.activeRouteIds.remove(routeId)
+            //self.activeRouteIds.remove(routeId)
             
             if !self.completedRoutes.contains(where: { $0.routeId == routeId }) {
                 self.completedRoutes.append(progress)
@@ -295,10 +359,20 @@ class RouteManager: ObservableObject {
         currentMapRegion = region
     }
     
-    func isTracking(route: VirtualRoute) -> Bool {
-        activeRouteIds.contains(route.id)
-    }
+//    func isTracking(route: VirtualRoute) -> Bool {
+//        activeRouteIds.contains(route.id)
+//    }
     func isRouteCompleted(_ routeId: UUID) -> Bool {
             completedRoutes.contains { $0.routeId == routeId }
         }
+    
+    // In RouteManager
+    func verifyTrackingState() {
+        print("🔍 Verifying tracking state:")
+        print("  - isActivelyTracking: \(isActivelyTracking)")
+        print("  - Current route: \(currentRoute?.name ?? "none")")
+        print("  - Current progress exists: \(currentProgress != nil)")
+        print("  - HealthKit isTrackingRoute: \(HealthKitManager.shared.isTrackingRoute)")
+        print("  - HealthKit start distance: \(HealthKitManager.shared.routeStartDistance)")
+    }
 }

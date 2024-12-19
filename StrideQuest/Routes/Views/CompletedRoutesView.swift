@@ -12,22 +12,22 @@ struct CompletedRoutesView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var showingRouteSelection = false
     
-    private func debugLog() {
-            print("\n📱 CompletedRoutesView Debug Info:")
-            print("  - Total completed routes: \(routeManager.completedRoutes.count)")
-            
-            for (index, progress) in routeManager.completedRoutes.enumerated() {
-                print("\n  Route \(index + 1):")
-                print("    - Progress ID: \(progress.id)")
-                print("    - Route ID: \(progress.routeId)")
-                print("    - Has current route?: \(progress.currentRoute != nil)")
-                print("    - Completed Distance: \(progress.completedDistance)")
-                print("    - Is Completed: \(progress.isCompleted)")
-                if let route = progress.currentRoute {
-                    print("    - Route name: \(route.name)")
-                }
-            }
-        }
+//    private func debugLog() {
+//            print("\n📱 CompletedRoutesView Debug Info:")
+//            print("  - Total completed routes: \(routeManager.completedRoutes.count)")
+//            
+//            for (index, progress) in routeManager.completedRoutes.enumerated() {
+//                print("\n  Route \(index + 1):")
+//                print("    - Progress ID: \(progress.id)")
+//                print("    - Route ID: \(progress.routeId)")
+//                print("    - Has current route?: \(progress.currentRoute != nil)")
+//                print("    - Completed Distance: \(progress.completedDistance)")
+//                print("    - Is Completed: \(progress.isCompleted)")
+//                if let route = progress.currentRoute {
+//                    print("    - Route name: \(route.name)")
+//                }
+//            }
+//        }
         
         var body: some View {
             NavigationStack {
@@ -59,7 +59,7 @@ struct CompletedRoutesView: View {
                         ScrollView {
                             LazyVStack(spacing: 16) {
                                 ForEach(routeManager.completedRoutes, id: \.id) { progress in
-                                    if let route = progress.currentRoute {
+                                    if let route = routeManager.getRoute(by: progress.routeId) {
                                         CompletedRouteCard(route: route, progress: progress)
                                     } else {
                                         Text("Invalid Route (ID: \(progress.routeId))")
@@ -78,9 +78,9 @@ struct CompletedRoutesView: View {
                     })
                 }
             }
-            .onAppear {
-                debugLog()
-            }
+//            .onAppear {
+//                debugLog()
+//            }
         }
     }
 

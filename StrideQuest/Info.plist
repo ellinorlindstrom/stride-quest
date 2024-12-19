@@ -21,13 +21,14 @@
     </array>
     <key>BGTaskSchedulerPermittedIdentifiers</key>
     <array>
-        <string>com.ellinorlindstrom.StrideQuest.StrideQuest.healthkitfetch</string>
+        <string>com.ellinorlindstrom.StrideQuest.StrideQuest.healthkit.refresh</string>
     </array>
     <key>UIBackgroundModes</key>
     <array>
         <string>processing</string>
         <string>fetch</string>
         <string>health-kit</string>
+        <string>location</string>
     </array>
     <!-- Added HealthKit Permission Descriptions -->
     <key>NSHealthShareUsageDescription</key>

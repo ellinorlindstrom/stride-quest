@@ -12,14 +12,20 @@ struct MilestoneAnnotationView: View {
     
     var body: some View {
         Image(systemName: "mappin.circle.fill")
-            .foregroundStyle(routeManager.isMilestoneCompleted(milestone) ? Color.green : Color.gray)
-            .font(.title)
-            .onTapGesture {
-                print("🎯 Milestone tapped: \(milestone.name)")
-                print("🎯 Is completed: \(isCompleted)")
-                // Only call onTap if this milestone belongs to current route
-                if milestone.routeId == currentRouteId {
-                    onTap()
+                    .foregroundStyle(routeManager.isMilestoneCompleted(milestone) ? Color.green : Color.gray)
+                    .font(.title)
+                    .onAppear {
+                        print("🎯 MilestoneAnnotation appeared:")
+                        print("  - Milestone: \(milestone.name)")
+                        print("  - Is tracking: \(routeManager.isActivelyTracking)")
+                        print("  - Is completed: \(routeManager.isMilestoneCompleted(milestone))")
+                    }
+                    .onTapGesture {
+                        print("🎯 Milestone tapped: \(milestone.name)")
+                        print("  - Is completed: \(isCompleted)")
+                        print("  - Current route match: \(milestone.routeId == currentRouteId)")
+                        if milestone.routeId == currentRouteId {
+                            onTap()
                 }
             }
     }

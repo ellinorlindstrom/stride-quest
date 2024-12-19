@@ -1,29 +1,115 @@
 import Foundation
 import HealthKit
 import SwiftUI
+import BackgroundTasks
 
 class HealthKitManager: ObservableObject {
+    // MARK: - Singleton
+    private static var instance: HealthKitManager?
+    static var shared: HealthKitManager {
+        if instance == nil {
+            instance = HealthKitManager()
+        }
+        return instance!
+    }
+    
+    // MARK: - Properties
     @AppStorage("lastKnownDistance") private var lastKnownDistance: Double = 0
-    static let shared = HealthKitManager()
+    @AppStorage("isHealthKitAuthorized") private var isHealthKitAuthorized = false
+    
     let healthStore = HKHealthStore()
     
-    /// Starting distance in kilometers when a route begins
+    // Published properties
     @Published var routeStartDistance: Double = 0
     @Published var isAuthorized = false
-    @Published var totalDistance: Double = 0 {
-        didSet {
-            if !RouteManager.shared.activeRouteIds.isEmpty {
-                let relativeDistance = max(0, totalDistance - routeStartDistance)
-                RouteManager.shared.updateProgress(withDistance: relativeDistance, source: "healthkit")
-            }
-            
-            HealthDataStore.shared.saveHealthData(
-                totalDistance,
-                date: Date(),
-                type: HKQuantityType(.distanceWalkingRunning)
-            )
+    @Published var totalDistance: Double = 0
+    @Published var isTrackingRoute: Bool = false
+    
+    // For route tracking
+    private var routeTrackingStartDistance: Double = 0
+    
+    //Computed property
+    // Add this property
+    var routeRelativeDistance: Double {
+        guard isTrackingRoute else { return 0 }
+        return max(0, totalDistance - routeTrackingStartDistance)
+    }
+    
+    private init() {
+            totalDistance = lastKnownDistance
+        }
+    
+    
+    private let backgroundTaskIdentifier = "com.ellinorlindstrom.StrideQuest.StrideQuest.healthkit.refresh"
+    
+    func registerBackgroundTasks() {
+        BGTaskScheduler.shared.register(
+            forTaskWithIdentifier: backgroundTaskIdentifier,
+            using: nil
+        ) { task in
+            self.handleBackgroundTask(task as! BGProcessingTask)
         }
     }
+    
+    private func scheduleNextBackgroundTask() {
+        let request = BGProcessingTaskRequest(identifier: backgroundTaskIdentifier)
+        request.requiresNetworkConnectivity = false
+        request.requiresExternalPower = false
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60) // 15 minutes
+        
+        do {
+            try BGTaskScheduler.shared.submit(request)
+        } catch {
+            print("Could not schedule background task: \(error)")
+        }
+    }
+    
+    private func handleBackgroundTask(_ task: BGProcessingTask) {
+        scheduleNextBackgroundTask()
+        
+        task.expirationHandler = {
+            task.setTaskCompleted(success: false)
+        }
+        
+        fetchTotalDistance()
+        task.setTaskCompleted(success: true)
+    }
+    
+    func setupBackgroundDelivery() async throws {
+        let distanceTypes = [
+            HKQuantityType(.distanceWalkingRunning),
+            HKQuantityType(.distanceCycling),
+            HKQuantityType(.distanceSwimming),
+            HKQuantityType(.distanceWheelchair),
+        ]
+        
+        for distanceType in distanceTypes {
+            try await healthStore.enableBackgroundDelivery(for: distanceType, frequency: .immediate)
+        }
+        
+        // Register for background updates
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleBackgroundUpdate),
+            name: UIApplication.didEnterBackgroundNotification,
+            object: nil
+        )
+    }
+    
+    @objc private func handleBackgroundUpdate() {
+        guard RouteManager.shared.currentRoute != nil else { return }
+        
+        let backgroundTask = UIApplication.shared.beginBackgroundTask {
+            // Handle expiration
+        }
+        
+        fetchTotalDistance()
+        
+        if backgroundTask != .invalid {
+            UIApplication.shared.endBackgroundTask(backgroundTask)
+        }
+    }
+    
     
     private var observerQueries: [HKObserverQuery] = []
     
@@ -35,12 +121,19 @@ class HealthKitManager: ObservableObject {
         HKQuantityType(.distanceWheelchair),
     ]
     
-    init() {
-        self.totalDistance = lastKnownDistance
-    }
-    
     func markRouteStart() {
         routeStartDistance = totalDistance
+        isTrackingRoute = true  // Ensure this is set
+        print("🎯 Route started at distance: \(routeStartDistance)")
+        print("  - isTrackingRoute set to: \(isTrackingRoute)")
+        
+        // Force an immediate distance fetch
+        fetchTotalDistance()
+    }
+    
+    func stopTracking() {
+        isTrackingRoute = false
+        print("🛑 Route tracking stopped")
     }
     
     // Request authorization and start observing
@@ -59,47 +152,32 @@ class HealthKitManager: ObservableObject {
         try await setupBackgroundDelivery()
     }
     
-    private func setupBackgroundDelivery() async throws {
-        let distanceTypes = [
-            HKQuantityType(.distanceWalkingRunning),
-            HKQuantityType(.distanceCycling),
-            HKQuantityType(.distanceSwimming),
-            HKQuantityType(.distanceWheelchair),
-        ]
-        
-        for distanceType in distanceTypes {
-            try await healthStore.enableBackgroundDelivery(for: distanceType, frequency: .immediate)
+    func handleDistanceUpdate(_ newDistance: Double) {
+            totalDistance = newDistance
+            lastKnownDistance = newDistance
+            
+            if isTrackingRoute && RouteManager.shared.currentRoute != nil {
+                let relativeDistance = routeRelativeDistance
+                print("📏 Distance Update:")
+                print("  - Total Distance: \(totalDistance)")
+                print("  - Start Distance: \(routeTrackingStartDistance)")
+                print("  - Relative Distance: \(relativeDistance)")
+                
+                RouteManager.shared.updateProgress(withDistance: relativeDistance, source: "healthkit")
+            }
+            
+            HealthDataStore.shared.saveHealthData(
+                totalDistance,
+                date: Date(),
+                type: HKQuantityType(.distanceWalkingRunning)
+            )
         }
-    }
-    
-//    private func startObservingDistance() {
-//        let distanceTypes = [
-//            HKQuantityType(.distanceWalkingRunning),
-//            HKQuantityType(.distanceCycling),
-//            HKQuantityType(.distanceSwimming),
-//            HKQuantityType(.distanceWheelchair),
-//        ]
-//        
-//        for distanceType in distanceTypes {
-//            let query = HKObserverQuery(sampleType: distanceType, predicate: nil) { [weak self] _, completion, error in
-//                if error == nil {
-//                    DispatchQueue.main.async {
-//                        self?.fetchTotalDistance()
-//                    }
-//                }
-//                completion()
-//            }
-//            
-//            observerQueries.append(query)
-//            healthStore.execute(query)
-//            
-//        }
-//    }
     
     func fetchTotalDistance() {
         let calendar = Calendar.current
         let now = Date()
-        let startOfDay = calendar.startOfDay(for: now)
+        let startDate = RouteManager.shared.currentProgress?.startDate ?? calendar.startOfDay(for: now)
+        
         
         let distanceTypes = [
             HKQuantityType(.distanceWalkingRunning),
@@ -109,7 +187,7 @@ class HealthKitManager: ObservableObject {
         ]
         
         let predicate = HKQuery.predicateForSamples(
-            withStart: startOfDay,
+            withStart: startDate,
             end: now
         )
         
@@ -123,7 +201,7 @@ class HealthKitManager: ObservableObject {
                 quantityType: distanceType,
                 quantitySamplePredicate: predicate,
                 options: .cumulativeSum,
-                anchorDate: startOfDay,
+                anchorDate: startDate,
                 intervalComponents: DateComponents(day: 1)
             )
             
@@ -132,7 +210,7 @@ class HealthKitManager: ObservableObject {
                 
                 guard let results = results else { return }
                 
-                results.enumerateStatistics(from: startOfDay, to: now) { statistics, stop in
+                results.enumerateStatistics(from: startDate, to: now) { statistics, stop in
                     if let sum = statistics.sumQuantity() {
                         let distance = sum.doubleValue(for: HKUnit.meter())
                         temporaryTotal += distance
@@ -144,7 +222,8 @@ class HealthKitManager: ObservableObject {
         }
         
         group.notify(queue: DispatchQueue.main) { [weak self] in
-            self?.totalDistance = temporaryTotal / 1000.0
+            let newDistance = temporaryTotal / 1000.0
+            self?.handleDistanceUpdate(newDistance)
             
             HealthDataStore.shared.saveHealthData(
                 temporaryTotal / 1000.0,
@@ -177,7 +256,7 @@ class HealthKitManager: ObservableObject {
             healthStore.execute(query)
         }
     }
-
+    
     @objc private func appBecameActive() {
         fetchTotalDistance()
     }

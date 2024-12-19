@@ -14,6 +14,10 @@ struct RouteDetailView: View {
     @Environment(\.dismiss) private var dismiss
     var onRouteSelected: (() -> Void)?
     
+    private var isRouteAvailable: Bool {
+        routeManager.isRouteAvailable(route)
+    }
+    
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -42,21 +46,28 @@ struct RouteDetailView: View {
                 }
                 .padding()
                 
-                    Button(action: {
-                        routeManager.selectRoute(route)
-                        routeManager.beginRouteTracking()
-                        dismiss()
+                Button(action: {
+                    routeManager.selectAndStartRoute(route)
+                    dismiss()
+                    // Give time for the dismiss animation to complete
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
                         onRouteSelected?()
-                    }) {
-                        Text(routeManager.isTracking(route: route) ? "Resume Journey" : "Start Journey")
-                            .font(.system(.headline, design: .monospaced))
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(routeManager.isTracking(route: route) ? Color.blue : Color.green)
-                            .cornerRadius(10)
                     }
-                    .padding(.horizontal)
+                }) {
+                    Text(routeManager.currentRoute?.id == route.id ? "Resume Journey" : "Start Journey")
+                        .font(.system(.headline, design: .monospaced))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(
+                            routeManager.isRouteAvailable(route)
+                            ? (routeManager.currentRoute?.id == route.id ? Color.blue : Color.green)
+                            : Color.gray
+                        )
+                        .cornerRadius(10)
+                }
+                .disabled(!routeManager.isRouteAvailable(route))
+                .padding(.horizontal)
             }
         }
         .navigationBarTitleDisplayMode(.inline)

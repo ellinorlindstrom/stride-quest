@@ -287,21 +287,21 @@ enum RouteFactory {
                     name: "Coal Harbour",
                     description: "A sophisticated waterfront neighborhood offering stunning views of the North Shore mountains, float planes taking off, and luxury yachts. The starting point showcases Vancouver's blend of urban and natural beauty.",
                     distanceFromStart: 0,
-                    imageName: "coal-harbour"
+                    imageName: ""
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.vancouverSeawall,
                     name: "Lions Gate Bridge",
                     description: "An iconic suspension bridge connecting Vancouver to the North Shore. This National Historic Site offers spectacular views of Stanley Park, the harbor, and the city skyline.",
                     distanceFromStart: 5.000,
-                    imageName: "lions-gate"
+                    imageName: ""
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.vancouverSeawall,
                     name: "English Bay",
                     description: "A vibrant beach area famous for stunning sunsets and the annual Celebration of Light fireworks competition. Popular among cyclists, swimmers, and beach volleyball enthusiasts.",
                     distanceFromStart: 10.000,
-                    imageName: "english-bay"
+                    imageName: ""
                 )
             ],
             imageName: "stanley-park",
