@@ -16,6 +16,7 @@ class HealthKitManager: ObservableObject {
     // MARK: - Properties
     @AppStorage("lastKnownDistance") private var lastKnownDistance: Double = 0
     @AppStorage("isHealthKitAuthorized") private var isHealthKitAuthorized = false
+    @AppStorage("routeTrackingStartDistance") private var savedRouteStartDistance: Double = 0
     
     let healthStore = HKHealthStore()
     
@@ -36,7 +37,8 @@ class HealthKitManager: ObservableObject {
     }
     
     private init() {
-            totalDistance = lastKnownDistance
+        self.totalDistance = lastKnownDistance
+        self.routeTrackingStartDistance = savedRouteStartDistance
         }
     
     
@@ -122,7 +124,9 @@ class HealthKitManager: ObservableObject {
     ]
     
     func markRouteStart() {
+        routeTrackingStartDistance = totalDistance
         routeStartDistance = totalDistance
+        savedRouteStartDistance = totalDistance
         isTrackingRoute = true  // Ensure this is set
         print("🎯 Route started at distance: \(routeStartDistance)")
         print("  - isTrackingRoute set to: \(isTrackingRoute)")
@@ -153,25 +157,28 @@ class HealthKitManager: ObservableObject {
     }
     
     func handleDistanceUpdate(_ newDistance: Double) {
-            totalDistance = newDistance
-            lastKnownDistance = newDistance
+        totalDistance = newDistance
+        
+        if isTrackingRoute && RouteManager.shared.currentRoute != nil {
+            let relativeDistance = routeRelativeDistance
+            print("📏 Distance Update:")
+            print("  - Total Distance: \(totalDistance)")
+            print("  - Start Distance: \(routeTrackingStartDistance)")
+            print("  - Relative Distance: \(relativeDistance)")
             
-            if isTrackingRoute && RouteManager.shared.currentRoute != nil {
-                let relativeDistance = routeRelativeDistance
-                print("📏 Distance Update:")
-                print("  - Total Distance: \(totalDistance)")
-                print("  - Start Distance: \(routeTrackingStartDistance)")
-                print("  - Relative Distance: \(relativeDistance)")
-                
-                RouteManager.shared.updateProgress(withDistance: relativeDistance, source: "healthkit")
-            }
-            
-            HealthDataStore.shared.saveHealthData(
-                totalDistance,
-                date: Date(),
-                type: HKQuantityType(.distanceWalkingRunning)
-            )
+            RouteManager.shared.updateProgress(withDistance: relativeDistance, source: "healthkit")
         }
+        
+        // Save both distances
+        lastKnownDistance = totalDistance
+        savedRouteStartDistance = routeTrackingStartDistance  // This ensures the start distance persists
+        
+        HealthDataStore.shared.saveHealthData(
+            totalDistance,
+            date: Date(),
+            type: HKQuantityType(.distanceWalkingRunning)
+        )
+    }
     
     func fetchTotalDistance() {
         let calendar = Calendar.current

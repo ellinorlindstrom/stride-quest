@@ -24,6 +24,7 @@ extension RouteManager {
         if isActivelyTracking {
             HealthKitManager.shared.isTrackingRoute = true
         }
+        restoreMilestoneState()
     }
     
     private func restoreCurrentRouteAndProgress() {
@@ -47,6 +48,30 @@ extension RouteManager {
                             self.setRecentlyUnlockedMilestone(nil)
                         }
                     }
+                }
+            }
+        }
+    }
+    
+    private func restoreMilestoneState() {
+        guard let progress = currentProgress,
+              let route = currentRoute else { return }
+        
+        print("🔄 Restoring milestone states")
+        print("  - Current progress: \(progress.completedDistance) km")
+        print("  - Completed milestones: \(progress.completedMilestones)")
+        
+        // Force check all milestones based on saved progress
+        for milestone in route.milestones {
+            if progress.completedMilestones.contains(milestone.id) ||
+               milestone.distanceFromStart <= progress.completedDistance {
+                // Either the milestone was explicitly marked as completed
+                // or the distance indicates it should be completed
+                if !progress.completedMilestones.contains(milestone.id) {
+                    var updatedProgress = progress
+                    updatedProgress.addCompletedMilestone(milestone.id)
+                    self.setCurrentProgress(updatedProgress)
+                    saveProgress()
                 }
             }
         }

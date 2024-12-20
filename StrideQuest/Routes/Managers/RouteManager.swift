@@ -79,38 +79,32 @@ class RouteManager: ObservableObject {
             return
         }
         
-        print("🎯 Starting route selection process")
-        
         // Set tracking state first
         isActivelyTracking = true
-        print("  - Set isActivelyTracking to true")
         
         // Set the current route
         setCurrentRoute(route)
-        print("  - Current route set to: \(route.name)")
         
         // Initialize fresh progress
         let newProgress = initializeProgress(for: route)
         setCurrentProgress(newProgress)
-        print("  - Initialized new progress")
         
         // Start HealthKit tracking
         HealthKitManager.shared.markRouteStart()
-        print("  - Called HealthKit markRouteStart")
+        
+        if let progress = currentProgress {
+                print("🎯 Initial milestone check with distance: \(progress.completedDistance)")
+                for milestone in route.milestones {
+                    if milestone.distanceFromStart <= progress.completedDistance {
+                        handleMilestoneCompletion(milestone)
+                    }
+                }
+            }
         
         // Force initial distance fetch
         HealthKitManager.shared.fetchTotalDistance()
-        print("  - Fetching initial distance")
         
         saveState()
-        print("  - State saved")
-        
-        // Verify final state
-        print("Final state check:")
-        print("  - isActivelyTracking: \(isActivelyTracking)")
-        print("  - Current route exists: \(currentRoute != nil)")
-        print("  - Current progress exists: \(currentProgress != nil)")
-        print("  - HealthKit isTrackingRoute: \(HealthKitManager.shared.isTrackingRoute)")
     }
     
     func focusMapOnCurrentRoute() {
@@ -249,7 +243,7 @@ class RouteManager: ObservableObject {
 
     
     
-    private func checkMilestones(for progress: RouteProgress, at distance: Double) {
+    func checkMilestones(for progress: RouteProgress, at distance: Double) {
         guard let route = currentRoute else { return }
         
         // Only check milestones that haven't been completed yet
@@ -262,6 +256,13 @@ class RouteManager: ObservableObject {
                 handleMilestoneCompletion(milestone)
             }
         }
+    }
+    
+    func refreshMilestoneStates() {
+        if let progress = currentProgress {
+                // Check all milestones up to the current progress
+                checkMilestones(for: progress, at: progress.completedDistance)
+            }
     }
     
     // MARK: - Milestone Management
