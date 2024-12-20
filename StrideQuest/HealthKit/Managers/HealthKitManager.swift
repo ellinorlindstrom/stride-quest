@@ -39,6 +39,9 @@ class HealthKitManager: ObservableObject {
     private init() {
         self.totalDistance = lastKnownDistance
         self.routeTrackingStartDistance = savedRouteStartDistance
+        print("This is init in HealthKitManager, totaldistance:", self.totalDistance)
+        print("This is init in HealthKitManager, routetrackingstartdistance:", self.totalDistance)
+
         }
     
     
@@ -152,6 +155,10 @@ class HealthKitManager: ObservableObject {
             self.isAuthorized = true
             self.startObservingDistance()
             self.fetchTotalDistance()
+            print("🍏 requestAuthorization func DispatchQueue.main.async",
+            "- self.isAuthorized", self.isAuthorized,
+            "- self.startObservingDistance", self.startObservingDistance,
+                  "self.fetchTotalDistance:",self.fetchTotalDistance)
         }
         try await setupBackgroundDelivery()
     }

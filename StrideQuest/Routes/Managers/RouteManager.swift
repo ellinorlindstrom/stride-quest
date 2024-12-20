@@ -9,7 +9,6 @@ class RouteManager: ObservableObject {
     @Published private(set) var availableRoutes: [VirtualRoute] = []
     @Published private(set) var currentRoute: VirtualRoute?
     @Published private(set) var currentProgress: RouteProgress?
-    //@Published private(set) var activeRouteIds: Set<UUID> = []
     @Published private(set) var currentRouteCoordinate: CLLocationCoordinate2D?
     @Published private(set) var currentMapRegion: MKCoordinateRegion?
     @Published private(set) var completedRoutes: [RouteProgress] = []
@@ -92,12 +91,12 @@ class RouteManager: ObservableObject {
         // Start HealthKit tracking
         HealthKitManager.shared.markRouteStart()
         
-        if let progress = currentProgress {
-                print("🎯 Initial milestone check with distance: \(progress.completedDistance)")
+   
+            print("🎯 Initial milestone check with distance: \(HealthKitManager.shared.totalDistance)")
                 for milestone in route.milestones {
-                    if milestone.distanceFromStart <= progress.completedDistance {
+                    if milestone.distanceFromStart <= HealthKitManager.shared.totalDistance {
                         handleMilestoneCompletion(milestone)
-                    }
+               
                 }
             }
         
@@ -159,15 +158,15 @@ class RouteManager: ObservableObject {
     
     // MARK: - Progress Polyline Management
         func updateProgressPolyline() {
-            guard let progress = currentProgress,
-                  let route = currentRoute else {
-                progressPolyline = []
-                return
-            }
+            guard let currentProgress = currentProgress,
+                      let route = currentRoute else {
+                    progressPolyline = []
+                    return
+                }
             
             var coordinates: [CLLocationCoordinate2D] = []
             var accumulatedDistance: Double = 0
-            let targetDistance = progress.completedDistance
+            let targetDistance = currentProgress.completedDistance
             
             print("⚡️ Updating progress polyline")
             print("Total completed distance: \(targetDistance) km")
@@ -261,7 +260,7 @@ class RouteManager: ObservableObject {
     func refreshMilestoneStates() {
         if let progress = currentProgress {
                 // Check all milestones up to the current progress
-                checkMilestones(for: progress, at: progress.completedDistance)
+                checkMilestones(for: progress, at: HealthKitManager.shared.totalDistance)
             }
     }
     
