@@ -4,16 +4,25 @@ import AuthenticationServices
 
 class AuthenticationManager: ObservableObject {
     @Published var isAuthenticated = false
+    @Published var isLoading = false
     @Published var userID: String?
     @Published var userName: String?
     @Published var userEmail: String?
     @Published var profileImage: UIImage?
     
     func handleSignInWithAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
+        DispatchQueue.main.async {
+            self.isLoading = true
+        }
         request.requestedScopes = [.fullName, .email]
     }
     
     func handleSignInWithAppleCompletion(_ result: Result<ASAuthorization, Error>) {
+        defer {
+            DispatchQueue.main.async {
+                self.isLoading = false
+            }
+        }
         switch result {
         case .success(let auth):
             switch auth.credential {
@@ -74,38 +83,38 @@ class AuthenticationManager: ObservableObject {
             }
         }
     }
-        
-        private func loadProfileImage() {
-            if let imageData = UserDefaults.standard.data(forKey: "userProfileImage"),
-               let image = UIImage(data: imageData) {
-                profileImage = image
-            }
+    
+    private func loadProfileImage() {
+        if let imageData = UserDefaults.standard.data(forKey: "userProfileImage"),
+           let image = UIImage(data: imageData) {
+            profileImage = image
         }
+    }
     
     func updateUserName(_ newName: String) {
-           DispatchQueue.main.async {
-               self.userName = newName
-               UserDefaults.standard.set(newName, forKey: "userName")
-           }
-       }
+        DispatchQueue.main.async {
+            self.userName = newName
+            UserDefaults.standard.set(newName, forKey: "userName")
+        }
+    }
     
     func checkAuthentication() {
-            if let userIdentifier = UserDefaults.standard.string(forKey: "userIdentifier") {
-                self.userID = userIdentifier
-                if let savedName = UserDefaults.standard.string(forKey: "userName") {
-                    self.userName = savedName
-                    print("Restored name from UserDefaults: \(savedName)")
-                } else {
-                    let defaultName = "User \(userIdentifier.prefix(4))"
-                    self.userName = defaultName
-                    UserDefaults.standard.set(defaultName, forKey: "userName")
-                    print("Set default name during restoration: \(defaultName)")
-                }
-                self.isAuthenticated = true
-                loadProfileImage()
-                print("Authentication restored - ID: \(userIdentifier), Name: \(self.userName ?? "nil")")
+        if let userIdentifier = UserDefaults.standard.string(forKey: "userIdentifier") {
+            self.userID = userIdentifier
+            if let savedName = UserDefaults.standard.string(forKey: "userName") {
+                self.userName = savedName
+                print("Restored name from UserDefaults: \(savedName)")
+            } else {
+                let defaultName = "User \(userIdentifier.prefix(4))"
+                self.userName = defaultName
+                UserDefaults.standard.set(defaultName, forKey: "userName")
+                print("Set default name during restoration: \(defaultName)")
             }
+            self.isAuthenticated = true
+            loadProfileImage()
+            print("Authentication restored - ID: \(userIdentifier), Name: \(self.userName ?? "nil")")
         }
+    }
     
     
     func signOut() {

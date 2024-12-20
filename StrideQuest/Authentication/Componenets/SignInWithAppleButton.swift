@@ -16,7 +16,16 @@ struct SignInWithAppleButton: View {
         SignInWithAppleButtonViewRepresentable(authManager: authManager)
             .frame(height: 50)
             .cornerRadius(10)
-
+            .disabled(authManager.isLoading)
+        
+        if authManager.isLoading {
+                        HStack {
+                            Spacer()
+                            LoadingView()
+                                .frame(width: 20, height: 20)  // Smaller size for button
+                            Spacer()
+                        }
+                    }
     }
 }
 

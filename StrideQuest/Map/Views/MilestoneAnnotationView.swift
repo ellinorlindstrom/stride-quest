@@ -3,33 +3,22 @@ import MapKit
 
 struct MilestoneAnnotationView: View {
     
-    @EnvironmentObject var routeManager: RouteManager
+    //@EnvironmentObject var routeManager: RouteManager
     let milestone: RouteMilestone
     let coordinate: CLLocationCoordinate2D
     let isCompleted: Bool
     let onTap: () -> Void
     let currentRouteId: UUID
     
-    private var shouldShowCompleted: Bool {
-        if let progress = routeManager.currentProgress {
-            // Show completed if:
-            // 1. The milestone is explicitly marked as completed
-            // 2. The current progress distance is beyond this milestone
-            return progress.completedMilestones.contains(milestone.id) ||
-            milestone.distanceFromStart <= progress.completedDistance
-        }
-        return false
-    }
-    
     var body: some View {
         Image(systemName: "mappin.circle.fill")
-            .foregroundStyle(shouldShowCompleted ? .green : .gray)
+            .foregroundColor(RouteManager.shared.isMilestoneCompleted(milestone) ? .green : .gray)
             .font(.title)
             .onAppear {
                 print("🎯 MilestoneAnnotation appeared:")
                 print("  - Milestone: \(milestone.name)")
-                print("  - Is tracking: \(routeManager.isActivelyTracking)")
-                print("  - Is completed: \(routeManager.isMilestoneCompleted(milestone))")
+                print("  - Is tracking: \(RouteManager.shared.isActivelyTracking)")
+                print("  - Is completed: \(RouteManager.shared.isMilestoneCompleted(milestone))")
             }
             .onTapGesture {
                 print("🎯 Milestone tapped: \(milestone.name)")

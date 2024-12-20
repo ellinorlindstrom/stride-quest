@@ -4,6 +4,7 @@ import CoreLocation
 
 struct ContentView: View {
     @EnvironmentObject var healthManager: HealthKitManager
+    @EnvironmentObject var routeManager: RouteManager
     @StateObject private var authManager = AuthenticationManager()
     @State private var showingRouteSelection = false
     @State private var showingManualEntry = false
@@ -11,6 +12,7 @@ struct ContentView: View {
     @State private var showingCompletedRoutes = false
     @State private var showingSettings = false
     @State private var isMenuShowing = false
+    @State private var isLoading = true
     
     var body: some View {
         VStack(spacing: 0) {
@@ -26,11 +28,12 @@ struct ContentView: View {
                 .shadow(radius: 5)
                 
                 ZStack {
-                    MapView()
-                    if showingProgress {
+                    MapView(isLoading: $isLoading)
+                        .environmentObject(routeManager)
+                    if showingProgress{
                         VStack {
                             Spacer()
-                            RouteProgressView()
+                            RouteProgressView(isLoading: $isLoading)
                                 .background(.ultraThinMaterial)
                                 .cornerRadius(15)
                                 .padding()
@@ -55,12 +58,15 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showingRouteSelection) {
             RouteSelectionView()
+                .environmentObject(routeManager)
         }
         .sheet(isPresented: $showingManualEntry) {
             ManualDistanceEntryView()
+                .environmentObject(routeManager)
         }
         .sheet(isPresented: $showingCompletedRoutes) {
             CompletedRoutesView()
+                .environmentObject(routeManager)
         }
 
         .sheet(isPresented: $showingSettings) {

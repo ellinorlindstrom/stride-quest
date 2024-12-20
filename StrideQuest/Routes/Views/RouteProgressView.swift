@@ -11,66 +11,72 @@ struct RouteProgressView: View {
     @EnvironmentObject var routeManager: RouteManager
     @StateObject private var healthManager = HealthKitManager.shared
     @State private var showingRouteSelection = false
+    @Binding var isLoading: Bool
     
     var body: some View {
-        VStack(spacing: 20) {
-            if let progress = routeManager.currentProgress,
-               let route = routeManager.getRoute(by: progress.routeId) {
-                // Current route progress
-                VStack(alignment: .leading, spacing: 15) {
-                    Text(route.name)
-                        .font(.system(.headline, design: .monospaced))
-                    
-                    ProgressBar(value: progress.percentageCompleted)
-                        .id(progress.completedDistance)
-                    
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text("Completed")
-                            Text(String(format: "%.2f km", progress.completedDistance))
-                                .font(.headline)
-                        }
+        if !isLoading {
+            VStack(spacing: 20) {
+                if let progress = routeManager.currentProgress,
+                   let route = routeManager.getRoute(by: progress.routeId) {
+                    // Current route progress
+                    VStack(alignment: .leading, spacing: 15) {
+                        Text(route.name)
+                            .font(.system(.headline, design: .monospaced))
                         
-                        Spacer()
+                        ProgressBar(value: progress.percentageCompleted)
+                            .id(progress.completedDistance)
                         
-                        VStack(alignment: .trailing) {
-                            Text("Remaining")
-                            Text(String(format: "%.2f km",
-                                        route.totalDistance - progress.completedDistance))
-                                .font(.headline)
-                        }
-                    }
-                    .onAppear {
-                                routeManager.verifyTrackingState()
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text("Completed")
+                                Text(String(format: "%.2f km", progress.completedDistance))
+                                    .font(.headline)
                             }
-                }
-                .padding()
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(15)
-             
-            } else {
-                VStack(spacing: 5) {
-                    Text("No Active Journey")
-                        .font(.system(.headline, design: .monospaced))
-                        .padding()
-                    
-                    Button("Choose Your Adventure!") {
-                        showingRouteSelection = true
+                            
+                            Spacer()
+                            
+                            VStack(alignment: .trailing) {
+                                Text("Remaining")
+                                Text(String(format: "%.2f km",
+                                            route.totalDistance - progress.completedDistance))
+                                .font(.headline)
+                            }
+                        }
+                        .onAppear {
+                            routeManager.verifyTrackingState()
+                        }
                     }
-                    .font(.system(.caption, design: .monospaced))
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .frame(maxWidth: .infinity)
                     .padding()
-                    .tint(.teal)
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(15)
                     
+                } else {
+                    VStack(spacing: 5) {
+                        Text("No Active Journey")
+                            .font(.system(.headline, design: .monospaced))
+                            .padding()
+                        
+                        Button("Choose Your Adventure!") {
+                            showingRouteSelection = true
+                        }
+                        .font(.system(.caption, design: .monospaced))
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .tint(.teal)
+                        
+                    }
                 }
             }
+            .sheet(isPresented: $showingRouteSelection) {
+                RouteSelectionView()
+            }
+            if isLoading {
+                LoadingView()
+                    .zIndex(100)
+            }
         }
-        .sheet(isPresented: $showingRouteSelection) {
-            RouteSelectionView()
-        }
-   
     }
 }
 

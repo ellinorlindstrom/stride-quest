@@ -7,6 +7,7 @@ struct MapView: View {
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var isUserInteracting = false
     @State private var mapStyle = MapStyle.standard(elevation: .realistic)
+    @Binding var isLoading: Bool
     
     var body: some View {
         ZStack {
@@ -83,39 +84,54 @@ struct MapView: View {
                 .transition(.move(edge: .bottom))
                 .zIndex(2)
             }
+            
+            if isLoading {
+                LoadingView()
+                    .zIndex(100)
+            }
         }
-        .onReceive(routeManager.$currentMapRegion) { newRegion in
-                    if let region = newRegion, !isUserInteracting {
-                        withAnimation(.easeInOut(duration: 0.3)) {
-                            cameraPosition = .region(region)
-                        }
-                    }
-                }
+        
         .onChange(of: routeManager.showMilestoneCard) { oldValue, newValue in
-                    if !newValue {
-                        routeManager.selectedMilestone = nil
-                    }
+            if !newValue {
+                routeManager.selectedMilestone = nil
+            }
         }
         .onAppear {
-            setInitialCamera()
+            isLoading = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                setInitialCamera()
+            }
         }
+        
         .onReceive(routeManager.$currentProgress) { _ in
             routeManager.updateProgressPolyline()
-        }
-        .onReceive(routeManager.$currentMapRegion) { region in
-            if let region = region, !isUserInteracting {
-                cameraPosition = .region(region)
-            }
         }
     }
     
     private func setInitialCamera() {
-        if let route = routeManager.currentRoute {
-            let span = MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
-            cameraPosition = .region(MKCoordinateRegion(
-                center: route.startCoordinate,
-                span: span
-            ))
-        }
-    }
-}
+           if let route = routeManager.currentRoute {
+               let span = MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
+               let region = MKCoordinateRegion(
+                   center: route.startCoordinate,
+                   span: span
+               )
+               
+               // Set camera position first
+               cameraPosition = .region(region)
+               
+               // Add delay before hiding loading screen to ensure camera has moved
+               DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                   withAnimation(.easeInOut(duration: 0.3)) {
+                       isLoading = false
+                   }
+               }
+           } else {
+               // Even with no route, add a small delay
+               DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                   withAnimation(.easeInOut(duration: 0.3)) {
+                       isLoading = false
+                   }
+               }
+           }
+       }
+   }
