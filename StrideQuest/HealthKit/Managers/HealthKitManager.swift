@@ -40,7 +40,7 @@ class HealthKitManager: ObservableObject {
         self.totalDistance = lastKnownDistance
         self.routeTrackingStartDistance = savedRouteStartDistance
         print("This is init in HealthKitManager, totaldistance:", self.totalDistance)
-        print("This is init in HealthKitManager, routetrackingstartdistance:", self.totalDistance)
+        print("This is init in HealthKitManager, routetrackingstartdistance:", self.routeTrackingStartDistance)
 
         }
     
@@ -102,7 +102,11 @@ class HealthKitManager: ObservableObject {
     }
     
     @objc private func handleBackgroundUpdate() {
-        guard RouteManager.shared.currentRoute != nil else { return }
+        guard RouteManager.shared.currentRoute != nil else {
+               print("No active route, skipping background update")
+               return
+           }
+           
         
         let backgroundTask = UIApplication.shared.beginBackgroundTask {
             // Handle expiration
@@ -127,14 +131,30 @@ class HealthKitManager: ObservableObject {
     ]
     
     func markRouteStart() {
-        routeTrackingStartDistance = totalDistance
-        routeStartDistance = totalDistance
-        savedRouteStartDistance = totalDistance
-        isTrackingRoute = true  // Ensure this is set
-        print("🎯 Route started at distance: \(routeStartDistance)")
-        print("  - isTrackingRoute set to: \(isTrackingRoute)")
+        // Instead of resetting everything to 0, should check if resuming
+        if RouteManager.shared.currentProgress != nil {
+            // Resuming existing route
+            routeTrackingStartDistance = savedRouteStartDistance
+            isTrackingRoute = true
+        } else {
+            // Starting new route
+            totalDistance = 0
+            routeTrackingStartDistance = 0
+            routeStartDistance = 0
+            savedRouteStartDistance = 0
+            isTrackingRoute = true
+        }
         
-        // Force an immediate distance fetch
+        fetchTotalDistance()
+    }
+    
+    
+    func resumeRoute(startDistance: Double) {
+        routeTrackingStartDistance = startDistance
+        savedRouteStartDistance = startDistance
+        routeStartDistance = startDistance
+        isTrackingRoute = true
+        print("▶️ Resuming route tracking from distance: \(startDistance)")
         fetchTotalDistance()
     }
     
@@ -188,9 +208,12 @@ class HealthKitManager: ObservableObject {
     }
     
     func fetchTotalDistance() {
-        let calendar = Calendar.current
+        guard let routeStartDate = RouteManager.shared.currentProgress?.startDate else {
+               print("No active route found")
+               return
+           }
+
         let now = Date()
-        let startDate = RouteManager.shared.currentProgress?.startDate ?? calendar.startOfDay(for: now)
         
         
         let distanceTypes = [
@@ -201,7 +224,7 @@ class HealthKitManager: ObservableObject {
         ]
         
         let predicate = HKQuery.predicateForSamples(
-            withStart: startDate,
+            withStart: routeStartDate,
             end: now
         )
         
@@ -215,7 +238,7 @@ class HealthKitManager: ObservableObject {
                 quantityType: distanceType,
                 quantitySamplePredicate: predicate,
                 options: .cumulativeSum,
-                anchorDate: startDate,
+                anchorDate: routeStartDate,
                 intervalComponents: DateComponents(day: 1)
             )
             
@@ -224,7 +247,7 @@ class HealthKitManager: ObservableObject {
                 
                 guard let results = results else { return }
                 
-                results.enumerateStatistics(from: startDate, to: now) { statistics, stop in
+                results.enumerateStatistics(from: routeStartDate, to: now) { statistics, stop in
                     if let sum = statistics.sumQuantity() {
                         let distance = sum.doubleValue(for: HKUnit.meter())
                         temporaryTotal += distance
@@ -272,6 +295,10 @@ class HealthKitManager: ObservableObject {
     }
     
     @objc private func appBecameActive() {
+        guard RouteManager.shared.currentRoute != nil else {
+            print("No active route, skipping active update")
+            return
+        }
         fetchTotalDistance()
     }
 }

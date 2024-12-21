@@ -22,15 +22,17 @@ struct RouteProgressView: View {
                     VStack(alignment: .leading, spacing: 15) {
                         Text(route.name)
                             .font(.system(.headline, design: .monospaced))
+                            .foregroundStyle(.accentSq)
                         
                         ProgressBar(value: progress.percentageCompleted)
-                            .id(progress.completedDistance)
+                            .id(healthManager.totalDistance)
                         
                         HStack {
                             VStack(alignment: .leading) {
                                 Text("Completed")
-                                Text(String(format: "%.2f km", progress.completedDistance))
+                                Text(String(format: "%.2f km", healthManager.totalDistance))
                                     .font(.headline)
+                                    .foregroundStyle(.textSq)
                             }
                             
                             Spacer()
@@ -38,8 +40,9 @@ struct RouteProgressView: View {
                             VStack(alignment: .trailing) {
                                 Text("Remaining")
                                 Text(String(format: "%.2f km",
-                                            route.totalDistance - progress.completedDistance))
+                                            max(0,route.totalDistance - healthManager.totalDistance)))
                                 .font(.headline)
+                                .foregroundStyle(.textSq)
                             }
                         }
                         .onAppear {
@@ -55,6 +58,7 @@ struct RouteProgressView: View {
                         Text("No Active Journey")
                             .font(.system(.headline, design: .monospaced))
                             .padding()
+                            .foregroundStyle(.textSq)
                         
                         Button("Choose Your Adventure!") {
                             showingRouteSelection = true
@@ -64,7 +68,7 @@ struct RouteProgressView: View {
                         .controlSize(.large)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .tint(.teal)
+                        .tint(.accentSq)
                         
                     }
                 }
@@ -94,7 +98,7 @@ struct ProgressBar: View {
                 Rectangle()
                     .frame(width: min(CGFloat(value) * geometry.size.width / 100, geometry.size.width),
                            height: 20)
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(.primarySq)
                     .animation(.spring(), value: value)
             }
             .cornerRadius(10)

@@ -26,13 +26,7 @@ struct AppHeader: View {
                     
                     Image(systemName: "map.fill")
                         .font(.title2)
-                        .foregroundStyle(.teal)
-                        .rotationEffect(.degrees(isAnimating ? 360 : 0))
-                        .onAppear {
-                            withAnimation(.linear(duration: 20).repeatForever(autoreverses: false)) {
-                                isAnimating = true
-                            }
-                        }
+                        .foregroundStyle(.primarySq)
                 }
             }
             
@@ -41,9 +35,10 @@ struct AppHeader: View {
                 Text("StrideQuest")
                     .font(.system(.title2, design: .monospaced))
                     .fontWeight(.bold)
+                    .foregroundStyle(.accentSq)
                 Text("Your Adventure Awaits")
                     .font(.system(.caption, design: .monospaced))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSq)
             }
             
             Spacer()
@@ -52,10 +47,10 @@ struct AppHeader: View {
             VStack(alignment: .trailing, spacing: 2) {
                 Text(String(format: "%.2f km", healthManager.totalDistance))
                     .font(.system(.headline, design: .monospaced))
-                    .foregroundStyle(.teal)
+                    .foregroundStyle(.accentSq)
                 Text("Today's Distance")
                     .font(.system(.caption2, design: .monospaced))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.textSq)
             }
         }
         .padding()

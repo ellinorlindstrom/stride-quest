@@ -20,6 +20,7 @@ enum RouteConstants {
     static let vancouverSeawall = createUUID(from: "C2345678-9ABC-DEF0-1234-56789ABCDEF0")
     
     // Asia
+    static let greatWall = createUUID(from: "F1234567-89AB-CDEF-0123-456789ABCDEF")
     static let kyotoPhilosophersPath = createUUID(from: "D3456789-ABCD-EF01-2345-6789ABCDEF01")
     static let seoulCityWall = createUUID(from: "E4567890-BCDE-F012-3456-789ABCDEF012")
     
@@ -39,17 +40,18 @@ enum RouteFactory {
     private static func createAllRoutes() async throws -> [VirtualRoute] {
         // Create all routes concurrently
         async let route1 = createCaminoRoute()
-        async let route2 = createNorwegianFjordsRoute()
-        async let route3 = createBostonFreedomRoute()
-        async let route4 = createVancouverSeawallRoute()
-        async let route5 = createKyotoPhilosophersRoute()
-        async let route6 = createSeoulCityWallRoute()
-        async let route7 = createBondiToBronteRoute()
-        async let route8 = createTableMountainRoute()
-        
+        //async let route2 = createGreatWallRoute() // Moved Great Wall to second
+        async let route3 = createNorwegianFjordsRoute() // Shifted Norwegian Fjords down
+        async let route4 = createBostonFreedomRoute()
+        async let route5 = createVancouverSeawallRoute()
+        async let route6 = createKyotoPhilosophersRoute()
+        async let route7 = createSeoulCityWallRoute()
+        async let route8 = createBondiToBronteRoute()
+        async let route9 = createTableMountainRoute()
+
         let routes = try await [
-            route1, route2, route3, route4,
-            route5, route6, route7, route8
+            route1, /*route2,*/ route3, route4,
+            route5, route6, route7, route8, route9
         ]
         
         return try await updateRouteDistances(routes)
@@ -200,6 +202,56 @@ enum RouteFactory {
             ]
         )
     }
+    
+    // China - Great Wall
+    
+    private static func createGreatWallRoute() async throws -> VirtualRoute {
+        return try await createRouteWithSegments(
+            id: RouteConstants.greatWall,
+            name: "The Great Wall Trek",
+            description: "Traverse iconic sections of the Great Wall of China, experiencing its rich history and breathtaking views.",
+            totalDistance: 211.000, // Approximate walking distance between milestones in kilometers
+            milestones: [
+                RouteMilestone(
+                    routeId: RouteConstants.greatWall,
+                    name: "Jiayuguan Pass",
+                    description: "The westernmost starting point of the Great Wall, situated in the Gobi Desert. Jiayuguan Pass is a stunning fortress symbolizing the ancient Silk Road's convergence with the Wall.",
+                    distanceFromStart: 0,
+                    imageName: "jiayuguan"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.greatWall,
+                    name: "Juyongguan Pass",
+                    description: "A beautifully preserved and easily accessible section of the Great Wall near Beijing. Known for its steep stairs and breathtaking mountain scenery.",
+                    distanceFromStart: 80.000,
+                    imageName: "juyongguan"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.greatWall,
+                    name: "Mutianyu Section",
+                    description: "One of the most scenic and restored sections of the Great Wall, offering a mix of steep climbs and lush green surroundings.",
+                    distanceFromStart: 150.000,
+                    imageName: "mutianyu"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.greatWall,
+                    name: "Simatai Section",
+                    description: "Known for its wild and rugged beauty, Simatai offers an untouched and authentic experience of the Great Wall, with its breathtaking views and dramatic cliffs.",
+                    distanceFromStart: 211.000,
+                    imageName: "simatai"
+                )
+            ],
+            imageName: "great-wall",
+            region: "China",
+            waypoints: [
+                CLLocationCoordinate2D(latitude: 39.8352, longitude: 98.2891), // Jiayuguan Pass
+                CLLocationCoordinate2D(latitude: 40.2849, longitude: 116.0707), // Juyongguan Pass
+                CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704), // Mutianyu Section
+                CLLocationCoordinate2D(latitude: 40.2627, longitude: 117.5144)  // Simatai Section
+            ]
+        )
+    }
+
     
     // Norway - Moderate Hike
     private static func createNorwegianFjordsRoute() async throws -> VirtualRoute {

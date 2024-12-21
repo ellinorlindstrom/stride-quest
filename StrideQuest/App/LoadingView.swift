@@ -9,33 +9,14 @@ struct LoadingView: View {
             ProgressView()
                 .progressViewStyle(.circular)
                 .scaleEffect(1.5)
-                .tint(.blue)
+                .tint(.primarySq)
             
-            Text("Loading...")
-                .font(.system(.subheadline, design: .monospaced))
-                .foregroundColor(.secondary)
-                .padding(.top, 10)
+
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(.ultraThinMaterial)
     }
 }
-
-//// Usage example in your MapView
-//struct MapView: View {
-//    @State private var isLoading = true
-//    
-//    var body: some View {
-//        ZStack {
-//            // Your existing map content here
-//            
-//            if isLoading {
-//                SimpleLoadingView()
-//                    .zIndex(100)
-//            }
-//        }
-//    }
-//}
 
 // Preview
 struct LoadingView_Previews: PreviewProvider {

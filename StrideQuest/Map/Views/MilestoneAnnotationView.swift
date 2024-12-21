@@ -12,13 +12,13 @@ struct MilestoneAnnotationView: View {
     
     var body: some View {
         Image(systemName: "mappin.circle.fill")
-            .foregroundColor(RouteManager.shared.isMilestoneCompleted(milestone) ? .green : .gray)
+            .foregroundColor(isCompleted ? .primarySq : .gray)
             .font(.title)
             .onAppear {
                 print("🎯 MilestoneAnnotation appeared:")
                 print("  - Milestone: \(milestone.name)")
                 print("  - Is tracking: \(RouteManager.shared.isActivelyTracking)")
-                print("  - Is completed: \(RouteManager.shared.isMilestoneCompleted(milestone))")
+                print("  - Is completed: \(isCompleted)")
             }
             .onTapGesture {
                 print("🎯 Milestone tapped: \(milestone.name)")

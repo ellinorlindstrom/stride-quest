@@ -15,12 +15,12 @@ struct MapView: View {
                 if let route = routeManager.currentRoute {
                     // Route polyline
                     MapPolyline(coordinates: route.path)
-                        .stroke(.purple.opacity(0.4), lineWidth: 4)
+                        .stroke(.textSq.opacity(0.8), lineWidth: 4)
                     
                     // Progress polyline
                     if !routeManager.progressPolyline.isEmpty {
                         MapPolyline(coordinates: routeManager.progressPolyline)
-                            .stroke(.blue, lineWidth: 4)
+                            .stroke(.accentSq, lineWidth: 4)
                     }
                     
                     // Current position annotation
@@ -97,41 +97,82 @@ struct MapView: View {
             }
         }
         .onAppear {
-            isLoading = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                setInitialCamera()
-            }
-        }
+                    isLoading = true
+                    focusOnRoute()
+                }
+                .onReceive(routeManager.$currentRoute) { _ in
+                    isLoading = true
+                    focusOnRoute()
+                }
         
         .onReceive(routeManager.$currentProgress) { _ in
             routeManager.updateProgressPolyline()
         }
     }
     
-    private func setInitialCamera() {
-           if let route = routeManager.currentRoute {
-               let span = MKCoordinateSpan(latitudeDelta: 0.2, longitudeDelta: 0.2)
-               let region = MKCoordinateRegion(
-                   center: route.startCoordinate,
-                   span: span
-               )
-               
-               // Set camera position first
-               cameraPosition = .region(region)
-               
-               // Add delay before hiding loading screen to ensure camera has moved
-               DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                   withAnimation(.easeInOut(duration: 0.3)) {
-                       isLoading = false
-                   }
-               }
-           } else {
-               // Even with no route, add a small delay
-               DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                   withAnimation(.easeInOut(duration: 0.3)) {
-                       isLoading = false
-                   }
-               }
-           }
-       }
-   }
+    private func focusOnRoute() {
+            if let route = routeManager.currentRoute {
+                let span = MKCoordinateSpan(
+                    latitudeDelta: 0.2,
+                    longitudeDelta: 0.2
+                )
+                
+                let region = MKCoordinateRegion(
+                    center: route.startCoordinate,
+                    span: span
+                )
+                
+                withAnimation(.easeInOut(duration: 0.5)) {
+                    cameraPosition = .region(region)
+                }
+                
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        isLoading = false
+                    }
+                }
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    withAnimation(.easeInOut(duration: 0.3)) {
+                        isLoading = false
+                    }
+                }
+            }
+        }
+    }
+
+//    private func setInitialCamera() {
+//        if let route = routeManager.currentRoute {
+//            let span = MKCoordinateSpan(
+//                latitudeDelta: routeManager.isActivelyTracking ? 0.05 : 0.2,
+//                longitudeDelta: routeManager.isActivelyTracking ? 0.05 : 0.2
+//            )
+//            
+//            // If actively tracking, center on current position instead of route start
+//            let center = routeManager.progressPolyline.last ?? route.startCoordinate
+//            
+//            let region = MKCoordinateRegion(
+//                center: center,
+//                span: span
+//            )
+//            
+//            // Set camera position with animation
+//            withAnimation(.easeInOut(duration: 0.5)) {
+//                cameraPosition = .region(region)
+//            }
+//            
+//            // Add delay before hiding loading screen
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+//                withAnimation(.easeInOut(duration: 0.3)) {
+//                    isLoading = false
+//                }
+//            }
+//        } else {
+//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+//                withAnimation(.easeInOut(duration: 0.3)) {
+//                    isLoading = false
+//                }
+//            }
+//        }
+//    }
+//}

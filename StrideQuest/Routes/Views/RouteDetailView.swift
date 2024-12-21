@@ -47,12 +47,20 @@ struct RouteDetailView: View {
                 .padding()
                 
                 Button(action: {
-                    routeManager.selectAndStartRoute(route)
+                    if let existingProgress = routeManager.currentProgress {
+                               // Call the new resume function in HealthKitManager
+                               HealthKitManager.shared.resumeRoute(startDistance: existingProgress.completedDistance)
+                               routeManager.isActivelyTracking = true
+                           }else {
+                        routeManager.selectAndStartRoute(route)
+                    }
+                    
                     dismiss()
-                    // Give time for the dismiss animation to complete
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        routeManager.focusMapOnCurrentRoute()
                         onRouteSelected?()
                     }
+
                 }) {
                     Text(routeManager.currentRoute?.id == route.id ? "Resume Journey" : "Start Journey")
                         .font(.system(.headline, design: .monospaced))

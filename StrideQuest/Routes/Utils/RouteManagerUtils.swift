@@ -95,6 +95,8 @@ extension RouteManager {
 
 // MARK: - RouteManager+ProgressTracking
 extension RouteManager {
+
+    
     func initializeProgress(for route: VirtualRoute) -> RouteProgress {
         RouteProgress(
             id: UUID(),

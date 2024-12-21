@@ -61,17 +61,6 @@ class RouteManager: ObservableObject {
         }
     }
     
-    
-    // MARK: - Route Management
-    func selectRoute(_ route: VirtualRoute) {
-            // Only allow selecting a route if it's the next available one
-            guard isRouteAvailable(route) else { return }
-            
-            currentRoute = route
-            saveState()
-        }
-    
-    // In RouteManager
     func selectAndStartRoute(_ route: VirtualRoute) {
         guard isRouteAvailable(route) else {
             print("❌ Route not available")
@@ -91,19 +80,23 @@ class RouteManager: ObservableObject {
         // Start HealthKit tracking
         HealthKitManager.shared.markRouteStart()
         
-   
             print("🎯 Initial milestone check with distance: \(HealthKitManager.shared.totalDistance)")
-                for milestone in route.milestones {
-                    if milestone.distanceFromStart <= HealthKitManager.shared.totalDistance {
-                        handleMilestoneCompletion(milestone)
-               
-                }
-            }
+        let currentDistance = HealthKitManager.shared.totalDistance
+           for milestone in route.milestones {
+               if milestone.distanceFromStart <= currentDistance {
+                   // Only add if not already completed
+                   if !newProgress.completedMilestones.contains(milestone.id) {
+                       handleMilestoneCompletion(milestone)
+                       print("🎯 Restored milestone: \(milestone.name) at distance \(milestone.distanceFromStart)")
+                   }
+               }
+           }
         
         // Force initial distance fetch
         HealthKitManager.shared.fetchTotalDistance()
-        
+        focusMapOnCurrentRoute()
         saveState()
+        saveProgress()
     }
     
     func focusMapOnCurrentRoute() {
@@ -158,15 +151,14 @@ class RouteManager: ObservableObject {
     
     // MARK: - Progress Polyline Management
         func updateProgressPolyline() {
-            guard let currentProgress = currentProgress,
-                      let route = currentRoute else {
+            guard let route = currentRoute else {
                     progressPolyline = []
                     return
                 }
             
             var coordinates: [CLLocationCoordinate2D] = []
             var accumulatedDistance: Double = 0
-            let targetDistance = currentProgress.completedDistance
+            let targetDistance = HealthKitManager.shared.totalDistance
             
             print("⚡️ Updating progress polyline")
             print("Total completed distance: \(targetDistance) km")
