@@ -42,11 +42,12 @@ class RouteManager: ObservableObject {
         }
     
     private init() {
-            
-            restoreState()
-            loadRoutes()
-            loadCompletedRoutes()
+        Task {
+            await restoreState()
         }
+        loadRoutes()
+        loadCompletedRoutes()
+    }
     
     let healthDataStore = HealthDataStore.shared
     

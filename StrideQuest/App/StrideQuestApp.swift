@@ -26,7 +26,10 @@ struct StrideQuestApp: App {
                 .environmentObject(healthManager)
                 .environmentObject(routeManager)
                 .task {
+                    // First ensure HealthKit is authorized
                     await requestHealthKitAuthorization()
+                    // Then restore state
+                    await routeManager.restoreState()
                 }
                 .onAppear {
                     print("App started with Core Data context: \(persistenceController.container.viewContext)")

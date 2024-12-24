@@ -140,39 +140,3 @@ struct MapView: View {
             }
         }
     }
-
-//    private func setInitialCamera() {
-//        if let route = routeManager.currentRoute {
-//            let span = MKCoordinateSpan(
-//                latitudeDelta: routeManager.isActivelyTracking ? 0.05 : 0.2,
-//                longitudeDelta: routeManager.isActivelyTracking ? 0.05 : 0.2
-//            )
-//            
-//            // If actively tracking, center on current position instead of route start
-//            let center = routeManager.progressPolyline.last ?? route.startCoordinate
-//            
-//            let region = MKCoordinateRegion(
-//                center: center,
-//                span: span
-//            )
-//            
-//            // Set camera position with animation
-//            withAnimation(.easeInOut(duration: 0.5)) {
-//                cameraPosition = .region(region)
-//            }
-//            
-//            // Add delay before hiding loading screen
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-//                withAnimation(.easeInOut(duration: 0.3)) {
-//                    isLoading = false
-//                }
-//            }
-//        } else {
-//            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-//                withAnimation(.easeInOut(duration: 0.3)) {
-//                    isLoading = false
-//                }
-//            }
-//        }
-//    }
-//}

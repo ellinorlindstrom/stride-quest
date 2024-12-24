@@ -57,7 +57,7 @@ struct LoginView: View {
                                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                                 .aspectRatio(contentMode: .fill)
                                 .offset(y: 30)
-                                .ignoresSafeArea() // Extends beyond safe area edges
+                                .ignoresSafeArea() 
                         )
                 }
                 .padding(.bottom, 90)

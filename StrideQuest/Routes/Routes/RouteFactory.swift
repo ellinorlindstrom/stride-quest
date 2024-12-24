@@ -39,12 +39,12 @@ enum RouteFactory {
     
     private static func createAllRoutes() async throws -> [VirtualRoute] {
         // Create all routes concurrently
-        async let route1 = createCaminoRoute()
+        async let route1 = createKyotoPhilosophersRoute() 
         //async let route2 = createGreatWallRoute() // Moved Great Wall to second
         async let route3 = createNorwegianFjordsRoute() // Shifted Norwegian Fjords down
         async let route4 = createBostonFreedomRoute()
         async let route5 = createVancouverSeawallRoute()
-        async let route6 = createKyotoPhilosophersRoute()
+        async let route6 = createCaminoRoute()
         async let route7 = createSeoulCityWallRoute()
         async let route8 = createBondiToBronteRoute()
         async let route9 = createTableMountainRoute()
@@ -152,6 +152,38 @@ enum RouteFactory {
             startCoordinate: waypoints.first ?? CLLocationCoordinate2D(),
             waypoints: waypoints,
             segments: segments
+        )
+    }
+    
+    // Japan - Cultural Walk
+    private static func createKyotoPhilosophersRoute() async throws -> VirtualRoute {
+        return try await createRouteWithSegments(
+            id: RouteConstants.kyotoPhilosophersPath,
+            name: "Philosopher's Path",
+            description: "Peaceful stone path through historic Kyoto",
+            totalDistance: 2.000,
+            milestones: [
+                RouteMilestone(
+                    routeId: RouteConstants.kyotoPhilosophersPath,
+                    name: "Ginkaku-ji",
+                    description: "The Silver Pavilion, a Zen temple of extraordinary beauty. Its minimalist design, moss garden, and sand sculptures exemplify Japanese aesthetics and the pursuit of perfection in simplicity.",
+                    distanceFromStart: 0,
+                    imageName: "ginkakuji"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.kyotoPhilosophersPath,
+                    name: "Nanzen-ji",
+                    description: "One of Japan's most important Zen temples, featuring magnificent gates, a surprising aqueduct, and tranquil rock gardens. The temple grounds offer a perfect blend of architecture and nature.",
+                    distanceFromStart: 2.000,
+                    imageName: "nanzenji"
+                )
+            ],
+            imageName: "philosophers-path",
+            region: "Japan",
+            waypoints: [
+                CLLocationCoordinate2D(latitude: 35.0271, longitude: 135.7944), // Ginkaku-ji
+                CLLocationCoordinate2D(latitude: 35.0116, longitude: 135.7932)  // Nanzen-ji
+            ]
         )
     }
     
@@ -366,37 +398,7 @@ enum RouteFactory {
         )
     }
     
-    // Japan - Cultural Walk
-    private static func createKyotoPhilosophersRoute() async throws -> VirtualRoute {
-        return try await createRouteWithSegments(
-            id: RouteConstants.kyotoPhilosophersPath,
-            name: "Philosopher's Path",
-            description: "Peaceful stone path through historic Kyoto",
-            totalDistance: 2.000,
-            milestones: [
-                RouteMilestone(
-                    routeId: RouteConstants.kyotoPhilosophersPath,
-                    name: "Ginkaku-ji",
-                    description: "The Silver Pavilion, a Zen temple of extraordinary beauty. Its minimalist design, moss garden, and sand sculptures exemplify Japanese aesthetics and the pursuit of perfection in simplicity.",
-                    distanceFromStart: 0,
-                    imageName: "ginkakuji"
-                ),
-                RouteMilestone(
-                    routeId: RouteConstants.kyotoPhilosophersPath,
-                    name: "Nanzen-ji",
-                    description: "One of Japan's most important Zen temples, featuring magnificent gates, a surprising aqueduct, and tranquil rock gardens. The temple grounds offer a perfect blend of architecture and nature.",
-                    distanceFromStart: 2.000,
-                    imageName: "nanzenji"
-                )
-            ],
-            imageName: "philosophers-path",
-            region: "Japan",
-            waypoints: [
-                CLLocationCoordinate2D(latitude: 35.0271, longitude: 135.7944), // Ginkaku-ji
-                CLLocationCoordinate2D(latitude: 35.0116, longitude: 135.7932)  // Nanzen-ji
-            ]
-        )
-    }
+    
     
     // South Korea - Urban Historical
     private static func createSeoulCityWallRoute() async throws -> VirtualRoute {
