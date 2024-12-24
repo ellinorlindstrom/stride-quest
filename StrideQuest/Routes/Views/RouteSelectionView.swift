@@ -105,7 +105,7 @@ struct RouteCard: View {
             
             VStack(alignment: .leading, spacing: 5) {
                             Text(route.name)
-                                .font(.system(.headline, design: .monospaced))
+                    .font(.system(.headline, design: .rounded))
                             
                             Text(route.region)
                                 .font(.subheadline)
@@ -121,6 +121,4 @@ struct RouteCard: View {
                 }
             }
 
-#Preview {
-    RouteSelectionView()
-}
+

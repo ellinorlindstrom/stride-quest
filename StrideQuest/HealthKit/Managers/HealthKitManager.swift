@@ -158,11 +158,6 @@ class HealthKitManager: ObservableObject {
         fetchTotalDistance()
     }
     
-    func stopTracking() {
-        isTrackingRoute = false
-        print("🛑 Route tracking stopped")
-    }
-    
     // Request authorization and start observing
     func requestAuthorization() async throws {
         guard HKHealthStore.isHealthDataAvailable() else {
@@ -195,10 +190,8 @@ class HealthKitManager: ObservableObject {
             
             RouteManager.shared.updateProgress(withDistance: relativeDistance, source: "healthkit")
         }
-        
-        // Save both distances
         lastKnownDistance = totalDistance
-        savedRouteStartDistance = routeTrackingStartDistance  // This ensures the start distance persists
+        savedRouteStartDistance = routeTrackingStartDistance
         
         HealthDataStore.shared.saveHealthData(
             totalDistance,

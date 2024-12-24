@@ -20,24 +20,20 @@ struct AppHeader: View {
                 }
             }) {
                 ZStack {
-                    Circle()
-                        .fill(.ultraThinMaterial)
-                        .frame(width: 40, height: 40)
-                    
                     Image(systemName: "map.fill")
                         .font(.title2)
-                        .foregroundStyle(.primarySq)
+                        .foregroundStyle(.secondSecondarySq)
                 }
             }
             
             // App Title
             VStack(alignment: .leading, spacing: 2) {
                 Text("StrideQuest")
-                    .font(.system(.title2, design: .monospaced))
+                    .font(.system(.title2, design: .rounded))
                     .fontWeight(.bold)
-                    .foregroundStyle(.accentSq)
+                    .foregroundStyle(.textSq)
                 Text("Your Adventure Awaits")
-                    .font(.system(.caption, design: .monospaced))
+                    .font(.system(.caption, design: .default))
                     .foregroundStyle(.textSq)
             }
             
@@ -46,19 +42,70 @@ struct AppHeader: View {
             // Display Today's Distance
             VStack(alignment: .trailing, spacing: 2) {
                 Text(String(format: "%.2f km", healthManager.totalDistance))
-                    .font(.system(.headline, design: .monospaced))
-                    .foregroundStyle(.accentSq)
+                    .font(.system(.headline, design: .rounded))
+                    .foregroundStyle(.textSq)
                 Text("Today's Distance")
-                    .font(.system(.caption2, design: .monospaced))
+                    .font(.system(.caption2, design: .default))
                     .foregroundStyle(.textSq)
             }
         }
         .padding()
-        .background(.ultraThinMaterial)
+        .background(.backgroundSq)
         .frame(maxWidth: .infinity)
         .onAppear {
             // Fetch distance when AppHeader appears
             healthManager.fetchTotalDistance()
+        }
+    }
+}
+
+extension HealthKitManager {
+    static var preview: HealthKitManager {
+        let manager = HealthKitManager.shared // Use shared instance if available
+        // Set any preview values you want to see
+        manager.totalDistance = 5.43 // Example distance
+        return manager
+    }
+}
+
+#Preview {
+    AppHeader(
+        authManager: AuthenticationManager(),
+        showingRouteSelection: .constant(false),
+        showingManualEntry: .constant(false),
+        showingCompletedRoutes: .constant(false),
+        showingSettings: .constant(false),
+        isMenuShowing: .constant(false)
+    )
+    .environmentObject(HealthKitManager.preview)
+}
+// If you want to preview both light and dark mode side by side:
+struct AppHeader_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            AppHeader(
+                authManager: AuthenticationManager(),
+                showingRouteSelection: .constant(false),
+                showingManualEntry: .constant(false),
+                showingCompletedRoutes: .constant(false),
+                showingSettings: .constant(false),
+                isMenuShowing: .constant(false)
+            )
+            .environmentObject(HealthKitManager.preview)
+            .preferredColorScheme(.light)
+            .previewDisplayName("Light Mode")
+            
+            AppHeader(
+                authManager: AuthenticationManager(),
+                showingRouteSelection: .constant(false),
+                showingManualEntry: .constant(false),
+                showingCompletedRoutes: .constant(false),
+                showingSettings: .constant(false),
+                isMenuShowing: .constant(false)
+            )
+            .environmentObject(HealthKitManager.preview)
+            .preferredColorScheme(.dark)
+            .previewDisplayName("Dark Mode")
         }
     }
 }

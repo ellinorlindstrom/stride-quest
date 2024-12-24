@@ -12,7 +12,7 @@ struct MilestoneAnnotationView: View {
     
     var body: some View {
         Image(systemName: "mappin.circle.fill")
-            .foregroundColor(isCompleted ? .primarySq : .gray)
+            .foregroundColor(isCompleted ? .secondarySq : .gray)
             .font(.title)
             .onAppear {
                 print("🎯 MilestoneAnnotation appeared:")

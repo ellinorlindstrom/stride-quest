@@ -21,8 +21,8 @@ struct RouteProgressView: View {
                     // Current route progress
                     VStack(alignment: .leading, spacing: 15) {
                         Text(route.name)
-                            .font(.system(.headline, design: .monospaced))
-                            .foregroundStyle(.accentSq)
+                            .font(.system(.headline, design: .rounded))
+                            .foregroundStyle(.textSq)
                         
                         ProgressBar(value: progress.percentageCompleted)
                             .id(healthManager.totalDistance)
@@ -56,19 +56,19 @@ struct RouteProgressView: View {
                 } else {
                     VStack(spacing: 5) {
                         Text("No Active Journey")
-                            .font(.system(.headline, design: .monospaced))
+                            .font(.system(.headline, design: .rounded))
                             .padding()
                             .foregroundStyle(.textSq)
                         
                         Button("Choose Your Adventure!") {
                             showingRouteSelection = true
                         }
-                        .font(.system(.caption, design: .monospaced))
+                        .font(.system(.caption, design: .rounded))
                         .buttonStyle(.borderedProminent)
                         .controlSize(.large)
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .tint(.accentSq)
+                        .tint(.secondSecondarySq)
                         
                     }
                 }
@@ -93,12 +93,12 @@ struct ProgressBar: View {
                 Rectangle()
                     .frame(width: geometry.size.width, height: 20)
                     .opacity(0.3)
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(.backgroundSq)
                 
                 Rectangle()
                     .frame(width: min(CGFloat(value) * geometry.size.width / 100, geometry.size.width),
                            height: 20)
-                    .foregroundStyle(.primarySq)
+                    .foregroundStyle(.secondarySq)
                     .animation(.spring(), value: value)
             }
             .cornerRadius(10)

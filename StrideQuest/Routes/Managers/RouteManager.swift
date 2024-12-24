@@ -145,10 +145,6 @@ class RouteManager: ObservableObject {
         }
     }
     
-    func beginRouteTracking() {
-        startTracking()
-    }
-    
     // MARK: - Progress Polyline Management
         func updateProgressPolyline() {
             guard let route = currentRoute else {
@@ -227,7 +223,7 @@ class RouteManager: ObservableObject {
         
         // Store the current progress before checking new milestones
         currentProgress = updatedProgress
-        checkMilestones(for: updatedProgress, at: cappedDistance)
+        checkMilestones(for: updatedProgress, at: HealthKitManager.shared.totalDistance)
         saveProgress()
         updateProgressPolyline()
     }
@@ -247,13 +243,6 @@ class RouteManager: ObservableObject {
                 handleMilestoneCompletion(milestone)
             }
         }
-    }
-    
-    func refreshMilestoneStates() {
-        if let progress = currentProgress {
-                // Check all milestones up to the current progress
-                checkMilestones(for: progress, at: HealthKitManager.shared.totalDistance)
-            }
     }
     
     // MARK: - Milestone Management
@@ -329,7 +318,6 @@ class RouteManager: ObservableObject {
     
     // MARK: - Utility Functions
     
-    // In RouteManager class
     func getRoute(by id: UUID) -> VirtualRoute? {
         return availableRoutes.first { route in route.id == id }
     }

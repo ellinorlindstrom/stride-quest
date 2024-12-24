@@ -40,11 +40,11 @@ struct SideMenu: View {
                                 } else {
                                     ZStack {
                                         Circle()
-                                            .fill(Color(red: 0.075, green: 0.278, blue: 0.396))
+                                            .fill(Color(.secondarySq))
                                             .frame(width: 60, height: 60)
                                         Image(systemName: "person.fill")
                                             .font(.system(size: 30))
-                                            .foregroundColor(.white)
+                                            .foregroundColor(.secondSecondarySq)
                                     }
                                 }
                             }
@@ -60,13 +60,13 @@ struct SideMenu: View {
                             }
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Welcome")
-                                    .font(.system(.subheadline, design: .monospaced))
+                                    .font(.system(.subheadline, design: .rounded))
                                     .foregroundStyle(.secondary)
                                 
                                 if let userName = authManager.userName {
                                     let firstName = userName.components(separatedBy: " ").first ?? userName
                                     Text(firstName)
-                                        .font(.system(.headline, design: .monospaced))
+                                        .font(.system(.headline, design: .default))
                                         .foregroundStyle(.primary)
                                 }
                             }
@@ -107,7 +107,7 @@ struct SideMenu: View {
                             }
                         }
                         .padding(.vertical, 8)
-                        .font(.system(.headline, design: .monospaced))
+                        .font(.system(.headline, design: .rounded))
                         
                         Spacer()
                     }

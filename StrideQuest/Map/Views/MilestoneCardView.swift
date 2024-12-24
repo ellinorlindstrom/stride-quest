@@ -45,7 +45,7 @@ struct MilestoneCard: View {
                 
                 // Milestone info
                 Text(milestone.name)
-                    .font(.system(.title2, design: .monospaced))
+                    .font(.system(.title2, design: .rounded))
                     .bold()
                     .padding(.vertical, 8)
                 

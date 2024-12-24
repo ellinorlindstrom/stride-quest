@@ -15,7 +15,7 @@ struct MapView: View {
                 if let route = routeManager.currentRoute {
                     // Route polyline
                     MapPolyline(coordinates: route.path)
-                        .stroke(.textSq.opacity(0.8), lineWidth: 4)
+                        .stroke(.secondarySq.opacity(0.8), lineWidth: 4)
                     
                     // Progress polyline
                     if !routeManager.progressPolyline.isEmpty {
