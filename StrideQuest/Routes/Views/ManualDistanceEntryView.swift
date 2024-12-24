@@ -10,6 +10,7 @@ import Foundation
 
 struct ManualDistanceEntryView: View {
     @EnvironmentObject var routeManager: RouteManager
+    @StateObject private var healthManager = HealthKitManager.shared
     @State private var additionalDistance = ""
     @Environment(\.dismiss) private var dismiss
     
@@ -33,8 +34,12 @@ struct ManualDistanceEntryView: View {
                 
                 Button("Add Distance") {
                     if let km = Double(additionalDistance) {
-                        let currentDistance = routeManager.currentProgress?.completedDistance ?? 0
-                        routeManager.updateProgress(withDistance: currentDistance + km, isManual: true)
+                        // Update HealthKit's total distance
+                        let newTotalDistance = healthManager.totalDistance + km
+                        healthManager.totalDistance = newTotalDistance
+                        
+                        // Update route progress
+                        routeManager.updateProgress(withDistance: newTotalDistance, isManual: true)
                         dismiss()
                     }
                 }

@@ -5,7 +5,7 @@ struct MilestoneCard: View {
     let milestone: RouteMilestone
     let routeId: UUID
     @Binding var isShowing: Bool
-    @Binding var selectedMilestone: RouteMilestone?    
+    @Binding var selectedMilestone: RouteMilestone?
     
     var body: some View {
         if milestone.routeId == routeId {
@@ -90,31 +90,35 @@ struct MilestoneCard: View {
     }
     
     private func completeRoute() {
-            guard let currentProgress = routeManager.currentProgress else { return }
-            
-            // Create an updated progress with completion
-            var updatedProgress = currentProgress
-            updatedProgress.finalizeCompletion()
-            
-            // First save the updated progress
-            routeManager.saveProgress()
-            
-            // Then handle route completion
-            routeManager.handleRouteCompletion(updatedProgress)
-            
-            // Finally, dismiss the card
+        guard let currentProgress = routeManager.currentProgress else { return }
+        
+        // Create an updated progress with completion
+        var updatedProgress = currentProgress
+        updatedProgress.finalizeCompletion()
+        
+        // First save the updated progress
+        routeManager.saveProgress()
+        
+        // Then handle route completion
+        routeManager.handleRouteCompletion(updatedProgress)
+        
+        // Finally, dismiss the card
+        withAnimation {
+            isShowing = false
+            selectedMilestone = nil
+        }
+    }
+    
+    private func handleDismiss() {
+        // If it's the final milestone, complete the route before dismissing
+        if isFinalMilestone {
+            completeRoute()
+        } else {
+            // Otherwise just dismiss normally
             withAnimation {
                 isShowing = false
                 selectedMilestone = nil
             }
         }
-        
-        private func handleDismiss() {
-            withAnimation {
-                isShowing = false
-                selectedMilestone = nil
-            
-        }
     }
 }
-
