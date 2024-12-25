@@ -11,23 +11,6 @@ struct CompletedRoutesView: View {
     @EnvironmentObject var routeManager: RouteManager
     @Environment(\.dismiss) private var dismiss
     @State private var showingRouteSelection = false
-    
-//    private func debugLog() {
-//            print("\n📱 CompletedRoutesView Debug Info:")
-//            print("  - Total completed routes: \(routeManager.completedRoutes.count)")
-//            
-//            for (index, progress) in routeManager.completedRoutes.enumerated() {
-//                print("\n  Route \(index + 1):")
-//                print("    - Progress ID: \(progress.id)")
-//                print("    - Route ID: \(progress.routeId)")
-//                print("    - Has current route?: \(progress.currentRoute != nil)")
-//                print("    - Completed Distance: \(progress.completedDistance)")
-//                print("    - Is Completed: \(progress.isCompleted)")
-//                if let route = progress.currentRoute {
-//                    print("    - Route name: \(route.name)")
-//                }
-//            }
-//        }
         
         var body: some View {
             NavigationStack {
@@ -78,9 +61,6 @@ struct CompletedRoutesView: View {
                     })
                 }
             }
-//            .onAppear {
-//                debugLog()
-//            }
         }
     }
 

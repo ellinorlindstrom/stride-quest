@@ -7,6 +7,9 @@ struct MilestoneCard: View {
     @Binding var isShowing: Bool
     @Binding var selectedMilestone: RouteMilestone?
     
+    @State private var isTruncated: Bool = false
+    @State private var showingFullText: Bool = false
+    
     var body: some View {
         if milestone.routeId == routeId {
             VStack {
@@ -53,6 +56,30 @@ struct MilestoneCard: View {
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
+                    .lineLimit(4)
+                    .background(
+                        GeometryReader { geometry in
+                            Color.clear.onAppear {
+                                let frame = geometry.frame(in: .local)
+                                let text = milestone.description as NSString
+                                let textRect = text.boundingRect(
+                                    with: CGSize(width: frame.width, height: .infinity),
+                                    options: [.usesLineFragmentOrigin],
+                                    attributes: [.font: UIFont.systemFont(ofSize: 17)],
+                                    context: nil
+                                )
+                                isTruncated = textRect.height > frame.height
+                            }
+                        }
+                    )
+                
+                if isTruncated {
+                    Button(action: { showingFullText = true }) {
+                        Text("Read More")
+                            .foregroundColor(.blue)
+                            .padding(.top, 4)
+                    }
+                }
                 
                 if isFinalMilestone {
                     Button(action: {
@@ -80,10 +107,16 @@ struct MilestoneCard: View {
             )
             .transition(.scale.combined(with: .opacity))
             .offset(y: -50)
-        } else {
-            EmptyView()
-        }
-    }
+            .sheet(isPresented: $showingFullText) {
+                           FullTextView(
+                               title: milestone.name,
+                               text: milestone.description
+                           )
+                       }
+                   } else {
+                       EmptyView()
+                   }
+               }
     private var isFinalMilestone: Bool {
         guard let route = routeManager.getRoute(by: routeId) else { return false }
         return abs(milestone.distanceFromStart - route.totalDistance) < 0.1
@@ -118,6 +151,31 @@ struct MilestoneCard: View {
             withAnimation {
                 isShowing = false
                 selectedMilestone = nil
+            }
+        }
+    }
+}
+struct FullTextView: View {
+    @Environment(\.dismiss) private var dismiss
+    let title: String
+    let text: String
+    
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(text)
+                        .padding()
+                }
+            }
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
             }
         }
     }

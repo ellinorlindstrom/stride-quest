@@ -228,12 +228,14 @@ class HealthKitManager: ObservableObject {
             group.enter()
             
             let query = HKStatisticsCollectionQuery(
-                quantityType: distanceType,
-                quantitySamplePredicate: predicate,
-                options: .cumulativeSum,
-                anchorDate: routeStartDate,
-                intervalComponents: DateComponents(day: 1)
-            )
+                        quantityType: distanceType,
+                        quantitySamplePredicate: predicate,
+                        options: .cumulativeSum,
+                        anchorDate: routeStartDate,
+                        intervalComponents: DateComponents(minute: 1)
+                    )
+            
+            var temporaryTotal: Double = 0
             
             query.initialResultsHandler = { query, results, error in
                 defer { group.leave() }
