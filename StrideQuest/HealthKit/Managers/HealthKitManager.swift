@@ -39,9 +39,6 @@ class HealthKitManager: ObservableObject {
     private init() {
         self.totalDistance = lastKnownDistance
         self.routeTrackingStartDistance = savedRouteStartDistance
-        print("This is init in HealthKitManager, totaldistance:", self.totalDistance)
-        print("This is init in HealthKitManager, routetrackingstartdistance:", self.routeTrackingStartDistance)
-
         }
     
     
@@ -170,10 +167,6 @@ class HealthKitManager: ObservableObject {
             self.isAuthorized = true
             self.startObservingDistance()
             self.fetchTotalDistance()
-            print("🍏 requestAuthorization func DispatchQueue.main.async",
-            "- self.isAuthorized", self.isAuthorized,
-            "- self.startObservingDistance", self.startObservingDistance,
-                  "self.fetchTotalDistance:",self.fetchTotalDistance)
         }
         try await setupBackgroundDelivery()
     }
@@ -183,13 +176,10 @@ class HealthKitManager: ObservableObject {
         
         if isTrackingRoute && RouteManager.shared.currentRoute != nil {
             let relativeDistance = routeRelativeDistance
-            print("📏 Distance Update:")
-            print("  - Total Distance: \(totalDistance)")
-            print("  - Start Distance: \(routeTrackingStartDistance)")
-            print("  - Relative Distance: \(relativeDistance)")
-            
             RouteManager.shared.updateProgress(withDistance: relativeDistance, source: "healthkit")
         }
+        
+        // Save both distances
         lastKnownDistance = totalDistance
         savedRouteStartDistance = routeTrackingStartDistance
         
@@ -202,7 +192,6 @@ class HealthKitManager: ObservableObject {
     
     func fetchTotalDistance() {
         guard let routeStartDate = RouteManager.shared.currentProgress?.startDate else {
-               print("No active route found")
                return
            }
 
@@ -228,14 +217,12 @@ class HealthKitManager: ObservableObject {
             group.enter()
             
             let query = HKStatisticsCollectionQuery(
-                        quantityType: distanceType,
-                        quantitySamplePredicate: predicate,
-                        options: .cumulativeSum,
-                        anchorDate: routeStartDate,
-                        intervalComponents: DateComponents(minute: 1)
-                    )
-            
-            var temporaryTotal: Double = 0
+                quantityType: distanceType,
+                quantitySamplePredicate: predicate,
+                options: .cumulativeSum,
+                anchorDate: routeStartDate,
+                intervalComponents: DateComponents(minute: 1)
+            )
             
             query.initialResultsHandler = { query, results, error in
                 defer { group.leave() }
