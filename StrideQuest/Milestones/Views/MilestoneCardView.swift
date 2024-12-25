@@ -162,13 +162,31 @@ struct FullTextView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(alignment: .leading, spacing: 16) {
-                    Text(text)
-                        .padding()
+            ZStack(alignment: .bottom) {
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Text(title)
+                            .font(.system(.title, design: .rounded))
+                            .bold()
+                            .foregroundColor(Color(.textSq))
+                            .padding(.top, 20)
+                        
+                        Text(text)
+                            .foregroundColor(Color(.textSq))
+                            .zIndex(10)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 100)
                 }
+                
+                Image("sq-bg-2")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: .infinity)
+                    .ignoresSafeArea()
             }
-            .navigationTitle(title)
+            .frame(maxHeight: .infinity)
+            .background(Color(.backgroundSq))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -180,3 +198,13 @@ struct FullTextView: View {
         }
     }
 }
+#Preview {
+    FullTextView(
+        title: "Sample Milestone",
+        text: """
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+        
+        """
+    )
+}
+
