@@ -14,32 +14,33 @@ class RouteManager: ObservableObject {
     @Published private(set) var completedRoutes: [RouteProgress] = []
     @Published private(set) var recentlyUnlockedMilestone: RouteMilestone?
     @Published private(set) var progressPolyline: [CLLocationCoordinate2D] = []
+    @Published var showingRouteSelection: Bool = false
     
     internal func setAvailableRoutes(_ routes: [VirtualRoute]) {
-           availableRoutes = routes
-       }
-       
-       internal func setCurrentRoute(_ route: VirtualRoute?) {
-           currentRoute = route
-       }
-       
-       internal func setCurrentProgress(_ progress: RouteProgress?) {
-           currentProgress = progress
-       }
-       
-       internal func setRecentlyUnlockedMilestone(_ milestone: RouteMilestone?) {
-           recentlyUnlockedMilestone = milestone
-       }
+        availableRoutes = routes
+    }
+    
+    internal func setCurrentRoute(_ route: VirtualRoute?) {
+        currentRoute = route
+    }
+    
+    internal func setCurrentProgress(_ progress: RouteProgress?) {
+        currentProgress = progress
+    }
+    
+    internal func setRecentlyUnlockedMilestone(_ milestone: RouteMilestone?) {
+        recentlyUnlockedMilestone = milestone
+    }
     
     // MARK: - Private Properties
     private let defaults = UserDefaults.standard
     private let milestoneCompletedPublisher = PassthroughSubject<RouteMilestone, Never>()
     
     private static let instance = RouteManager()
-        
-        static var shared: RouteManager {
-            return instance
-        }
+    
+    static var shared: RouteManager {
+        return instance
+    }
     
     private init() {
         Task {
@@ -81,17 +82,17 @@ class RouteManager: ObservableObject {
         // Start HealthKit tracking
         HealthKitManager.shared.markRouteStart()
         
-            print("🎯 Initial milestone check with distance: \(HealthKitManager.shared.totalDistance)")
+        print("🎯 Initial milestone check with distance: \(HealthKitManager.shared.totalDistance)")
         let currentDistance = HealthKitManager.shared.totalDistance
-           for milestone in route.milestones {
-               if milestone.distanceFromStart <= currentDistance {
-                   // Only add if not already completed
-                   if !newProgress.completedMilestones.contains(milestone.id) {
-                       handleMilestoneCompletion(milestone)
-                       print("🎯 Restored milestone: \(milestone.name) at distance \(milestone.distanceFromStart)")
-                   }
-               }
-           }
+        for milestone in route.milestones {
+            if milestone.distanceFromStart <= currentDistance {
+                // Only add if not already completed
+                if !newProgress.completedMilestones.contains(milestone.id) {
+                    handleMilestoneCompletion(milestone)
+                    print("🎯 Restored milestone: \(milestone.name) at distance \(milestone.distanceFromStart)")
+                }
+            }
+        }
         
         // Force initial distance fetch
         HealthKitManager.shared.fetchTotalDistance()
@@ -101,41 +102,42 @@ class RouteManager: ObservableObject {
     }
     
     func focusMapOnCurrentRoute() {
-            guard let route = currentRoute else { return }
-            
-            // Set a closer zoom level when actively tracking
-            let span = MKCoordinateSpan(
-                latitudeDelta: isActivelyTracking ? 0.05 : 0.2,
-                longitudeDelta: isActivelyTracking ? 0.05 : 0.2
-            )
-            
-            let region = MKCoordinateRegion(
-                center: route.startCoordinate,
-                span: span
-            )
-            
-            DispatchQueue.main.async {
-                self.currentMapRegion = region
-            }
+        guard let route = currentRoute else { return }
+        
+        // Set a closer zoom level when actively tracking
+        let span = MKCoordinateSpan(
+            latitudeDelta: isActivelyTracking ? 0.05 : 0.2,
+            longitudeDelta: isActivelyTracking ? 0.05 : 0.2
+        )
+        
+        let region = MKCoordinateRegion(
+            center: route.startCoordinate,
+            span: span
+        )
+        
+        DispatchQueue.main.async {
+            self.currentMapRegion = region
+            print("🗺️ Updating currentMapRegion to: \(region)")
+        }
+    }
+    
+    func isRouteAvailable(_ route: VirtualRoute) -> Bool {
+        // First route is always available
+        if completedRoutes.isEmpty {
+            return route == availableRoutes.first
         }
         
-        func isRouteAvailable(_ route: VirtualRoute) -> Bool {
-            // First route is always available
-            if completedRoutes.isEmpty {
-                return route == availableRoutes.first
-            }
-            
-            // Find the index of the last completed route
-            guard let lastCompletedRoute = completedRoutes.last,
-                  let lastCompletedIndex = availableRoutes.firstIndex(where: { $0.id == lastCompletedRoute.routeId }),
-                  let newRouteIndex = availableRoutes.firstIndex(where: { $0.id == route.id })
-            else {
-                return false
-            }
-            
-            // Only allow selecting the next route in sequence
-            return newRouteIndex == lastCompletedIndex + 1
+        // Find the index of the last completed route
+        guard let lastCompletedRoute = completedRoutes.last,
+              let lastCompletedIndex = availableRoutes.firstIndex(where: { $0.id == lastCompletedRoute.routeId }),
+              let newRouteIndex = availableRoutes.firstIndex(where: { $0.id == route.id })
+        else {
+            return false
         }
+        
+        // Only allow selecting the next route in sequence
+        return newRouteIndex == lastCompletedIndex + 1
+    }
     
     private func loadRoutes() {
         Task {
@@ -147,68 +149,68 @@ class RouteManager: ObservableObject {
     }
     
     // MARK: - Progress Polyline Management
-        func updateProgressPolyline() {
-            guard let route = currentRoute else {
-                    progressPolyline = []
-                    return
-                }
-            
-            var coordinates: [CLLocationCoordinate2D] = []
-            var accumulatedDistance: Double = 0
-            let targetDistance = HealthKitManager.shared.totalDistance
-            
-            print("⚡️ Updating progress polyline")
-            print("Total completed distance: \(targetDistance) km")
-            
-            // Always start with the first coordinate
-            if let firstCoord = route.segments.first?.path.first {
-                coordinates.append(firstCoord)
-            }
-            
-            // Early exit if we haven't moved from start
-            guard targetDistance > 0 else {
-                DispatchQueue.main.async {
-                    self.progressPolyline = coordinates
-                }
-                return
-            }
-            
-            outerLoop: for segment in route.segments {
-                let segmentCoordinates = segment.path
-                
-                for i in 0..<(segmentCoordinates.count - 1) {
-                    let start = segmentCoordinates[i]
-                    let end = segmentCoordinates[i + 1]
-                    let pointDistance = RouteUtils.calculateDistance(from: start, to: end)
-                    
-                    if accumulatedDistance + pointDistance >= targetDistance {
-                        // We've found the segment containing our target distance
-                        let remainingDistance = targetDistance - accumulatedDistance
-                        let fraction = min(1.0, max(0.0, remainingDistance / pointDistance))
-                        
-                        if let interpolated = RouteUtils.interpolateCoordinate(from: start, to: end, fraction: fraction) {
-                            coordinates.append(interpolated)
-                        }
-                        break outerLoop
-                    }
-                    
-                    coordinates.append(end)
-                    accumulatedDistance += pointDistance
-                }
-            }
-            
+    func updateProgressPolyline() {
+        guard let route = currentRoute else {
+            progressPolyline = []
+            return
+        }
+        
+        var coordinates: [CLLocationCoordinate2D] = []
+        var accumulatedDistance: Double = 0
+        let targetDistance = HealthKitManager.shared.totalDistance
+        
+        print("⚡️ Updating progress polyline")
+        print("Total completed distance: \(targetDistance) km")
+        
+        // Always start with the first coordinate
+        if let firstCoord = route.segments.first?.path.first {
+            coordinates.append(firstCoord)
+        }
+        
+        // Early exit if we haven't moved from start
+        guard targetDistance > 0 else {
             DispatchQueue.main.async {
                 self.progressPolyline = coordinates
-                print("Final polyline has \(coordinates.count) coordinates")
+            }
+            return
+        }
+        
+        outerLoop: for segment in route.segments {
+            let segmentCoordinates = segment.path
+            
+            for i in 0..<(segmentCoordinates.count - 1) {
+                let start = segmentCoordinates[i]
+                let end = segmentCoordinates[i + 1]
+                let pointDistance = RouteUtils.calculateDistance(from: start, to: end)
+                
+                if accumulatedDistance + pointDistance >= targetDistance {
+                    // We've found the segment containing our target distance
+                    let remainingDistance = targetDistance - accumulatedDistance
+                    let fraction = min(1.0, max(0.0, remainingDistance / pointDistance))
+                    
+                    if let interpolated = RouteUtils.interpolateCoordinate(from: start, to: end, fraction: fraction) {
+                        coordinates.append(interpolated)
+                    }
+                    break outerLoop
+                }
+                
+                coordinates.append(end)
+                accumulatedDistance += pointDistance
             }
         }
         
-        // Update the existing updateProgress function to call updateProgressPolyline
+        DispatchQueue.main.async {
+            self.progressPolyline = coordinates
+            print("Final polyline has \(coordinates.count) coordinates")
+        }
+    }
+    
+    // Update the existing updateProgress function to call updateProgressPolyline
     func updateProgress(withDistance distance: Double, isManual: Bool = false, source: String = "unknown") {
         guard let progress = currentProgress,
-                      let route = currentRoute else {
-                    return
-                }
+              let route = currentRoute else {
+            return
+        }
         print("📊 Updating progress - Distance: \(distance), Source: \(source)")
         var updatedProgress = progress
         let cappedDistance = min(distance, route.totalDistance)
@@ -228,7 +230,7 @@ class RouteManager: ObservableObject {
         saveProgress()
         updateProgressPolyline()
     }
-
+    
     
     
     func checkMilestones(for progress: RouteProgress, at distance: Double) {
@@ -286,34 +288,30 @@ class RouteManager: ObservableObject {
     }
     
     func isMilestoneCompleted(_ milestone: RouteMilestone) -> Bool {
-        print("🎯 Checking milestone completion:")
-        print("  - Milestone: \(milestone.name)")
-        print("  - isActivelyTracking: \(isActivelyTracking)")
-        print("  - Current Progress exists: \(currentProgress != nil)")
-        print("  - HealthKit isTrackingRoute: \(HealthKitManager.shared.isTrackingRoute)")
-        
         let isCompleted = currentProgress?.completedMilestones.contains(milestone.id) ?? false
-        print("  - Is completed: \(isCompleted)")
         return isCompleted
     }
     
     // MARK: - Route Completion
-     func handleRouteCompletion(_ progress: RouteProgress) {
+    func handleRouteCompletion(_ progress: RouteProgress) {
         guard progress.isCompleted else { return }
-            
-            let routeId = progress.routeId 
-            
+        
+        let routeId = progress.routeId
         
         DispatchQueue.main.async {
-            //self.activeRouteIds.remove(routeId)
-            
             if !self.completedRoutes.contains(where: { $0.routeId == routeId }) {
                 self.completedRoutes.append(progress)
                 self.healthDataStore.updateRouteProgress(progress)
             }
-            
             self.currentProgress = nil
-            self.currentRoute = nil
+                    self.currentRoute = nil
+                    self.isActivelyTracking = false
+                    self.progressPolyline = []
+                    self.currentRouteCoordinate = nil
+                    self.showingRouteSelection = true
+                    self.recentlyUnlockedMilestone = nil
+                    
+                    print("🏁 Route completed and all states reset")
         }
     }
     
@@ -336,24 +334,7 @@ class RouteManager: ObservableObject {
         }
     }
     
-    func updateMapRegion(_ region: MKCoordinateRegion) {
-        currentMapRegion = region
-    }
-    
-//    func isTracking(route: VirtualRoute) -> Bool {
-//        activeRouteIds.contains(route.id)
-//    }
     func isRouteCompleted(_ routeId: UUID) -> Bool {
-            completedRoutes.contains { $0.routeId == routeId }
-        }
-    
-    // In RouteManager
-    func verifyTrackingState() {
-        print("🔍 Verifying tracking state:")
-        print("  - isActivelyTracking: \(isActivelyTracking)")
-        print("  - Current route: \(currentRoute?.name ?? "none")")
-        print("  - Current progress exists: \(currentProgress != nil)")
-        print("  - HealthKit isTrackingRoute: \(HealthKitManager.shared.isTrackingRoute)")
-        print("  - HealthKit start distance: \(HealthKitManager.shared.routeStartDistance)")
+        completedRoutes.contains { $0.routeId == routeId }
     }
 }

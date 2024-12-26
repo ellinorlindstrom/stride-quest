@@ -6,7 +6,6 @@ struct ContentView: View {
     @EnvironmentObject var healthManager: HealthKitManager
     @EnvironmentObject var routeManager: RouteManager
     @StateObject private var authManager = AuthenticationManager()
-    @State private var showingRouteSelection = false
     @State private var showingManualEntry = false
     @State private var showingProgress = true
     @State private var showingCompletedRoutes = false
@@ -19,7 +18,7 @@ struct ContentView: View {
             if authManager.isAuthenticated {
                 AppHeader(
                     authManager: authManager,
-                    showingRouteSelection: $showingRouteSelection,
+                    showingRouteSelection: $routeManager.showingRouteSelection,
                     showingManualEntry: $showingManualEntry,
                     showingCompletedRoutes: $showingCompletedRoutes,
                     showingSettings: $showingSettings,
@@ -42,7 +41,7 @@ struct ContentView: View {
                     if isMenuShowing  {
                         SideMenu(
                             authManager: authManager,
-                            showingRouteSelection: $showingRouteSelection,
+                            showingRouteSelection: $routeManager.showingRouteSelection,
                             showingManualEntry: $showingManualEntry,
                             showingCompletedRoutes: $showingCompletedRoutes,
                             showingSettings: $showingSettings,
@@ -56,10 +55,10 @@ struct ContentView: View {
                 LoginView(authManager: authManager)
             }
         }
-        .sheet(isPresented: $showingRouteSelection) {
-            RouteSelectionView()
-                .environmentObject(routeManager)
-        }
+        .sheet(isPresented: $routeManager.showingRouteSelection) {
+                   RouteSelectionView()
+                       .environmentObject(routeManager)
+               }
         .sheet(isPresented: $showingManualEntry) {
             ManualDistanceEntryView()
                 .environmentObject(routeManager)

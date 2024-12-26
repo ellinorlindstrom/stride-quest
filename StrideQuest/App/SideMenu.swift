@@ -74,7 +74,7 @@ struct SideMenu: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 25)
                         .padding(.horizontal)
-                        .background(.ultraThinMaterial.opacity(0.7))
+                        .background(.backgroundSq.opacity(0.7))
                         
                         // Menu Items
                         VStack(spacing: 0) {
@@ -112,7 +112,7 @@ struct SideMenu: View {
                         Spacer()
                     }
                     .frame(width: min(geometry.size.width * 0.8, 300))
-                    .background(.ultraThinMaterial.opacity(0.7))
+                    .background(.backgroundSq.opacity(0.7))
                     .offset(x: dragOffset)
                     
                     Spacer()

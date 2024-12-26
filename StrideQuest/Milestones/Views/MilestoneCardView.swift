@@ -6,9 +6,10 @@ struct MilestoneCard: View {
     let routeId: UUID
     @Binding var isShowing: Bool
     @Binding var selectedMilestone: RouteMilestone?
-    
+    @State private var showingRouteSelection: Bool = false
     @State private var isTruncated: Bool = false
     @State private var showingFullText: Bool = false
+    @State private var showingCompletionView = false
     
     var body: some View {
         if milestone.routeId == routeId {
@@ -16,13 +17,22 @@ struct MilestoneCard: View {
                 // Header with close button
                 HStack {
                     Spacer()
-                    Button(action: handleDismiss) {
+                    Button(action: {
+                        print("Dismissing card")
+                        showingCompletionView = false
+                        showingFullText = false
+                        withAnimation {
+                            isShowing = false
+                            selectedMilestone = nil
+                        }
+                    }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(.gray)
                             .font(.title2)
                     }
                 }
                 .padding(.bottom, 4)
+                .zIndex(100)
                 
                 // Milestone image
                 if !milestone.imageName.isEmpty {
@@ -81,16 +91,16 @@ struct MilestoneCard: View {
                     }
                 }
                 
-                if isFinalMilestone {
+                if checkIsFinalMilestone() {
                     Button(action: {
-                        completeRoute()
+                        showingCompletionView = true
                     }) {
                         Text("Complete Route")
                             .font(.headline)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.green)
+                            .background(Color.secondSecondarySq)
                             .cornerRadius(10)
                     }
                     .padding(.top)
@@ -102,59 +112,53 @@ struct MilestoneCard: View {
             .frame(width: 300, height: 450)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(.ultraThinMaterial)
+                    .fill(.backgroundSq)
                     .shadow(radius: 10)
             )
             .transition(.scale.combined(with: .opacity))
             .offset(y: -50)
-            .sheet(isPresented: $showingFullText) {
-                           FullTextView(
-                               title: milestone.name,
-                               text: milestone.description
-                           )
-                       }
-                   } else {
-                       EmptyView()
-                   }
-               }
-    private var isFinalMilestone: Bool {
-        guard let route = routeManager.getRoute(by: routeId) else { return false }
-        return abs(milestone.distanceFromStart - route.totalDistance) < 0.1
-    }
-    
-    private func completeRoute() {
-        guard let currentProgress = routeManager.currentProgress else { return }
-        
-        // Create an updated progress with completion
-        var updatedProgress = currentProgress
-        updatedProgress.finalizeCompletion()
-        
-        // First save the updated progress
-        routeManager.saveProgress()
-        
-        // Then handle route completion
-        routeManager.handleRouteCompletion(updatedProgress)
-        
-        // Finally, dismiss the card
-        withAnimation {
-            isShowing = false
-            selectedMilestone = nil
-        }
-    }
-    
-    private func handleDismiss() {
-        // If it's the final milestone, complete the route before dismissing
-        if isFinalMilestone {
-            completeRoute()
-        } else {
-            // Otherwise just dismiss normally
-            withAnimation {
-                isShowing = false
-                selectedMilestone = nil
+            .sheet(isPresented: $showingCompletionView) {
+                RouteCompletionView ()
             }
+            .sheet(isPresented: $showingFullText) {
+                FullTextView(
+                    title: milestone.name,
+                    text: milestone.description
+                )
+            }
+        } else {
+            EmptyView()
         }
     }
+    
+    
+    
+    private func checkIsFinalMilestone() -> Bool {
+        guard let route = routeManager.getRoute(by: routeId) else {
+            print("⚠️ Could not find route with ID: \(routeId)")
+            return false
+        }
+        let isFinal = abs(milestone.distanceFromStart - route.totalDistance) < 0.5
+        print("🎯 Checking final milestone: distance = \(milestone.distanceFromStart), total = \(route.totalDistance), isFinal = \(isFinal)")
+        return isFinal
+    }
+    
+    
+    
+    //    private func handleDismiss() {
+    //        if isFinalMilestone {
+    //            showingCompletionView = true
+    //            return
+    //        }
+    //
+    //            withAnimation {
+    //                isShowing = false
+    //                selectedMilestone = nil
+    //            }
+    //        }
 }
+
+
 struct FullTextView: View {
     @Environment(\.dismiss) private var dismiss
     let title: String
@@ -198,6 +202,7 @@ struct FullTextView: View {
         }
     }
 }
+
 #Preview {
     FullTextView(
         title: "Sample Milestone",

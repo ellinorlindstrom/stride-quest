@@ -13,7 +13,7 @@ enum RouteConstants {
     
     // Europe
     static let camino = createUUID(from: "E5674600-8577-4DED-A7C7-24D836AC4842")
-    static let norwegianFjords = createUUID(from: "A7890123-4567-89AB-CDEF-012345678901")
+    static let highCoast = createUUID(from: "A7890123-4567-89AB-CDEF-012345678901")
     
     // North America
     static let bostonFreedom = createUUID(from: "B1234567-89AB-CDEF-0123-456789ABCDEF")
@@ -40,8 +40,8 @@ enum RouteFactory {
     private static func createAllRoutes() async throws -> [VirtualRoute] {
         // Create all routes concurrently
         async let route1 = createKyotoPhilosophersRoute() 
-        //async let route2 = createGreatWallRoute() // Moved Great Wall to second
-        async let route3 = createNorwegianFjordsRoute() // Shifted Norwegian Fjords down
+        //async let route2 = createGreatWallRoute()
+        async let route3 = createHighCoastRoute()
         async let route4 = createBostonFreedomRoute()
         async let route5 = createVancouverSeawallRoute()
         async let route6 = createCaminoRoute()
@@ -160,20 +160,66 @@ enum RouteFactory {
         return try await createRouteWithSegments(
             id: RouteConstants.kyotoPhilosophersPath,
             name: "Philosopher's Path",
-            description: "Peaceful stone path through historic Kyoto",
+            description: """
+            A peaceful 2-kilometer stone path through northern Kyoto, named after philosopher Nishida Kitaro \
+            who meditated while walking this route to Kyoto University. The path follows a cherry-tree-lined \
+            canal and connects several significant temples, offering a contemplative journey through historic \
+            eastern Kyoto.
+            """,
             totalDistance: 2.000,
             milestones: [
                 RouteMilestone(
                     routeId: RouteConstants.kyotoPhilosophersPath,
                     name: "Ginkaku-ji",
-                    description: "The Silver Pavilion, a Zen temple of extraordinary beauty. Its minimalist design, moss garden, and sand sculptures exemplify Japanese aesthetics and the pursuit of perfection in simplicity.",
+                    description: """
+                    The Silver Pavilion, a Zen temple of extraordinary beauty. Its minimalist design, moss garden, \
+                    and sand sculptures exemplify Japanese aesthetics and the pursuit of perfection in simplicity. \
+                    The temple's Sea of Silver Sand and Moon Viewing Platform are particularly notable features.
+                    """,
                     distanceFromStart: 0,
                     imageName: "ginkakuji"
                 ),
                 RouteMilestone(
                     routeId: RouteConstants.kyotoPhilosophersPath,
+                    name: "Honen-in Temple",
+                    description: """
+                    A serene temple famous for its moss-covered entry gates and seasonal gardens. The thatched \
+                    gate entrance features carefully raked sand patterns that change with the seasons. The temple \
+                    regularly hosts modern art exhibitions in its halls.
+                    """,
+                    distanceFromStart: 0.400,
+                    imageName: "honenin"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.kyotoPhilosophersPath,
+                    name: "Anraku-ji Temple",
+                    description: """
+                    A small but significant temple dedicated to the Buddhist nun Anraku. Known for its beautiful \
+                    garden and connection to the history of women in Japanese Buddhism.
+                    """,
+                    distanceFromStart: 0.800,
+                    imageName: "anrakuji"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.kyotoPhilosophersPath,
+                    name: "Eikan-do Zenrin-ji",
+                    description: """
+                    Famous for its autumn colors and unique statue of the Amida Buddha looking backward over his \
+                    shoulder. The temple features multiple halls connected by covered walkways, a pond garden, and \
+                    a pagoda offering panoramic views of Kyoto.
+                    """,
+                    distanceFromStart: 1.500,
+                    imageName: "eikando"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.kyotoPhilosophersPath,
                     name: "Nanzen-ji",
-                    description: "One of Japan's most important Zen temples, featuring magnificent gates, a surprising aqueduct, and tranquil rock gardens. The temple grounds offer a perfect blend of architecture and nature.",
+                    description: """
+                    One of Japan's most important Zen temples, featuring magnificent gates, a surprising aqueduct, \
+                    and tranquil rock gardens. The temple grounds offer a perfect blend of architecture and nature. \
+                    The massive Sanmon gate and the unexpected brick aqueduct showcase the temple's historical \
+                    significance and architectural diversity.
+                    """,
                     distanceFromStart: 2.000,
                     imageName: "nanzenji"
                 )
@@ -182,6 +228,9 @@ enum RouteFactory {
             region: "Japan",
             waypoints: [
                 CLLocationCoordinate2D(latitude: 35.0271, longitude: 135.7944), // Ginkaku-ji
+                CLLocationCoordinate2D(latitude: 35.0262, longitude: 135.7941), // Honen-in
+                CLLocationCoordinate2D(latitude: 35.0245, longitude: 135.7938), // Anraku-ji
+                CLLocationCoordinate2D(latitude: 35.0147, longitude: 135.7934), // Eikan-do
                 CLLocationCoordinate2D(latitude: 35.0116, longitude: 135.7932)  // Nanzen-ji
             ]
         )
@@ -237,86 +286,128 @@ enum RouteFactory {
     
     // China - Great Wall
     
-    private static func createGreatWallRoute() async throws -> VirtualRoute {
+//    private static func createGreatWallRoute() async throws -> VirtualRoute {
+//        return try await createRouteWithSegments(
+//            id: RouteConstants.greatWall,
+//            name: "The Great Wall Trek",
+//            description: "Traverse iconic sections of the Great Wall of China, experiencing its rich history and breathtaking views.",
+//            totalDistance: 211.000, // Approximate walking distance between milestones in kilometers
+//            milestones: [
+//                RouteMilestone(
+//                    routeId: RouteConstants.greatWall,
+//                    name: "Jiayuguan Pass",
+//                    description: "The westernmost starting point of the Great Wall, situated in the Gobi Desert. Jiayuguan Pass is a stunning fortress symbolizing the ancient Silk Road's convergence with the Wall.",
+//                    distanceFromStart: 0,
+//                    imageName: "jiayuguan"
+//                ),
+//                RouteMilestone(
+//                    routeId: RouteConstants.greatWall,
+//                    name: "Juyongguan Pass",
+//                    description: "A beautifully preserved and easily accessible section of the Great Wall near Beijing. Known for its steep stairs and breathtaking mountain scenery.",
+//                    distanceFromStart: 80.000,
+//                    imageName: "juyongguan"
+//                ),
+//                RouteMilestone(
+//                    routeId: RouteConstants.greatWall,
+//                    name: "Mutianyu Section",
+//                    description: "One of the most scenic and restored sections of the Great Wall, offering a mix of steep climbs and lush green surroundings.",
+//                    distanceFromStart: 150.000,
+//                    imageName: "mutianyu"
+//                ),
+//                RouteMilestone(
+//                    routeId: RouteConstants.greatWall,
+//                    name: "Simatai Section",
+//                    description: "Known for its wild and rugged beauty, Simatai offers an untouched and authentic experience of the Great Wall, with its breathtaking views and dramatic cliffs.",
+//                    distanceFromStart: 211.000,
+//                    imageName: "simatai"
+//                )
+//            ],
+//            imageName: "great-wall",
+//            region: "China",
+//            waypoints: [
+//                CLLocationCoordinate2D(latitude: 39.8352, longitude: 98.2891), // Jiayuguan Pass
+//                CLLocationCoordinate2D(latitude: 40.2849, longitude: 116.0707), // Juyongguan Pass
+//                CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704), // Mutianyu Section
+//                CLLocationCoordinate2D(latitude: 40.2627, longitude: 117.5144)  // Simatai Section
+//            ]
+//        )
+//    }
+
+    
+    private static func createHighCoastRoute() async throws -> VirtualRoute {
         return try await createRouteWithSegments(
-            id: RouteConstants.greatWall,
-            name: "The Great Wall Trek",
-            description: "Traverse iconic sections of the Great Wall of China, experiencing its rich history and breathtaking views.",
-            totalDistance: 211.000, // Approximate walking distance between milestones in kilometers
+            id: RouteConstants.highCoast,
+            name: "Höga Kusten Trail - Coastal Section",
+            description: """
+            A scenic 12km coastal section of Sweden's High Coast Trail (Höga Kustenleden), featuring dramatic \
+            coastline views, historic fishing villages, and UNESCO World Heritage sites. This segment offers \
+            moderate difficulty with well-maintained paths.
+            """,
+            totalDistance: 12.000,
             milestones: [
                 RouteMilestone(
-                    routeId: RouteConstants.greatWall,
-                    name: "Jiayuguan Pass",
-                    description: "The westernmost starting point of the Great Wall, situated in the Gobi Desert. Jiayuguan Pass is a stunning fortress symbolizing the ancient Silk Road's convergence with the Wall.",
+                    routeId: RouteConstants.highCoast,
+                    name: "Hornöberget",
+                    description: """
+                    Starting point offering panoramic views of the Baltic Sea and surrounding islands. Features \
+                    interpretive signs about the area's unique geology and land uplift phenomenon.
+                    """,
                     distanceFromStart: 0,
-                    imageName: "jiayuguan"
+                    imageName: "hornoberget"
                 ),
                 RouteMilestone(
-                    routeId: RouteConstants.greatWall,
-                    name: "Juyongguan Pass",
-                    description: "A beautifully preserved and easily accessible section of the Great Wall near Beijing. Known for its steep stairs and breathtaking mountain scenery.",
-                    distanceFromStart: 80.000,
-                    imageName: "juyongguan"
+                    routeId: RouteConstants.highCoast,
+                    name: "Rotsidan Nature Reserve",
+                    description: """
+                    Famous for its smooth, wave-washed rocks and coastal meadows. The distinctive shoreline \
+                    showcases the effects of post-glacial rebound, raising the coast by nearly 300 meters.
+                    """,
+                    distanceFromStart: 3.500,
+                    imageName: "rotsidan"
                 ),
                 RouteMilestone(
-                    routeId: RouteConstants.greatWall,
-                    name: "Mutianyu Section",
-                    description: "One of the most scenic and restored sections of the Great Wall, offering a mix of steep climbs and lush green surroundings.",
-                    distanceFromStart: 150.000,
-                    imageName: "mutianyu"
+                    routeId: RouteConstants.highCoast,
+                    name: "Bönhamn Fishing Village",
+                    description: """
+                    Historic fishing village with well-preserved traditional buildings and boat houses. \
+                    Offers facilities including a café, rest areas, and insights into local maritime culture.
+                    """,
+                    distanceFromStart: 6.000,
+                    imageName: "bonhamn"
                 ),
                 RouteMilestone(
-                    routeId: RouteConstants.greatWall,
-                    name: "Simatai Section",
-                    description: "Known for its wild and rugged beauty, Simatai offers an untouched and authentic experience of the Great Wall, with its breathtaking views and dramatic cliffs.",
-                    distanceFromStart: 211.000,
-                    imageName: "simatai"
+                    routeId: RouteConstants.highCoast,
+                    name: "Högklinten Viewpoint",
+                    description: """
+                    One of the trail's highest points, offering spectacular views of the High Coast Bridge \
+                    and surrounding archipelago. Features picnic areas and information about local wildlife.
+                    """,
+                    distanceFromStart: 9.000,
+                    imageName: ""
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.highCoast,
+                    name: "Norrfällsviken",
+                    description: """
+                    Beautiful fishing village and endpoint of this section, featuring sandy beaches, historic \
+                    chapel, and camping facilities. Popular spot for swimming in summer months.
+                    """,
+                    distanceFromStart: 12.000,
+                    imageName: "norrfallsviken"
                 )
             ],
-            imageName: "great-wall",
-            region: "China",
+            imageName: "high-coast-trail",
+            region: "Sweden",
             waypoints: [
-                CLLocationCoordinate2D(latitude: 39.8352, longitude: 98.2891), // Jiayuguan Pass
-                CLLocationCoordinate2D(latitude: 40.2849, longitude: 116.0707), // Juyongguan Pass
-                CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704), // Mutianyu Section
-                CLLocationCoordinate2D(latitude: 40.2627, longitude: 117.5144)  // Simatai Section
+                CLLocationCoordinate2D(latitude: 62.9271, longitude: 18.2614), // Hornöberget
+                CLLocationCoordinate2D(latitude: 62.9158, longitude: 18.2425), // Rotsidan
+                CLLocationCoordinate2D(latitude: 62.8986, longitude: 18.2347), // Bönhamn
+                CLLocationCoordinate2D(latitude: 62.8869, longitude: 18.2469), // Högklinten
+                CLLocationCoordinate2D(latitude: 62.8733, longitude: 18.2528)  // Norrfällsviken
             ]
         )
     }
 
-    
-    // Norway - Moderate Hike
-    private static func createNorwegianFjordsRoute() async throws -> VirtualRoute {
-        return try await createRouteWithSegments(
-            id: RouteConstants.norwegianFjords,
-            name: "Trolltunga Trail",
-            description: "Spectacular hike to one of Norway's most dramatic viewpoints",
-            totalDistance: 27.000,
-            milestones: [
-                RouteMilestone(
-                    routeId: RouteConstants.norwegianFjords,
-                    name: "Skjeggedal",
-                    description: "The gateway to Trolltunga, this valley base camp offers stunning views of Norwegian fjords and waterfalls. Starting point facilities prepare hikers for the challenging ascent ahead.",
-                    distanceFromStart: 0,
-                    imageName: "skjeggedal"
-                ),
-                RouteMilestone(
-                    routeId: RouteConstants.norwegianFjords,
-                    name: "Trolltunga",
-                    description: "A spectacular rock formation jutting out 700 meters above Lake Ringedalsvatnet. This 'Troll's Tongue' offers one of Norway's most dramatic photo opportunities and panoramic views of the fjords.",
-                    distanceFromStart: 27.000,
-                    imageName: "trolltunga-trail"
-                )
-            ],
-            imageName: "trolltunga-trail",
-            region: "Norway",
-            waypoints: [
-                CLLocationCoordinate2D(latitude: 60.1252, longitude: 6.7458), // Skjeggedal
-                CLLocationCoordinate2D(latitude: 60.1241, longitude: 6.7400), // Mid point
-                CLLocationCoordinate2D(latitude: 60.1244, longitude: 6.7495)  // Trolltunga
-            ]
-        )
-    }
     
     // USA - Historical City Walk
     private static func createBostonFreedomRoute() async throws -> VirtualRoute {

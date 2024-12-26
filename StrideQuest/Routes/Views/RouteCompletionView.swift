@@ -1,55 +1,80 @@
-//
-//  RouteFinishView.swift
-//  StrideQuest
-//
-//  Created by Ellinor Lindström on 2024-12-23.
-//
 import SwiftUI
 
-struct RouteCompletionView: View {
-    @Environment(\.dismiss) var dismiss
-    @State private var showingRouteSelection = false
 
+struct RouteCompletionView: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var routeManager: RouteManager
+    var onDismiss: (() -> Void)?
     
     var body: some View {
-        VStack(spacing: 20) {
-            Spacer()
-            
-            Text("Congratulations!")
-                .font(.system(.largeTitle, design: .default))
-                .fontWeight(.bold)
-            
-            Text("You've completed this route!")
-                .font(.title2)
-                .multilineTextAlignment(.center)
-            
-            Spacer()
-            
-            Button(action: {
-                showingRouteSelection = true
-            }) {
-                Text("Next Route")
-                    .font(.headline)
-                    .foregroundColor(.white)
+        NavigationView {
+            ZStack(alignment: .bottom) {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        Text("Route Completed!")
+                            .font(.system(.title, design: .rounded))
+                            .bold()
+                            .foregroundColor(Color(.textSq))
+                            .padding(.top, 20)
+                            .multilineTextAlignment(.center)
+                        
+                        if let route = routeManager.currentRoute {
+                            Text("Congratulations! You've successfully completed \(route.name)!")
+                                .foregroundColor(Color(.textSq))
+                                .zIndex(10)
+                                .padding(.top, 10)
+                                .multilineTextAlignment(.center)
+                        }
+                        
+                        VStack(spacing: 16) {
+                            
+                            Button(action: {
+                                completeRoute()
+                                dismiss()
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                                    routeManager.showingRouteSelection = true
+                                }
+                            }) {
+                                Text("Start Next Route")
+                                    .font(.headline)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color(.secondSecondarySq))
+                                    .foregroundColor(Color(.textSq))
+                                    .cornerRadius(10)
+                            }
+                        }
+                        .padding(.top, 20)
+                    }
+                    .padding(.horizontal)
+                    .padding(.bottom, 100)
+                }
+                
+                Image("sq-bg-2")
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
                     .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.black)
-                    .cornerRadius(10)
+                    .ignoresSafeArea()
+                    .allowsHitTesting(false)
+                
             }
-            .padding(.horizontal)
-            .padding(.bottom, 50)
+            .frame(maxHeight: .infinity)
+            .background(Color(.backgroundSq))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        completeRoute()
+                    }
+                }
+            }
         }
-        .sheet(isPresented: $showingRouteSelection) {
-            RouteSelectionView()
-        }
-        .foregroundColor(.backgroundSq)
-        .background(
-            Image("sq-bg-2")
-                .resizable()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .aspectRatio(contentMode: .fill)
-                .offset(y: 30)
-                .ignoresSafeArea()
-        )
+    }
+    private func completeRoute() {
+        guard let currentProgress = routeManager.currentProgress else { return }
+        var updatedProgress = currentProgress
+        updatedProgress.finalizeCompletion()
+        routeManager.saveProgress()
+        routeManager.handleRouteCompletion(updatedProgress)
     }
 }

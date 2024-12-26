@@ -64,12 +64,12 @@ struct RouteDetailView: View {
                 }) {
                     Text(routeManager.currentRoute?.id == route.id ? "Resume Journey" : "Start Journey")
                         .font(.system(.headline, design: .rounded))
-                        .foregroundColor(.white)
+                        .foregroundColor(.textSq)
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(
                             routeManager.isRouteAvailable(route)
-                            ? (routeManager.currentRoute?.id == route.id ? Color.blue : Color.green)
+                            ? (routeManager.currentRoute?.id == route.id ? Color.secondSecondarySq : Color.secondSecondarySq)
                             : Color.gray
                         )
                         .cornerRadius(10)

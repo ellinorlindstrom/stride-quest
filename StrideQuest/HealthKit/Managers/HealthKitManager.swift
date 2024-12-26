@@ -128,7 +128,6 @@ class HealthKitManager: ObservableObject {
     ]
     
     func markRouteStart() {
-        // Instead of resetting everything to 0, should check if resuming
         if RouteManager.shared.currentProgress != nil {
             // Resuming existing route
             routeTrackingStartDistance = savedRouteStartDistance

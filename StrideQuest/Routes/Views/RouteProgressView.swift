@@ -10,7 +10,6 @@ import SwiftUI
 struct RouteProgressView: View {
     @EnvironmentObject var routeManager: RouteManager
     @StateObject private var healthManager = HealthKitManager.shared
-    @State private var showingRouteSelection = false
     @Binding var isLoading: Bool
     
     var body: some View {
@@ -45,9 +44,6 @@ struct RouteProgressView: View {
                                 .foregroundStyle(.textSq)
                             }
                         }
-                        .onAppear {
-                            routeManager.verifyTrackingState()
-                        }
                     }
                     .padding()
                     .background(Color.gray.opacity(0.1))
@@ -61,7 +57,7 @@ struct RouteProgressView: View {
                             .foregroundStyle(.textSq)
                         
                         Button("Choose Your Adventure!") {
-                            showingRouteSelection = true
+                            routeManager.showingRouteSelection = true
                         }
                         .font(.system(.caption, design: .rounded))
                         .buttonStyle(.borderedProminent)
@@ -72,9 +68,6 @@ struct RouteProgressView: View {
                         
                     }
                 }
-            }
-            .sheet(isPresented: $showingRouteSelection) {
-                RouteSelectionView()
             }
             if isLoading {
                 LoadingView()
