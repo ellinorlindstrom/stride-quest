@@ -120,26 +120,62 @@ enum RouteFactory {
         region: String,
         waypoints: [CLLocationCoordinate2D]
     ) async throws -> VirtualRoute {
+        // Validate input
+        guard !waypoints.isEmpty else {
+            throw RouteError.invalidCoordinate
+        }
+        
         var segments: [RouteSegment] = []
+        var fallbackSegmentsUsed = false
         
         // Create walking segments between consecutive waypoints
         for i in 0..<(waypoints.count - 1) {
+            let start = waypoints[i]
+            let end = waypoints[i + 1]
+            
             do {
+                // Validate coordinates before attempting to create segment
+                guard CLLocationCoordinate2DIsValid(start), CLLocationCoordinate2DIsValid(end) else {
+                    print("⚠️ Invalid coordinates detected for waypoints \(i) and \(i+1)")
+                    throw RouteError.invalidCoordinate
+                }
+                
                 let segment = try await RouteUtils.createWalkingSegment(
-                    from: waypoints[i],
-                    to: waypoints[i + 1]
+                    from: start,
+                    to: end
                 )
                 segments.append(segment)
+                
+            } catch RouteError.maxRetriesExceeded(let underlyingError) {
+                print("🚨 Max retries exceeded for segment \(i) to \(i+1). Error: \(underlyingError?.localizedDescription ?? "Unknown")")
+                fallbackSegmentsUsed = true
+                let fallbackSegment = RouteSegment(coordinates: [start, end])
+                segments.append(fallbackSegment)
+                
+            } catch RouteError.invalidCoordinate {
+                print("🚨 Invalid coordinates for segment \(i) to \(i+1)")
+                throw RouteError.invalidCoordinate
+                
             } catch {
-                print("Error creating segment between waypoints \(i) and \(i+1): \(error)")
-                // Fallback to direct line segment if walking directions fail
-                let fallbackSegment = RouteSegment(coordinates: [waypoints[i], waypoints[i + 1]])
+                print("🚨 Error creating segment \(i) to \(i+1): \(error.localizedDescription)")
+                fallbackSegmentsUsed = true
+                let fallbackSegment = RouteSegment(coordinates: [start, end])
                 segments.append(fallbackSegment)
             }
         }
         
         // Calculate actual total distance based on segments
         let actualDistance = segments.reduce(0) { $0 + $1.distance }
+        
+        // Optionally warn if fallback segments were used
+        if fallbackSegmentsUsed {
+            print("⚠️ Route created with some fallback segments. Navigation accuracy may be affected.")
+        }
+        
+        // Validate the final route
+        guard !segments.isEmpty else {
+            throw RouteError.noRouteFound
+        }
         
         return VirtualRoute(
             id: id,
@@ -152,6 +188,7 @@ enum RouteFactory {
             startCoordinate: waypoints.first ?? CLLocationCoordinate2D(),
             waypoints: waypoints,
             segments: segments
+           // usesFallbackSegments: fallbackSegmentsUsed
         )
     }
     
@@ -283,56 +320,6 @@ enum RouteFactory {
             ]
         )
     }
-    
-    // China - Great Wall
-    
-//    private static func createGreatWallRoute() async throws -> VirtualRoute {
-//        return try await createRouteWithSegments(
-//            id: RouteConstants.greatWall,
-//            name: "The Great Wall Trek",
-//            description: "Traverse iconic sections of the Great Wall of China, experiencing its rich history and breathtaking views.",
-//            totalDistance: 211.000, // Approximate walking distance between milestones in kilometers
-//            milestones: [
-//                RouteMilestone(
-//                    routeId: RouteConstants.greatWall,
-//                    name: "Jiayuguan Pass",
-//                    description: "The westernmost starting point of the Great Wall, situated in the Gobi Desert. Jiayuguan Pass is a stunning fortress symbolizing the ancient Silk Road's convergence with the Wall.",
-//                    distanceFromStart: 0,
-//                    imageName: "jiayuguan"
-//                ),
-//                RouteMilestone(
-//                    routeId: RouteConstants.greatWall,
-//                    name: "Juyongguan Pass",
-//                    description: "A beautifully preserved and easily accessible section of the Great Wall near Beijing. Known for its steep stairs and breathtaking mountain scenery.",
-//                    distanceFromStart: 80.000,
-//                    imageName: "juyongguan"
-//                ),
-//                RouteMilestone(
-//                    routeId: RouteConstants.greatWall,
-//                    name: "Mutianyu Section",
-//                    description: "One of the most scenic and restored sections of the Great Wall, offering a mix of steep climbs and lush green surroundings.",
-//                    distanceFromStart: 150.000,
-//                    imageName: "mutianyu"
-//                ),
-//                RouteMilestone(
-//                    routeId: RouteConstants.greatWall,
-//                    name: "Simatai Section",
-//                    description: "Known for its wild and rugged beauty, Simatai offers an untouched and authentic experience of the Great Wall, with its breathtaking views and dramatic cliffs.",
-//                    distanceFromStart: 211.000,
-//                    imageName: "simatai"
-//                )
-//            ],
-//            imageName: "great-wall",
-//            region: "China",
-//            waypoints: [
-//                CLLocationCoordinate2D(latitude: 39.8352, longitude: 98.2891), // Jiayuguan Pass
-//                CLLocationCoordinate2D(latitude: 40.2849, longitude: 116.0707), // Juyongguan Pass
-//                CLLocationCoordinate2D(latitude: 40.4319, longitude: 116.5704), // Mutianyu Section
-//                CLLocationCoordinate2D(latitude: 40.2627, longitude: 117.5144)  // Simatai Section
-//            ]
-//        )
-//    }
-
     
     private static func createHighCoastRoute() async throws -> VirtualRoute {
         return try await createRouteWithSegments(

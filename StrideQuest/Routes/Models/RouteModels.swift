@@ -7,6 +7,23 @@ enum RouteError: Error {
     case noRouteFound
     case invalidCoordinate
     case invalidDistance
+    case maxRetriesExceeded(underlyingError: Error?)
+    case networkError(Error)
+    
+    var errorDescription: String {
+        switch self {
+        case .noRouteFound:
+            return "No route could be found between the specified locations"
+        case .invalidCoordinate:
+            return "The provided coordinates are invalid"
+        case .invalidDistance:
+            return "The provided distance is invalid"
+        case .maxRetriesExceeded(let error):
+            return "Failed to find route after multiple attempts. Last error: \(error?.localizedDescription ?? "Unknown")"
+        case .networkError(let error):
+            return "Network error occurred: \(error.localizedDescription)"
+        }
+    }
 }
 
 

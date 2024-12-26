@@ -31,9 +31,7 @@ struct RouteCompletionView: View {
                             Button(action: {
                                 completeRoute()
                                 dismiss()
-                                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                                    routeManager.showingRouteSelection = true
-                                }
+                                routeManager.showingRouteSelection = true
                             }) {
                                 Text("Start Next Route")
                                     .font(.headline)
@@ -74,7 +72,7 @@ struct RouteCompletionView: View {
         guard let currentProgress = routeManager.currentProgress else { return }
         var updatedProgress = currentProgress
         updatedProgress.finalizeCompletion()
-        routeManager.saveProgress()
         routeManager.handleRouteCompletion(updatedProgress)
+        routeManager.saveProgress()
     }
 }

@@ -138,24 +138,10 @@ struct MilestoneCard: View {
             print("⚠️ Could not find route with ID: \(routeId)")
             return false
         }
-        let isFinal = abs(milestone.distanceFromStart - route.totalDistance) < 0.5
+        let isFinal = abs(milestone.distanceFromStart - route.totalDistance) < 0.1
         print("🎯 Checking final milestone: distance = \(milestone.distanceFromStart), total = \(route.totalDistance), isFinal = \(isFinal)")
         return isFinal
     }
-    
-    
-    
-    //    private func handleDismiss() {
-    //        if isFinalMilestone {
-    //            showingCompletionView = true
-    //            return
-    //        }
-    //
-    //            withAnimation {
-    //                isShowing = false
-    //                selectedMilestone = nil
-    //            }
-    //        }
 }
 
 

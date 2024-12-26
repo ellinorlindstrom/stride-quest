@@ -298,20 +298,23 @@ class RouteManager: ObservableObject {
         
         let routeId = progress.routeId
         
-        DispatchQueue.main.async {
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            
             if !self.completedRoutes.contains(where: { $0.routeId == routeId }) {
                 self.completedRoutes.append(progress)
                 self.healthDataStore.updateRouteProgress(progress)
             }
+            
+            self.isActivelyTracking = false
+            self.progressPolyline = []
+            self.currentRouteCoordinate = nil
+            self.recentlyUnlockedMilestone = nil
             self.currentProgress = nil
-                    self.currentRoute = nil
-                    self.isActivelyTracking = false
-                    self.progressPolyline = []
-                    self.currentRouteCoordinate = nil
-                    self.showingRouteSelection = true
-                    self.recentlyUnlockedMilestone = nil
-                    
-                    print("🏁 Route completed and all states reset")
+            self.currentRoute = nil
+            self.showingRouteSelection = true
+            
+            print("🏁 Route completed and all states reset")
         }
     }
     
