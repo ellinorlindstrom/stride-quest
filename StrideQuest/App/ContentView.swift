@@ -12,34 +12,20 @@ struct ContentView: View {
     @State private var showingSettings = false
     @State private var isMenuShowing = false
     @State private var isLoading = true
+    @State private var hasSeenWelcome = UserDefaults.standard.bool(forKey: "hasSeenWelcome")
+    
     
     var body: some View {
         VStack(spacing: 0) {
             if authManager.isAuthenticated {
-                AppHeader(
-                    authManager: authManager,
-                    showingRouteSelection: $routeManager.showingRouteSelection,
-                    showingManualEntry: $showingManualEntry,
-                    showingCompletedRoutes: $showingCompletedRoutes,
-                    showingSettings: $showingSettings,
-                    isMenuShowing: $isMenuShowing
-                )
-                .shadow(radius: 5)
-                
-                ZStack {
-                    MapView(isLoading: $isLoading)
-                        .environmentObject(routeManager)
-                    if showingProgress{
-                        VStack {
-                            Spacer()
-                            RouteProgressView(isLoading: $isLoading)
-                                .background(.ultraThinMaterial)
-                                .cornerRadius(15)
-                                .padding()
-                        }
-                    }
-                    if isMenuShowing  {
-                        SideMenu(
+                if !hasSeenWelcome {
+                    WelcomeView(onCompletion: {
+                        hasSeenWelcome = true
+                        UserDefaults.standard.set(true, forKey: "hasSeenWelcome")
+                    })
+                } else {
+                    VStack(spacing: 0) {
+                        AppHeader(
                             authManager: authManager,
                             showingRouteSelection: $routeManager.showingRouteSelection,
                             showingManualEntry: $showingManualEntry,
@@ -47,8 +33,33 @@ struct ContentView: View {
                             showingSettings: $showingSettings,
                             isMenuShowing: $isMenuShowing
                         )
-                        .environmentObject(authManager)
-                        .transition(.move(edge: .leading))
+                        .shadow(radius: 5)
+                        
+                        ZStack {
+                            MapView(isLoading: $isLoading)
+                                .environmentObject(routeManager)
+                            if showingProgress {
+                                VStack {
+                                    Spacer()
+                                    RouteProgressView(isLoading: $isLoading)
+                                        .background(.ultraThinMaterial)
+                                        .cornerRadius(15)
+                                        .padding()
+                                }
+                            }
+                            if isMenuShowing {
+                                SideMenu(
+                                    authManager: authManager,
+                                    showingRouteSelection: $routeManager.showingRouteSelection,
+                                    showingManualEntry: $showingManualEntry,
+                                    showingCompletedRoutes: $showingCompletedRoutes,
+                                    showingSettings: $showingSettings,
+                                    isMenuShowing: $isMenuShowing
+                                )
+                                .environmentObject(authManager)
+                                .transition(.move(edge: .leading))
+                            }
+                        }
                     }
                 }
             } else {
@@ -56,9 +67,9 @@ struct ContentView: View {
             }
         }
         .sheet(isPresented: $routeManager.showingRouteSelection) {
-                   RouteSelectionView()
-                       .environmentObject(routeManager)
-               }
+            RouteSelectionView()
+                .environmentObject(routeManager)
+        }
         .sheet(isPresented: $showingManualEntry) {
             ManualDistanceEntryView()
                 .environmentObject(routeManager)
@@ -67,7 +78,7 @@ struct ContentView: View {
             CompletedRoutesView()
                 .environmentObject(routeManager)
         }
-
+        
         .sheet(isPresented: $showingSettings) {
             SettingsView(authManager: authManager )
         }
