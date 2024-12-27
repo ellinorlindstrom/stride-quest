@@ -6,7 +6,6 @@ struct AppHeader: View {
     
     let authManager: AuthenticationManager
     @Binding var showingRouteSelection: Bool
-    @Binding var showingManualEntry: Bool
     @Binding var showingCompletedRoutes: Bool
     @Binding var showingSettings: Bool
     @Binding var isMenuShowing: Bool
@@ -72,7 +71,6 @@ extension HealthKitManager {
     AppHeader(
         authManager: AuthenticationManager(),
         showingRouteSelection: .constant(false),
-        showingManualEntry: .constant(false),
         showingCompletedRoutes: .constant(false),
         showingSettings: .constant(false),
         isMenuShowing: .constant(false)
@@ -86,7 +84,6 @@ struct AppHeader_Previews: PreviewProvider {
             AppHeader(
                 authManager: AuthenticationManager(),
                 showingRouteSelection: .constant(false),
-                showingManualEntry: .constant(false),
                 showingCompletedRoutes: .constant(false),
                 showingSettings: .constant(false),
                 isMenuShowing: .constant(false)
@@ -98,7 +95,6 @@ struct AppHeader_Previews: PreviewProvider {
             AppHeader(
                 authManager: AuthenticationManager(),
                 showingRouteSelection: .constant(false),
-                showingManualEntry: .constant(false),
                 showingCompletedRoutes: .constant(false),
                 showingSettings: .constant(false),
                 isMenuShowing: .constant(false)

@@ -6,7 +6,6 @@ struct ContentView: View {
     @EnvironmentObject var healthManager: HealthKitManager
     @EnvironmentObject var routeManager: RouteManager
     @StateObject private var authManager = AuthenticationManager()
-    @State private var showingManualEntry = false
     @State private var showingProgress = true
     @State private var showingCompletedRoutes = false
     @State private var showingSettings = false
@@ -28,7 +27,6 @@ struct ContentView: View {
                         AppHeader(
                             authManager: authManager,
                             showingRouteSelection: $routeManager.showingRouteSelection,
-                            showingManualEntry: $showingManualEntry,
                             showingCompletedRoutes: $showingCompletedRoutes,
                             showingSettings: $showingSettings,
                             isMenuShowing: $isMenuShowing
@@ -51,7 +49,6 @@ struct ContentView: View {
                                 SideMenu(
                                     authManager: authManager,
                                     showingRouteSelection: $routeManager.showingRouteSelection,
-                                    showingManualEntry: $showingManualEntry,
                                     showingCompletedRoutes: $showingCompletedRoutes,
                                     showingSettings: $showingSettings,
                                     isMenuShowing: $isMenuShowing
@@ -68,10 +65,6 @@ struct ContentView: View {
         }
         .sheet(isPresented: $routeManager.showingRouteSelection) {
             RouteSelectionView()
-                .environmentObject(routeManager)
-        }
-        .sheet(isPresented: $showingManualEntry) {
-            ManualDistanceEntryView()
                 .environmentObject(routeManager)
         }
         .sheet(isPresented: $showingCompletedRoutes) {

@@ -206,7 +206,7 @@ class RouteManager: ObservableObject {
     }
     
     // Update the existing updateProgress function to call updateProgressPolyline
-    func updateProgress(withDistance distance: Double, isManual: Bool = false, source: String = "unknown") {
+    func updateProgress(withDistance distance: Double, source: String = "unknown") {
         guard let progress = currentProgress,
               let route = currentRoute else {
             return
@@ -217,7 +217,7 @@ class RouteManager: ObservableObject {
         
         let todayString = DateFormatter().string(from: Date())
         updatedProgress.updateDailyProgress(distance: distance, for: todayString)
-        updatedProgress.updateCompletedDistance(distance, isManual: isManual)
+        updatedProgress.updateCompletedDistance(distance)
         
         // Update current position
         if let newPosition = route.coordinate(at: cappedDistance) {

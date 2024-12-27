@@ -4,7 +4,6 @@ struct SideMenu: View {
     @GestureState private var dragOffset: CGFloat = 0
     @ObservedObject var authManager: AuthenticationManager
     @Binding var showingRouteSelection: Bool
-    @Binding var showingManualEntry: Bool
     @Binding var showingCompletedRoutes: Bool
     @Binding var showingSettings: Bool
     @Binding var isMenuShowing: Bool
@@ -80,11 +79,6 @@ struct SideMenu: View {
                         VStack(spacing: 0) {
                             MenuButton(icon: "map.fill", title: "Routes") {
                                 showingRouteSelection = true
-                                isMenuShowing = false
-                            }
-                            
-                            MenuButton(icon: "plus.circle.fill", title: "Add Distance") {
-                                showingManualEntry = true
                                 isMenuShowing = false
                             }
                             

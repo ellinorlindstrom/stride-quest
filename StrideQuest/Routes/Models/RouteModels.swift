@@ -269,9 +269,9 @@ struct RouteProgress: Codable {
         dailyProgress[date] = cappedDistance
     }
 
-        mutating func updateCompletedDistance(_ distance: Double, isManual: Bool) {
+        mutating func updateCompletedDistance(_ distance: Double) {
             let cappedDistance = min(distance, totalDistance)
-            completedDistance = isManual ? cappedDistance : min(cappedDistance, totalDistance)
+            completedDistance = min(cappedDistance, totalDistance)
             lastUpdated = Date()
             
             checkDistanceCompletion(at: completedDistance)
