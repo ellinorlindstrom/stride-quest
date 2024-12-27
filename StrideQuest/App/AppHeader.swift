@@ -2,6 +2,7 @@ import SwiftUI
 
 struct AppHeader: View {
     @EnvironmentObject var healthManager: HealthKitManager
+    @EnvironmentObject var routeManager: RouteManager
     @State private var isAnimating = false
     
     let authManager: AuthenticationManager
@@ -38,31 +39,33 @@ struct AppHeader: View {
             
             Spacer()
             
-            // Display Today's Distance
             VStack(alignment: .trailing, spacing: 2) {
-                Text(String(format: "%.2f km", healthManager.totalDistance))
-                    .font(.system(.headline, design: .rounded))
-                    .foregroundStyle(.textSq)
-                Text("Today's Distance")
-                    .font(.system(.caption2, design: .default))
-                    .foregroundStyle(.textSq)
+                            if let lastMilestone = routeManager.currentProgress?.lastCompletedMilestone?.name {
+                                Text(lastMilestone)
+                                    .font(.system(.headline, design: .rounded))
+                                    .foregroundStyle(.textSq)
+                                Text("Last Milestone")
+                                    .font(.system(.caption2, design: .default))
+                                    .foregroundStyle(.textSq)
+                            } else {
+                                Text("No milestone yet")
+                                    .font(.system(.headline, design: .rounded))
+                                    .foregroundStyle(.textSq)
+                                Text("Last Milestone")
+                                    .font(.system(.caption2, design: .default))
+                                    .foregroundStyle(.textSq)
+                            }
+                        }
+                    }
+                    .padding()
+                    .background(.backgroundSq)
+                    .frame(maxWidth: .infinity)
+                }
             }
-        }
-        .padding()
-        .background(.backgroundSq)
-        .frame(maxWidth: .infinity)
-        .onAppear {
-            // Fetch distance when AppHeader appears
-            healthManager.fetchTotalDistance()
-        }
-    }
-}
 
 extension HealthKitManager {
     static var preview: HealthKitManager {
-        let manager = HealthKitManager.shared // Use shared instance if available
-        // Set any preview values you want to see
-        manager.totalDistance = 5.43 // Example distance
+        let manager = HealthKitManager.shared
         return manager
     }
 }

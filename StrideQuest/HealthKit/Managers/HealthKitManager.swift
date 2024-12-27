@@ -154,7 +154,6 @@ class HealthKitManager: ObservableObject {
         fetchTotalDistance()
     }
     
-    // Request authorization and start observing
     func requestAuthorization() async throws {
         guard HKHealthStore.isHealthDataAvailable() else {
             throw HealthkitError.notAvailable

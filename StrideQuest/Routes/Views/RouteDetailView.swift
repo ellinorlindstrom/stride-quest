@@ -14,8 +14,8 @@ struct RouteDetailView: View {
     @Environment(\.dismiss) private var dismiss
     var onRouteSelected: (() -> Void)?
     
-    private var isRouteAvailable: Bool {
-        routeManager.isRouteAvailable(route)
+    private var getNextRoute: Bool {
+        routeManager.getNextRoute(route)
     }
     
     var body: some View {
@@ -68,13 +68,13 @@ struct RouteDetailView: View {
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(
-                            routeManager.isRouteAvailable(route)
+                            routeManager.getNextRoute(route)
                             ? (routeManager.currentRoute?.id == route.id ? Color.secondSecondarySq : Color.secondSecondarySq)
                             : Color.gray
                         )
                         .cornerRadius(10)
                 }
-                .disabled(!routeManager.isRouteAvailable(route))
+                .disabled(!routeManager.getNextRoute(route))
                 .padding(.horizontal)
             }
         }

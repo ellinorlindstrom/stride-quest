@@ -1,6 +1,7 @@
 import SwiftUI
 import MapKit
 import Combine
+import UserNotifications
 
 // MARK: - Central Route Management
 class RouteManager: ObservableObject {
@@ -64,7 +65,7 @@ class RouteManager: ObservableObject {
     }
     
     func selectAndStartRoute(_ route: VirtualRoute) {
-        guard isRouteAvailable(route) else {
+        guard getNextRoute(route) else {
             print("❌ Route not available")
             return
         }
@@ -121,7 +122,7 @@ class RouteManager: ObservableObject {
         }
     }
     
-    func isRouteAvailable(_ route: VirtualRoute) -> Bool {
+    func getNextRoute(_ route: VirtualRoute) -> Bool {
         // First route is always available
         if completedRoutes.isEmpty {
             return route == availableRoutes.first
@@ -254,23 +255,16 @@ class RouteManager: ObservableObject {
             print("❌ No current progress found")
             return
         }
-        
-        print("🎯 Before completion - Completed milestones: \(progress.completedMilestones)")
-        
+                
         // Create new progress instance with updated milestones
         var updatedProgress = progress
         updatedProgress.addCompletedMilestone(milestone.id)
-        
-        // Important: Update the current progress
         currentProgress = updatedProgress
-        
-        // Save immediately to persist the change
         saveProgress()
-        
-        print("🎯 After completion - Completed milestones: \(updatedProgress.completedMilestones)")
-        
+                
         recentlyUnlockedMilestone = milestone
         milestoneCompletedPublisher.send(milestone)
+        showMilestoneNotification(for: milestone)
         
         // Only show UI if milestone was just completed
         DispatchQueue.main.async {
@@ -287,12 +281,45 @@ class RouteManager: ObservableObject {
         }
     }
     
+    private func showMilestoneNotification(for milestone: RouteMilestone) {
+        let content = UNMutableNotificationContent()
+        content.title = "New Milestone Reached! 🎉"
+        content.body = "You've reached \(milestone.name)!"
+        content.sound = .default        
+        content.userInfo = [
+            "type": "milestone",
+            "milestoneId": milestone.id.uuidString,
+            "routeId": currentRoute?.id.uuidString ?? ""
+        ]
+        
+        let request = UNNotificationRequest(
+            identifier: "milestone-\(milestone.id)",
+            content: content,
+            trigger: nil
+        )
+        
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error = error {
+                print("❌ Error showing notification: \(error)")
+            }
+        }
+    }
+    
     func isMilestoneCompleted(_ milestone: RouteMilestone) -> Bool {
         let isCompleted = currentProgress?.completedMilestones.contains(milestone.id) ?? false
         return isCompleted
     }
     
     // MARK: - Route Completion
+    
+    func completeRoute() {
+            guard let currentProgress = currentProgress else { return }
+            var updatedProgress = currentProgress
+            updatedProgress.finalizeCompletion()
+            handleRouteCompletion(updatedProgress)
+            saveProgress()
+        }
+    
     func handleRouteCompletion(_ progress: RouteProgress) {
         guard progress.isCompleted else { return }
         

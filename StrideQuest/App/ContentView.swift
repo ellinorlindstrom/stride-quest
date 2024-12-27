@@ -21,6 +21,10 @@ struct ContentView: View {
                     WelcomeView(onCompletion: {
                         hasSeenWelcome = true
                         UserDefaults.standard.set(true, forKey: "hasSeenWelcome")
+                        Task {
+                            try? await healthManager.requestAuthorization()
+                            authManager.requestNotificationPermissions()
+                        }
                     })
                 } else {
                     VStack(spacing: 0) {
@@ -78,6 +82,22 @@ struct ContentView: View {
         .onAppear {
             authManager.checkAuthentication()
         }
+        .onChange(of: authManager.activeNotification) { oldNotification, notification in
+            guard let notification = notification else { return }
+            
+            switch notification.type {
+            case "milestone":
+                if let milestone = routeManager.currentRoute?.milestones.first(where: { $0.id.uuidString == notification.id }) {
+                    routeManager.selectedMilestone = milestone
+                    routeManager.showMilestoneCard = true
+                }
+            default:
+                break
+            }
+            // Reset the active notification after handling
+            authManager.activeNotification = nil
+        }
     }
 }
+
 

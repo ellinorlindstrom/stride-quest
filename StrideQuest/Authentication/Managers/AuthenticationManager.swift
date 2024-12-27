@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import AuthenticationServices
+import UserNotifications
 
 class AuthenticationManager: ObservableObject {
     @Published var isAuthenticated = false
@@ -9,6 +10,8 @@ class AuthenticationManager: ObservableObject {
     @Published var userName: String?
     @Published var userEmail: String?
     @Published var profileImage: UIImage?
+    @Published var activeNotification: ActiveNotification?
+
     
     func handleSignInWithAppleRequest(_ request: ASAuthorizationAppleIDRequest) {
         DispatchQueue.main.async {
@@ -116,6 +119,29 @@ class AuthenticationManager: ObservableObject {
         }
     }
     
+    func requestNotificationPermissions() {
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+            if granted {
+                print("✅ Notification permission granted")
+            } else if let error = error {
+                print("❌ Notification permission error: \(error)")
+            }
+        }
+    }
+    
+    struct ActiveNotification: Equatable {
+            let type: String
+            let id: String
+        }
+    
+    func handleMilestoneNotification(milestoneId: String) {
+            DispatchQueue.main.async {
+                self.activeNotification = ActiveNotification(
+                    type: "milestone",
+                    id: milestoneId
+                )
+            }
+        }
     
     func signOut() {
         UserDefaults.standard.removeObject(forKey: "userIdentifier")
@@ -131,3 +157,4 @@ class AuthenticationManager: ObservableObject {
         }
     }
 }
+

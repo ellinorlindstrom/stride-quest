@@ -227,6 +227,14 @@ struct RouteProgress: Codable {
         }.sorted { $0.date < $1.date }
     }
     
+    var lastCompletedMilestone: RouteMilestone? {
+            guard let route = RouteManager.shared.getRoute(by: routeId) else { return nil }
+            let completed = route.milestones.filter { milestone in
+                completedMilestones.contains(milestone.id)
+            }
+            return completed.max(by: { $0.distanceFromStart < $1.distanceFromStart })
+        }
+    
     // MARK: - Initialization
     init(id: UUID = UUID(),
          routeId: UUID,

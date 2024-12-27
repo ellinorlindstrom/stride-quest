@@ -12,6 +12,7 @@
 		C1B3666B2D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B3665F2D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataClass.swift */; };
 		C1B3666E2D0DBBC200AD5B1F /* DailyHealthData+CoreDataProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B3666D2D0DBBC200AD5B1F /* DailyHealthData+CoreDataProperties.swift */; };
 		C1B366712D0DBD7900AD5B1F /* DailyHealthData+CoreDataClass.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1B366702D0DBCFA00AD5B1F /* DailyHealthData+CoreDataClass.swift */; };
+		C1B366D62D1E9DEC00AD5B1F /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = C1B366D52D1E9DE300AD5B1F /* README.md */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,6 +42,7 @@
 		C1B366602D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RouteProgressEntity+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		C1B3666D2D0DBBC200AD5B1F /* DailyHealthData+CoreDataProperties.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DailyHealthData+CoreDataProperties.swift"; sourceTree = "<group>"; };
 		C1B366702D0DBCFA00AD5B1F /* DailyHealthData+CoreDataClass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DailyHealthData+CoreDataClass.swift"; sourceTree = "<group>"; };
+		C1B366D52D1E9DE300AD5B1F /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -102,6 +104,7 @@
 		C174E1572CEC7FC000E16571 = {
 			isa = PBXGroup;
 			children = (
+				C1B366D52D1E9DE300AD5B1F /* README.md */,
 				C1B366702D0DBCFA00AD5B1F /* DailyHealthData+CoreDataClass.swift */,
 				C1B3666D2D0DBBC200AD5B1F /* DailyHealthData+CoreDataProperties.swift */,
 				C1B3665F2D0DBA7100AD5B1F /* RouteProgressEntity+CoreDataClass.swift */,
@@ -246,6 +249,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				C174E1962CEC833B00E16571 /* .gitignore in Resources */,
+				C1B366D62D1E9DEC00AD5B1F /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -29,7 +29,6 @@ public class RouteProgressEntity: NSManagedObject {
         }
     }
     
-    // For daily progress with new dictionary structure
     func setDailyProgress(_ progress: [String: Double]) {
         do {
             self.dailyProgressData = try JSONEncoder().encode(progress)

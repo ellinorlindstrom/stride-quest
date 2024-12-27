@@ -39,19 +39,18 @@ enum RouteFactory {
     
     private static func createAllRoutes() async throws -> [VirtualRoute] {
         // Create all routes concurrently
-        async let route1 = createKyotoPhilosophersRoute() 
-        //async let route2 = createGreatWallRoute()
+        async let route1 = createBondiToBronteRoute()
+        async let route2 = createTableMountainRoute()
         async let route3 = createHighCoastRoute()
-        async let route4 = createBostonFreedomRoute()
+        async let route4 = createKyotoPhilosophersRoute()
         async let route5 = createVancouverSeawallRoute()
         async let route6 = createCaminoRoute()
         async let route7 = createSeoulCityWallRoute()
-        async let route8 = createBondiToBronteRoute()
-        async let route9 = createTableMountainRoute()
+        async let route8 = createBostonFreedomRoute()
 
         let routes = try await [
-            route1, /*route2,*/ route3, route4,
-            route5, route6, route7, route8, route9
+            route1, route2, route3, route4,
+            route5, route6, route7, route8
         ]
         
         return try await updateRouteDistances(routes)
@@ -189,6 +188,146 @@ enum RouteFactory {
             waypoints: waypoints,
             segments: segments
            // usesFallbackSegments: fallbackSegmentsUsed
+        )
+    }
+    
+    // Australia - Coastal Walk
+    private static func createBondiToBronteRoute() async throws -> VirtualRoute {
+        return try await createRouteWithSegments(
+            id: RouteConstants.bondiToBronte,
+            name: "Bondi to Bronte Coastal Walk",
+            description: "Scenic coastal walk past Sydney's famous beaches",
+            totalDistance: 2.500,
+            milestones: [
+                RouteMilestone(
+                    routeId: RouteConstants.bondiToBronte,
+                    name: "Bondi Beach",
+                    description: "Australia's most famous beach, known for its golden sand, pristine waves, and vibrant atmosphere. A paradise for surfers, swimmers, and sunbathers, showcasing the ultimate Aussie beach lifestyle.",
+                    distanceFromStart: 0,
+                    imageName: "bondi"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.bondiToBronte,
+                    name: "Tamarama Beach",
+                    description: "Nicknamed 'Glamarama' by locals, this small but picturesque beach offers dramatic cliffs, excellent surfing conditions, and a more intimate atmosphere than its famous neighbors.",
+                    distanceFromStart: 1.200,
+                    imageName: "tamarama"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.bondiToBronte,
+                    name: "Bronte Beach",
+                    description: "A charming family-friendly beach featuring a historic ocean pool, excellent cafes, and a large grassy park perfect for picnics. Popular with both locals and visitors for its natural rock pool.",
+                    distanceFromStart: 2.500,
+                    imageName: "bondi-bronte"
+                )
+            ],
+            imageName: "bondi-bronte",
+            region: "Australia",
+            waypoints: [
+                CLLocationCoordinate2D(latitude: -33.8915, longitude: 151.2767), // Bondi
+                CLLocationCoordinate2D(latitude: -33.9019, longitude: 151.2726), // Tamarama
+                CLLocationCoordinate2D(latitude: -33.9037, longitude: 151.2684)  // Bronte
+            ]
+        )
+    }
+    
+    // South Africa - Mountain Hike
+    private static func createTableMountainRoute() async throws -> VirtualRoute {
+        return try await createRouteWithSegments(
+            id: RouteConstants.tableMount,
+            name: "Table Mountain Platteklip Gorge",
+            description: "Direct route to the summit of Table Mountain via the iconic Platteklip Gorge",
+            totalDistance: 5.500, // More accurate total distance
+            milestones: [
+                RouteMilestone(
+                    routeId: RouteConstants.tableMount,
+                    name: "Platteklip Gorge Start",
+                    description: "The main starting point for the most direct route to the summit. This historic trail has been used since the first recorded ascent of Table Mountain in 1503.",
+                    distanceFromStart: 0,
+                    imageName: "platteklip-start"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.tableMount,
+                    name: "First View Point",
+                    description: "First major viewpoint offering spectacular views of Lion's Head and the city below.",
+                    distanceFromStart: 1.800,
+                    imageName: "table-mountain"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.tableMount,
+                    name: "Halfway Point",
+                    description: "A natural resting spot with space to catch your breath. The gorge's impressive rock walls tower above you.",
+                    distanceFromStart: 2.750,
+                    imageName: "table-mountain"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.tableMount,
+                    name: "Upper Plateau",
+                    description: "The point where you emerge from the gorge onto the upper plateau. The gradient eases here as you approach the summit.",
+                    distanceFromStart: 4.200,
+                    imageName: "table-mountain"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.tableMount,
+                    name: "Table Mountain Summit",
+                    description: "The iconic flat-topped peak offering breathtaking 360-degree views of Cape Town, the Atlantic Ocean, and neighboring peaks. Home to unique fynbos vegetation and elusive rock hyraxes.",
+                    distanceFromStart: 5.500,
+                    imageName: "table-summit"
+                )
+            ],
+            imageName: "table-mountain",
+            region: "South Africa",
+            waypoints: [
+                CLLocationCoordinate2D(latitude: -33.9566, longitude: 18.4041),  // Start at Tafelberg Road
+                CLLocationCoordinate2D(latitude: -33.9571, longitude: 18.4045),  // Initial ascent
+                CLLocationCoordinate2D(latitude: -33.9575, longitude: 18.4049),  // First viewpoint
+                CLLocationCoordinate2D(latitude: -33.9579, longitude: 18.4052),  // Lower gorge
+                CLLocationCoordinate2D(latitude: -33.9582, longitude: 18.4055),  // Middle gorge
+                CLLocationCoordinate2D(latitude: -33.9585, longitude: 18.4058),  // Upper gorge
+                CLLocationCoordinate2D(latitude: -33.9588, longitude: 18.4061),  // Emerge from gorge
+                CLLocationCoordinate2D(latitude: -33.9592, longitude: 18.4064),  // Upper plateau
+                CLLocationCoordinate2D(latitude: -33.9577, longitude: 18.4058)   // Summit
+            ]
+        )
+    }
+    
+    // USA - Historical City Walk
+    private static func createBostonFreedomRoute() async throws -> VirtualRoute {
+        return try await createRouteWithSegments(
+            id: RouteConstants.bostonFreedom,
+            name: "Boston Freedom Trail",
+            description: "Walk through history on Boston's iconic Freedom Trail",
+            totalDistance: 4.000,
+            milestones: [
+                RouteMilestone(
+                    routeId: RouteConstants.bostonFreedom,
+                    name: "Boston Common",
+                    description: "America's oldest public park, established in 1634. Once a cattle grazing ground, it's now the starting point of the Freedom Trail and a vibrant urban green space in the heart of Boston.",
+                    distanceFromStart: 0,
+                    imageName: "boston-common"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.bostonFreedom,
+                    name: "Paul Revere House",
+                    description: "The oldest remaining structure in downtown Boston (c. 1680) and home to Revolutionary War hero Paul Revere. This remarkably preserved colonial dwelling offers a glimpse into 18th-century Boston life.",
+                    distanceFromStart: 2.500,
+                    imageName: "paul-revere"
+                ),
+                RouteMilestone(
+                    routeId: RouteConstants.bostonFreedom,
+                    name: "USS Constitution",
+                    description: "The world's oldest commissioned warship still afloat (1797). 'Old Ironsides' earned her nickname during the War of 1812 and continues to be a symbol of American naval excellence.",
+                    distanceFromStart: 4.000,
+                    imageName: "uss-constitution"
+                )
+            ],
+            imageName: "freedom-trail",
+            region: "USA",
+            waypoints: [
+                CLLocationCoordinate2D(latitude: 42.3551, longitude: -71.0657), // Boston Common
+                CLLocationCoordinate2D(latitude: 42.3639, longitude: -71.0537), // Paul Revere House
+                CLLocationCoordinate2D(latitude: 42.3724, longitude: -71.0567)  // USS Constitution
+            ]
         )
     }
     
@@ -394,47 +533,6 @@ enum RouteFactory {
             ]
         )
     }
-
-    
-    // USA - Historical City Walk
-    private static func createBostonFreedomRoute() async throws -> VirtualRoute {
-        return try await createRouteWithSegments(
-            id: RouteConstants.bostonFreedom,
-            name: "Boston Freedom Trail",
-            description: "Walk through history on Boston's iconic Freedom Trail",
-            totalDistance: 4.000,
-            milestones: [
-                RouteMilestone(
-                    routeId: RouteConstants.bostonFreedom,
-                    name: "Boston Common",
-                    description: "America's oldest public park, established in 1634. Once a cattle grazing ground, it's now the starting point of the Freedom Trail and a vibrant urban green space in the heart of Boston.",
-                    distanceFromStart: 0,
-                    imageName: "boston-common"
-                ),
-                RouteMilestone(
-                    routeId: RouteConstants.bostonFreedom,
-                    name: "Paul Revere House",
-                    description: "The oldest remaining structure in downtown Boston (c. 1680) and home to Revolutionary War hero Paul Revere. This remarkably preserved colonial dwelling offers a glimpse into 18th-century Boston life.",
-                    distanceFromStart: 2.500,
-                    imageName: "paul-revere"
-                ),
-                RouteMilestone(
-                    routeId: RouteConstants.bostonFreedom,
-                    name: "USS Constitution",
-                    description: "The world's oldest commissioned warship still afloat (1797). 'Old Ironsides' earned her nickname during the War of 1812 and continues to be a symbol of American naval excellence.",
-                    distanceFromStart: 4.000,
-                    imageName: "uss-constitution"
-                )
-            ],
-            imageName: "freedom-trail",
-            region: "USA",
-            waypoints: [
-                CLLocationCoordinate2D(latitude: 42.3551, longitude: -71.0657), // Boston Common
-                CLLocationCoordinate2D(latitude: 42.3639, longitude: -71.0537), // Paul Revere House
-                CLLocationCoordinate2D(latitude: 42.3724, longitude: -71.0567)  // USS Constitution
-            ]
-        )
-    }
     
     // Canada - Urban Nature Walk
     private static func createVancouverSeawallRoute() async throws -> VirtualRoute {
@@ -514,80 +612,6 @@ enum RouteFactory {
                 CLLocationCoordinate2D(latitude: 37.5710, longitude: 127.0094), // Heunginjimun
                 CLLocationCoordinate2D(latitude: 37.5512, longitude: 126.9882), // Namsan Tower
                 CLLocationCoordinate2D(latitude: 37.5963, longitude: 126.9669)  // Sukjeongmun
-            ]
-        )
-    }
-    
-    // Australia - Coastal Walk
-    private static func createBondiToBronteRoute() async throws -> VirtualRoute {
-        return try await createRouteWithSegments(
-            id: RouteConstants.bondiToBronte,
-            name: "Bondi to Bronte Coastal Walk",
-            description: "Scenic coastal walk past Sydney's famous beaches",
-            totalDistance: 2.500,
-            milestones: [
-                RouteMilestone(
-                    routeId: RouteConstants.bondiToBronte,
-                    name: "Bondi Beach",
-                    description: "Australia's most famous beach, known for its golden sand, pristine waves, and vibrant atmosphere. A paradise for surfers, swimmers, and sunbathers, showcasing the ultimate Aussie beach lifestyle.",
-                    distanceFromStart: 0,
-                    imageName: "bondi"
-                ),
-                RouteMilestone(
-                    routeId: RouteConstants.bondiToBronte,
-                    name: "Tamarama Beach",
-                    description: "Nicknamed 'Glamarama' by locals, this small but picturesque beach offers dramatic cliffs, excellent surfing conditions, and a more intimate atmosphere than its famous neighbors.",
-                    distanceFromStart: 1.200,
-                    imageName: "tamarama"
-                ),
-                RouteMilestone(
-                    routeId: RouteConstants.bondiToBronte,
-                    name: "Bronte Beach",
-                    description: "A charming family-friendly beach featuring a historic ocean pool, excellent cafes, and a large grassy park perfect for picnics. Popular with both locals and visitors for its natural rock pool.",
-                    distanceFromStart: 2.500,
-                    imageName: "bondi-bronte"
-                )
-            ],
-            imageName: "bondi-bronte",
-            region: "Australia",
-            waypoints: [
-                CLLocationCoordinate2D(latitude: -33.8915, longitude: 151.2767), // Bondi
-                CLLocationCoordinate2D(latitude: -33.9019, longitude: 151.2726), // Tamarama
-                CLLocationCoordinate2D(latitude: -33.9037, longitude: 151.2684)  // Bronte
-            ]
-        )
-    }
-    
-    // South Africa - Mountain Hike
-    private static func createTableMountainRoute() async throws -> VirtualRoute {
-        return try await createRouteWithSegments(
-            id: RouteConstants.tableMount,
-            name: "Table Mountain Platteklip Gorge",
-            description: "Direct route to the summit of Table Mountain",
-            totalDistance: 3.000,
-            milestones: [
-                RouteMilestone(
-                    routeId: RouteConstants.tableMount,
-                    name: "Platteklip Gorge Start",
-                    description: "The main starting point for the most direct route to the summit. This historic trail has been used since the first recorded ascent of Table Mountain in 1503.",
-
-                    distanceFromStart: 0,
-                    imageName: "platteklip-start"
-                ),
-                RouteMilestone(
-                    routeId: RouteConstants.tableMount,
-                    name: "Table Mountain Summit",
-                    description: "The iconic flat-topped peak offering breathtaking 360-degree views of Cape Town, the Atlantic Ocean, and neighboring peaks. Home to unique fynbos vegetation and elusive rock hyraxes.",
-                    distanceFromStart: 3.000,
-                    imageName: "table-summit"
-                )
-            ],
-            imageName: "table-mountain",
-            region: "South Africa",
-            waypoints: [
-                CLLocationCoordinate2D(latitude: -33.9566, longitude: 18.4041), // Start
-                CLLocationCoordinate2D(latitude: -33.9575, longitude: 18.4049), // Mid-point
-                CLLocationCoordinate2D(latitude: -33.9577, longitude: 18.4058)  // Summit
             ]
         )
     }

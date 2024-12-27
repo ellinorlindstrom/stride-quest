@@ -20,12 +20,12 @@ struct RouteSelectionView: View {
                 )) {
                     RouteCard(
                         route: route,
-                        isAvailable: routeManager.isRouteAvailable(route),
+                        isAvailable: routeManager.getNextRoute(route),
                         isActive: routeManager.currentRoute?.id == route.id,
                         previousRouteName: getPreviousRouteName(for: route)
                     )
                 }
-                .disabled(!routeManager.isRouteAvailable(route))
+                .disabled(!routeManager.getNextRoute(route))
             }
             .navigationTitle("Choose Your Journey")
             .navigationDestination(isPresented: $navigateToCompleted) {
@@ -48,7 +48,7 @@ struct RouteSelectionView: View {
     }
     
     private func getPreviousRouteName(for route: VirtualRoute) -> String? {
-        guard !routeManager.isRouteAvailable(route),
+        guard !routeManager.getNextRoute(route),
               let currentIndex = routeManager.availableRoutes.firstIndex(where: { $0.id == route.id }),
               currentIndex > 0 else {
             return nil
