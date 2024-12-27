@@ -37,10 +37,10 @@ Predefined routes
 Milestone achievements
                                                         
 Known Issues
-[Any known issues or bugs]
+[ - ]
 
 Additional Notes
-[Any specific instructions or notes]
+[ - ]
                                                         
 Contact
 Ellinor Lindström
