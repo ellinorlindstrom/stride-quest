@@ -96,7 +96,7 @@ struct RouteCard: View {
                 }
                 .font(.caption)
                 .padding(8)
-                .background(.green.opacity(0.9))
+                .background(.secondSecondarySq.opacity(0.9))
                 .foregroundColor(.white)
                 .cornerRadius(20)
                 .padding(8)

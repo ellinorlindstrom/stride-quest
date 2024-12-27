@@ -23,12 +23,12 @@ struct ProfileSection: View {
                         ProfileImageView(profileImage: authManager.profileImage)
                             .overlay(
                                 Circle()
-                                    .stroke(Color.blue.opacity(0.8), lineWidth: 3)
+                                    .stroke(Color.secondarySq.opacity(0.8), lineWidth: 3)
                                     .scaleEffect(showImagePicker ? 1.1 : 1.0)
                             )
                             .overlay(
                                 Image(systemName: "camera.circle.fill")
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.secondarySq)
                                     .background(Circle().fill(Color.white))
                                     .offset(x: 35, y: 35)
                             )
@@ -59,7 +59,7 @@ struct ProfileSection: View {
                                 saveNameChanges()
                             } label: {
                                 Image(systemName: "checkmark.circle.fill")
-                                    .foregroundColor(.blue)
+                                    .foregroundColor(.secondarySq)
                                     .font(.system(size: 20))
                             }
                             
@@ -79,7 +79,7 @@ struct ProfileSection: View {
                             startNameEdit()
                         } label: {
                             Image(systemName: "pencil.circle")
-                                .foregroundColor(.blue)
+                                .foregroundColor(.secondarySq)
                                 .font(.system(size: 20))
                         }
                     }
@@ -146,9 +146,7 @@ struct ProfileImageView: View {
             } else {
                 ZStack {
                     Circle()
-                        .fill(colorScheme == .dark ?
-                              Color(red: 0.2, green: 0.4, blue: 0.6) :
-                                Color(red: 0.075, green: 0.278, blue: 0.396))
+                        .fill(Color(.secondarySq))
                         .frame(width: 120, height: 120)
                         .shadow(radius: 5)
                     
@@ -171,7 +169,7 @@ struct AccountInformationSection: View {
             if let email = email {
                 HStack {
                     Image(systemName: "envelope.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.secondarySq)
                     Text(email)
                         .textSelection(.enabled)
                 }
@@ -180,7 +178,7 @@ struct AccountInformationSection: View {
             if let userId = userId {
                 HStack {
                     Image(systemName: "person.badge.key.fill")
-                        .foregroundColor(.blue)
+                        .foregroundColor(.secondarySq)
                     Text(userId)
                         .textSelection(.enabled)
                         .font(.footnote)
